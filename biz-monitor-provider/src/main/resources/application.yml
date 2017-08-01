@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: biz-monitor-provider
+  messages:
+    encoding: UTF-8
+    basename: i18n/base
+    fallback-to-system-locale: false
+logging:
+  config: classpath:log4j2.xml
+  level:
+    root: info
+mybatis:
+  mapperLocations: classpath:mapper/*.xml

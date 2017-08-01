@@ -1,0 +1,46 @@
+spring:
+  cloud:
+    config:
+      profile: dev
+      uri: http://192.168.13.53:9999
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: false #调试用 超时不熔断
+#  redis:
+#     cluster:
+#       nodes:
+#         - 192.168.13.53:6379
+#         - 192.168.13.53:6380
+#         - 192.168.13.53:6381
+#         - 192.168.13.53:6382
+#         - 192.168.13.53:6383
+#         - 192.168.13.53:6384
+server:
+  port: 7001
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/  #注册中心地址
+#  instance:
+#    hostname: localhost
+#    instanceId: http://localhost:7001
+druid:
+  jdbc:
+    driveClassName: com.mysql.jdbc.Driver
+    jdbcUrl: jdbc:mysql://192.168.13.52:3306/sceo_user_center
+    jdbcUsername: root
+    jdbcPassword: hk123
+    maxActive: 20
+    initialSize: 1
+    maxWait: 60000
+    minIdle: 3
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 'x'
+    testWhileIdle: true
+    testOnBrowwon: false
+    testOnReturn: false
+    filters: stat,wall

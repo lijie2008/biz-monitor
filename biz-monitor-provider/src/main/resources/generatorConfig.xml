@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+    <classPathEntry location="D:\mysql-connector-java-5.1.39.jar" />
+
+    <context id="MyTables" targetRuntime="MyBatis3">
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:mysql://192.168.13.52:3306/sceo_user_center?useUnicode=true&amp;characterEncoding=UTF-8"
+                        userId="root"
+                        password="hk123">
+        </jdbcConnection>
+
+        <!--<javaTypeResolver >-->
+            <!--<property name="forceBigDecimals" value="false" />-->
+        <!--</javaTypeResolver>-->
+
+        <javaModelGenerator targetPackage="com.huntkey.rx.sceo.monitor.commom.model" targetProject="D:\work\IdeaProjects\sceo-security-center\security-center-common\src\main\java">
+            <property name="enableSubPackages" value="true" />
+            <property name="trimStrings" value="true" />
+        </javaModelGenerator>
+
+        <sqlMapGenerator targetPackage="mapper"  targetProject="D:\work\IdeaProjects\sceo-security-center\security-center-provider\src\main\resources">
+            <property name="enableSubPackages" value="true" />
+        </sqlMapGenerator>
+
+        <javaClientGenerator type="XMLMAPPER" targetPackage="com.huntkey.rx.sceo.monitor.provider.dao" targetProject="D:\work\IdeaProjects\sceo-security-center\security-center-provider\src\main\java">
+            <property name="enableSubPackages" value="true" />
+        </javaClientGenerator>
+
+        <!--<table schema="training" tableName="sys_user" domainObjectName="SysUser" >
+            &lt;!&ndash;<property name="useActualColumnNames" value="true"/>&ndash;&gt;
+            &lt;!&ndash;<generatedKey column="ID" sqlStatement="DB2" identity="true" />&ndash;&gt;
+            &lt;!&ndash;<columnOverride column="DATE_FIELD" property="startDate" />&ndash;&gt;
+            &lt;!&ndash;<ignoreColumn column="FRED" />&ndash;&gt;
+            &lt;!&ndash;<columnOverride column="LONG_VARCHAR_FIELD" jdbcType="VARCHAR" />&ndash;&gt;
+        </table>
+
+        <table schema="training" tableName="sys_user_security" domainObjectName="SysUserSecurity" ></table>-->
+
+    </context>
+</generatorConfiguration>
