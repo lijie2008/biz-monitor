@@ -1,23 +1,27 @@
 spring:
   cloud:
-    config:
-      profile: dev
-      uri: http://192.168.13.53:9999
+#    config:
+#      profile: dev
+#      uri: http://192.168.13.53:9999
 hystrix:
   command:
     default:
       execution:
         timeout:
           enabled: false #调试用 超时不熔断
-#  redis:
-#     cluster:
-#       nodes:
-#         - 192.168.13.53:6379
-#         - 192.168.13.53:6380
-#         - 192.168.13.53:6381
-#         - 192.168.13.53:6382
-#         - 192.168.13.53:6383
-#         - 192.168.13.53:6384
+redis:
+  port: 6379
+  host: 192.168.13.33
+    
+#    redis:
+#      cluster:
+#        nodes:
+#          - 192.168.13.53:6379
+#          - 192.168.13.53:6380
+#          - 192.168.13.53:6381
+#          - 192.168.13.53:6382
+#          - 192.168.13.53:6383
+#          - 192.168.13.53:6384
 server:
   port: 7001
 eureka:
