@@ -1,6 +1,7 @@
 package com.huntkey.rx.sceo.monitor.provider.exception;
 
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.exception.BusinessValidateException;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.utils.ValidatorResultUtil;
@@ -209,6 +210,18 @@ public class GlobalExceptionHandler {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("未知服务异常，请联系管理员！");
+        return result;
+    }
+    
+    /**
+     * 应用异常
+     */
+    @ExceptionHandler(ApplicationException.class)
+    public Result handleException(ApplicationException e) {
+        log.error("应用异常 exceptions", e);
+        Result result = new Result();
+        result.setRetCode(e.getCode());
+        result.setErrMsg(e.getMessage());
         return result;
     }
 }

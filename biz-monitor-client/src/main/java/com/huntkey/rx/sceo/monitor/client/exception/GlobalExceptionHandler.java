@@ -1,4 +1,4 @@
-package com.huntkey.rx.sceo.monitor.client.exception.handler;
+package com.huntkey.rx.sceo.monitor.client.exception;
 
 import java.util.Set;
 
@@ -21,7 +21,9 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.utils.ValidatorResultUtil;
 
 
@@ -160,6 +162,18 @@ public class GlobalExceptionHandler {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("content type not supported");
+        return result;
+    }
+    
+    /**
+     * 应用异常
+     */
+    @ExceptionHandler(ApplicationException.class)
+    public Result handleException(ApplicationException e) {
+        log.error("应用异常 exceptions", e);
+        Result result = new Result();
+        result.setRetCode(e.getCode());
+        result.setErrMsg(e.getMessage());
         return result;
     }
 
