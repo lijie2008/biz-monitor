@@ -5,6 +5,8 @@ package com.huntkey.rx.sceo.monitor.commom.exception;
  */
 public class BusinessValidateException extends RuntimeException {
 
+    private static final long serialVersionUID = 1L;
+
     public BusinessValidateException(){
         super();
     }

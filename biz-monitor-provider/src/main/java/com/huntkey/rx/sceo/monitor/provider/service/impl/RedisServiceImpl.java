@@ -3,7 +3,6 @@ package com.huntkey.rx.sceo.monitor.provider.service.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
@@ -25,9 +24,6 @@ public class RedisServiceImpl implements RedisService{
 
     @Autowired
     private JedisPool jedisPool;
-    
-    @Autowired
-    private RedisTemplate<String, Object> redis;
 
     @Override
     public Jedis getResource() {

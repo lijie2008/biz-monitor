@@ -1,11 +1,9 @@
-package com.huntkey.rx.sceo.monitor.provider.exception.handler;
+package com.huntkey.rx.sceo.monitor.provider.exception;
 
-import java.util.Set;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.ValidationException;
-
+import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.commom.exception.BusinessValidateException;
+import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
+import com.huntkey.rx.sceo.monitor.commom.utils.ValidatorResultUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -23,10 +21,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import com.huntkey.rx.commons.utils.rest.Result;
-import com.huntkey.rx.sceo.monitor.commom.exception.BusinessValidateException;
-import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
-import com.huntkey.rx.sceo.monitor.commom.utils.ValidatorResultUtil;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.ValidationException;
+import java.util.Set;
 
 /**
  * Created by xuyf on 2017/5/22 0022.
