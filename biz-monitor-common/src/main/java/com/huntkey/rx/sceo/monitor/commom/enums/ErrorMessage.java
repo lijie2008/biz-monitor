@@ -17,9 +17,9 @@ package com.huntkey.rx.sceo.monitor.commom.enums;
  */
 public enum ErrorMessage {
     
-    _60000(60000, "初始化堆栈"),
+    _60000(60000, "枚举类型不正确"),
     
-    _60001(60001, "节点操作"),
+    _60001(60001, "revoked注解在参数上时，必须指明key"),
     
     _60002(60002, "节点详情操作");
         

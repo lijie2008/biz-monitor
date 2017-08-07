@@ -35,5 +35,7 @@ public @interface Revoked {
      * @return
      */
     public OperateType type() default OperateType.INITIALIZE;
+    
+    public String key() default "";
 }
 
