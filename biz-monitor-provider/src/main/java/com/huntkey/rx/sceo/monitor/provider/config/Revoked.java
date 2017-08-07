@@ -24,7 +24,7 @@ import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
  * @version  
  * @see 	 
  */
-@Target({ElementType.METHOD})
+@Target({ElementType.METHOD,ElementType.FIELD,ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Revoked {
@@ -34,14 +34,6 @@ public @interface Revoked {
      * @author lijie
      * @return
      */
-    public OperateType type();
-    
-    /**
-     * 
-     * target: 指明需要取出的目标字段
-     * @author lijie
-     * @return
-     */
-    public String target() default "";
+    public OperateType type() default OperateType.INITIALIZE;
 }
 

@@ -1,7 +1,5 @@
 package com.huntkey.rx.sceo.monitor.provider.service;
 
-import redis.clients.jedis.Jedis;
-
 /**
  * 
  * ClassName: RedisService redis操作
@@ -10,19 +8,14 @@ import redis.clients.jedis.Jedis;
  * @version
  */
 public interface RedisService {
-    Jedis getResource();
-
-    void returnResource(Jedis jedis);
-
-    void set(String key, String value);
-
-    void set(byte[] key, byte[] value);
-
-    String get(String key);
-
-    byte[] get(byte[] key);
-
-    Long delete(String key);
-
-    Long delete(byte[] key);
+    
+    Long size(String key);
+    
+    Boolean isEmpity(String key);
+    
+    void lPush(String key, Object value);
+    
+    Object lPop(String key);
+    
+    void delete(String key);
 }
