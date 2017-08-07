@@ -31,20 +31,6 @@ public class CacheConfig extends CachingConfigurerSupport {
     @Value("${redis.host}")
     private String host;
     
-//    @Value("${redis.cluster.nodes}")
-//    private List<String> nodes;
-    
-//    @Bean
-//    public JedisCluster getJedisCluster(){
-//        log.info("JedisCluster创建！！" + this.nodes.get(0));
-//        Set<HostAndPort> nodes = new HashSet<>();
-//        for(String node : this.nodes){
-//            nodes.add(new HostAndPort(node.split(":")[0], Integer.valueOf(node.split(":")[1])));
-//        }
-//        JedisCluster cluster = new JedisCluster(nodes);
-//        return cluster;
-//    }
-    
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
         log.info("JedisCluster创建！！");
