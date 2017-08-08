@@ -10,7 +10,6 @@
 package com.huntkey.rx.sceo.monitor.commom.model;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * ClassName:NodeTo 节点对象
@@ -97,11 +96,6 @@ public class NodeTo implements Serializable{
      * 节点所在层级
      */
     private String mtor018;
-    
-    /**
-     * 关联资源对象集合
-     */
-    private List<ResourceTo> mtor019;
     
     /**
      * 监管更新标记
@@ -231,14 +225,6 @@ public class NodeTo implements Serializable{
 
     public void setMtor018(String mtor018) {
         this.mtor018 = mtor018;
-    }
-
-    public List<ResourceTo> getMtor019() {
-        return mtor019;
-    }
-
-    public void setMtor019(List<ResourceTo> mtor019) {
-        this.mtor019 = mtor019;
     }
 
     public int getMtor021() {

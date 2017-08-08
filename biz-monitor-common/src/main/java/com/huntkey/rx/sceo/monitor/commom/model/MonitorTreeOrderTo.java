@@ -10,7 +10,6 @@
 package com.huntkey.rx.sceo.monitor.commom.model;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * ClassName:MonitorTreeOrderTo 临时单To
@@ -48,10 +47,7 @@ public class MonitorTreeOrderTo implements Serializable{
      */
     private String mtor004;
     
-    /**
-     * 关联的节点集合
-     */
-    private List<NodeTo> mtor005;
+
 
     public String getId() {
         return id;
@@ -91,14 +87,6 @@ public class MonitorTreeOrderTo implements Serializable{
 
     public void setMtor004(String mtor004) {
         this.mtor004 = mtor004;
-    }
-
-    public List<NodeTo> getMtor005() {
-        return mtor005;
-    }
-
-    public void setMtor005(List<NodeTo> mtor005) {
-        this.mtor005 = mtor005;
     }
     
 }
