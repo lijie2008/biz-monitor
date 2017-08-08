@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: security-center-client
+#  cloud:
+#    config:
+#      profile: dev
+#      uri: http://192.168.13.53:9999
+  messages:
+    encoding: UTF-8
+    basename: i18n/base
+server:
+  port: 7002
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/  #注册中心地址
+  instance:
+      hostname: localhost
+      instanceId: http://localhost:7002
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: false #调试用 超时不熔断
+logging:
+  config: classpath:log4j2.xml
+  level:
+    root: info
