@@ -15,6 +15,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
@@ -23,8 +24,12 @@ import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.model.ConditionParam;
 import com.huntkey.rx.sceo.monitor.commom.model.FullInputArgument;
+import com.huntkey.rx.sceo.monitor.commom.model.MonitorTreeOrderTo;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.PagenationParam;
+import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.commom.model.SortParam;
+import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.HbaseClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
 
@@ -42,7 +47,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     private HbaseClient client;
     
     @Override
-    public JSONObject queryNode(String nodeId) {
+    public NodeTo queryNode(String nodeId) {
         ConditionParam cnd = new ConditionParam();
         cnd.setAttr(Constant.ID);
         cnd.setOperator("=");
@@ -55,11 +60,20 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
-        return (JSONObject)result.getData();
+        
+        JSONObject data = (JSONObject)result.getData();
+        
+        if(!JsonUtil.isEmpity(data)){
+            JSONArray dataset = data.getJSONArray(PersistanceConstant.DATASET);
+            if(!JsonUtil.isEmpity(dataset)){
+                return JsonUtil.getObject(dataset.getJSONObject(0).toJSONString(), NodeTo.class);
+            }
+        }
+        return null;
     }
 
     @Override
-    public JSONObject queryResource(String nodeId) {
+    public List<ResourceTo> queryResource(String nodeId) {
         ConditionParam cnd = new ConditionParam();
         cnd.setAttr(Constant.PID);
         cnd.setOperator("=");
@@ -73,12 +87,19 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         
-        return (JSONObject)result.getData();
+        JSONObject data = (JSONObject)result.getData();
         
+        if(!JsonUtil.isEmpity(data)){
+            JSONArray dataset = data.getJSONArray(PersistanceConstant.DATASET);
+            if(!JsonUtil.isEmpity(dataset)){
+                return JsonUtil.getList(dataset, ResourceTo.class);
+            }
+        }
+        return null;
     }
     
     @Override
-    public JSONObject queryOrder(String orderId){
+    public MonitorTreeOrderTo queryOrder(String orderId){
         ConditionParam cnd = new ConditionParam();
         cnd.setAttr(Constant.ID);
         cnd.setOperator("=");
@@ -92,19 +113,34 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         
-        return (JSONObject)result.getData();
+        JSONObject data = (JSONObject)result.getData();
         
+        if(!JsonUtil.isEmpity(data)){
+            JSONArray dataset = data.getJSONArray(PersistanceConstant.DATASET);
+            if(!JsonUtil.isEmpity(dataset)){
+                return JsonUtil.getObject(dataset.getJSONObject(0).toJSONString(), MonitorTreeOrderTo.class);
+            }
+        }
+        return null;
     }
     
     @Override
-    public JSONObject queryTreeNode(String orderId, String startDate, String endDate) {
+    public List<String> queryTreeNodeResource(String orderId, String startDate, String endDate, String excNodeId) {
         
-        Result result = client.queryTreeNodeResource(orderId, startDate, endDate);
+        Result result = client.queryTreeNodeResource(orderId, startDate, endDate,excNodeId);
         
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
-        return (JSONObject)result.getData();
         
+        JSONObject data = (JSONObject)result.getData();
+        
+        if(!JsonUtil.isEmpity(data)){
+            JSONArray dataset = data.getJSONArray(PersistanceConstant.DATASET);
+            if(!JsonUtil.isEmpity(dataset)){
+                return JsonUtil.getList(dataset, String.class);
+            }
+        }
+        return null;
     }
 
     /**

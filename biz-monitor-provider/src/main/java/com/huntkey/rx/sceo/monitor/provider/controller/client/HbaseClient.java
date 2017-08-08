@@ -48,6 +48,7 @@ public interface HbaseClient {
     Result update(@RequestParam(value = "datas") String datas);
     
     @RequestMapping(value= "/monitor/queryTreeNodeResource", method = RequestMethod.GET)
-    Result queryTreeNodeResource(@RequestParam(value="orderId") String orderId,@RequestParam(value="startDate",defaultValue="") String startDate, @RequestParam(value="endDate",defaultValue="") String endDate);
+    Result queryTreeNodeResource(@RequestParam(value="orderId") String orderId,@RequestParam(value="startDate",defaultValue="") String startDate,
+                                 @RequestParam(value="endDate",defaultValue="") String endDate, @RequestParam(defaultValue="") String excNodeId);
 }
 

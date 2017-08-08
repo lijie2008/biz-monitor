@@ -52,7 +52,7 @@ public class JsonUtil {
      * @return
      * @throws IOException
      */
-    public static final <T> T getObject(String jsonStr,Class<T> clazz) throws IOException {
+    public static final <T> T getObject(String jsonStr,Class<T> clazz) {
         if(isEmpity(jsonStr)){
             return null;
         }

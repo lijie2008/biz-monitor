@@ -9,7 +9,11 @@
 
 package com.huntkey.rx.sceo.monitor.provider.service;
 
-import com.alibaba.fastjson.JSONObject;
+import java.util.List;
+
+import com.huntkey.rx.sceo.monitor.commom.model.MonitorTreeOrderTo;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
+import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 
 /**
  * ClassName:MonitorTreeOrderService 临时单服务
@@ -27,7 +31,7 @@ public interface MonitorTreeOrderService {
      * @param nodeId 节点ID
      * @return
      */
-    JSONObject queryNode(String nodeId);
+    NodeTo queryNode(String nodeId);
     
     /**
      * 
@@ -36,7 +40,7 @@ public interface MonitorTreeOrderService {
      * @param nodeId 节点ID
      * @return
      */
-    JSONObject queryResource(String nodeId);
+    List<ResourceTo> queryResource(String nodeId);
     
     /**
      * 
@@ -45,18 +49,19 @@ public interface MonitorTreeOrderService {
      * @param orderId 临时单ID
      * @return
      */
-    JSONObject queryOrder(String orderId);
+    MonitorTreeOrderTo queryOrder(String orderId);
     
     /**
      * 
-     * queryTreeNode: 查询监管树下所有节点信息
+     * queryTreeNode: 查询当前临时单里已使用的资源信息
      * @author lijie
      * @param orderId
      * @param startDate
      * @param endDate - 可为空 空代表最大的失效日期
+     * @param excNodeId - 此id的资源不统计
      * @return
      */
-    JSONObject queryTreeNode(String orderId, String startDate, String endDate);
+    List<String> queryTreeNodeResource(String orderId, String startDate, String endDate,String excNodeId);
     
 }
 

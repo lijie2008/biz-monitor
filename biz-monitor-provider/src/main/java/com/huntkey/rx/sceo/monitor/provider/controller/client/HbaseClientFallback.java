@@ -59,7 +59,7 @@ public class HbaseClientFallback implements HbaseClient{
 	}
 
     @Override
-    public Result queryTreeNodeResource(String orderId, String startDate, String endDate) {
+    public Result queryTreeNodeResource(String orderId, String startDate, String endDate, String excNodeId) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("hbase client update fallback");
