@@ -9,6 +9,7 @@
 package com.huntkey.rx.sceo.monitor.provider.controller.client;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,15 +25,15 @@ import com.huntkey.rx.commons.utils.rest.Result;
  * @version
  * @see
  */
-@FeignClient(value = "modelerCommon-provider", fallback = HbaseClientFallback.class)
+@FeignClient(value = "serviceCenter-provider", fallback = HbaseClientFallback.class,url="http://192.168.13.34:2008")
 public interface HbaseClient {
 
-    @RequestMapping(value = "/esAndhbase", method = RequestMethod.GET)
-    Result queryFromEsAndHbase(@RequestParam(value = "datas") String datas);
+    @RequestMapping(value = "/servicecenter/find", method = RequestMethod.POST)
+    Result find(@RequestBody String datas);
 
 
-    @RequestMapping(value = "/esAndhbase/add", method = RequestMethod.POST)
-    Result addDatasToEsAndHbase(@RequestParam(value = "datas") String datas);
+    @RequestMapping(value = "/servicecenter/add", method = RequestMethod.POST)
+    Result add(@RequestParam(value = "datas") String datas);
     /**
      * 
      * deleteEsAndHbase: 删除数据
@@ -40,7 +41,10 @@ public interface HbaseClient {
      * @param datas
      * @return
      */
-    @RequestMapping(value= "/esAndhbase", method = RequestMethod.DELETE)
-    Result deleteEsAndHbase(@RequestParam(value = "datas") String datas);
+    @RequestMapping(value= "/servicecenter/delete", method = RequestMethod.DELETE)
+    Result delete(@RequestParam(value = "datas") String datas);
+    
+    @RequestMapping(value= "/servicecenter/update", method = RequestMethod.POST)
+    Result update(@RequestParam(value = "datas") String datas);
 }
 

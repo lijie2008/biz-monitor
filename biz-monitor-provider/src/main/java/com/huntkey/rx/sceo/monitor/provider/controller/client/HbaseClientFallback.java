@@ -26,28 +26,37 @@ import com.huntkey.rx.commons.utils.rest.Result;
 public class HbaseClientFallback implements HbaseClient{
 
     @Override
-    public Result queryFromEsAndHbase(String datas) {
+    public Result find(String datas) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("hbase client queryFromEsAndHbase fallback");
+        result.setErrMsg("hbase client find fallback");
         return result;
     }
 
     @Override
-    public Result addDatasToEsAndHbase(String datas) {
+    public Result add(String datas) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("hbase client addDatasToEsAndHbase fallback");
+        result.setErrMsg("hbase client add fallback");
         return result;
     }
 
     @Override
-    public Result deleteEsAndHbase(String datas) {
+    public Result delete(String datas) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("hbase client deleteEsAndHbase fallback");
+        result.setErrMsg("hbase client delete fallback");
         return result;
     }
+
+	@Override
+	public Result update(String datas) {
+		// TODO Auto-generated method stub
+		Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("hbase client update fallback");
+        return result;
+	}
 
 }
 

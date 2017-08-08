@@ -331,5 +331,15 @@ public class JsonUtil {
         }
         return false;
     }
-    
+    /**
+     * 校验jsonarray是否为null 或者 大小为0
+     * @param jsonArr
+     * @return
+     */
+    public static Boolean isNullOrEmpty(JSONArray jsonArr){
+    	if(jsonArr==null || jsonArr.size()<1){
+    		return true;
+    	}
+        return false;
+    }
 }
