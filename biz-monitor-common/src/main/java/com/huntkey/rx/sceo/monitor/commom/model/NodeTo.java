@@ -36,82 +36,82 @@ public class NodeTo implements Serializable{
     /**
      * 节点编号
      */
-    private String mtor_007;
+    private String mtor006;
     
     /**
      * 节点名称
      */
-    private String mtor_008;
+    private String mtor007;
     
     /**
      * 节点定义
      */
-    private String mtor_009;
+    private String mtor008;
     
     /**
      * 主管人
      */
-    private String mtor_010;
+    private String mtor009;
     
     /**
      * 协管人
      */
-    private String mtor_011;
+    private String mtor010;
     
     /**
      * 生效时间
      */
-    private String mtor_012;
+    private String mtor011;
     
     /**
      * 失效时间
      */
-    private String mtor_013;
+    private String mtor012;
     
     /**
      * 上级对象
      */
-    private String mtor_014;
+    private String mtor013;
     
     /**
      * 下级对象
      */
-    private String mtor_015;
+    private String mtor014;
     
     /**
      * 左邻对象
      */
-    private String mtor_016;
+    private String mtor015;
     
     /**
      * 右邻对象
      */
-    private String mtor_017;
+    private String mtor016;
     
     /**
      * 层级编码
      */
-    private String mtor_019;
+    private String mtor017;
     
     /**
      * 节点所在层级
      */
-    private String mtor_020;
+    private String mtor018;
     
     /**
      * 关联资源对象集合
      */
-    private List<ResourceTo> mtor_021;
+    private List<ResourceTo> mtor019;
     
     /**
      * 监管更新标记
      */
-    private String mtor_023;
+    private int mtor021;
     
     /**
      * 直属关联对象条件(方法)
      */
-    private String mtor_024;
+    private String mtor022;
 
     public String getId() {
         return id;
@@ -129,133 +129,133 @@ public class NodeTo implements Serializable{
         this.pid = pid;
     }
 
-    public String getMtor_007() {
-        return mtor_007;
+    public String getMtor006() {
+        return mtor006;
     }
 
-    public void setMtor_007(String mtor_007) {
-        this.mtor_007 = mtor_007;
+    public void setMtor006(String mtor006) {
+        this.mtor006 = mtor006;
     }
 
-    public String getMtor_008() {
-        return mtor_008;
+    public String getMtor007() {
+        return mtor007;
     }
 
-    public void setMtor_008(String mtor_008) {
-        this.mtor_008 = mtor_008;
+    public void setMtor007(String mtor007) {
+        this.mtor007 = mtor007;
     }
 
-    public String getMtor_009() {
-        return mtor_009;
+    public String getMtor008() {
+        return mtor008;
     }
 
-    public void setMtor_009(String mtor_009) {
-        this.mtor_009 = mtor_009;
+    public void setMtor008(String mtor008) {
+        this.mtor008 = mtor008;
     }
 
-    public String getMtor_010() {
-        return mtor_010;
+    public String getMtor009() {
+        return mtor009;
     }
 
-    public void setMtor_010(String mtor_010) {
-        this.mtor_010 = mtor_010;
+    public void setMtor009(String mtor009) {
+        this.mtor009 = mtor009;
     }
 
-    public String getMtor_011() {
-        return mtor_011;
+    public String getMtor010() {
+        return mtor010;
     }
 
-    public void setMtor_011(String mtor_011) {
-        this.mtor_011 = mtor_011;
+    public void setMtor010(String mtor010) {
+        this.mtor010 = mtor010;
     }
 
-    public String getMtor_012() {
-        return mtor_012;
+    public String getMtor011() {
+        return mtor011;
     }
 
-    public void setMtor_012(String mtor_012) {
-        this.mtor_012 = mtor_012;
+    public void setMtor011(String mtor011) {
+        this.mtor011 = mtor011;
     }
 
-    public String getMtor_013() {
-        return mtor_013;
+    public String getMtor012() {
+        return mtor012;
     }
 
-    public void setMtor_013(String mtor_013) {
-        this.mtor_013 = mtor_013;
+    public void setMtor012(String mtor012) {
+        this.mtor012 = mtor012;
     }
 
-    public String getMtor_014() {
-        return mtor_014;
+    public String getMtor013() {
+        return mtor013;
     }
 
-    public void setMtor_014(String mtor_014) {
-        this.mtor_014 = mtor_014;
+    public void setMtor013(String mtor013) {
+        this.mtor013 = mtor013;
     }
 
-    public String getMtor_015() {
-        return mtor_015;
+    public String getMtor014() {
+        return mtor014;
     }
 
-    public void setMtor_015(String mtor_015) {
-        this.mtor_015 = mtor_015;
+    public void setMtor014(String mtor014) {
+        this.mtor014 = mtor014;
     }
 
-    public String getMtor_016() {
-        return mtor_016;
+    public String getMtor015() {
+        return mtor015;
     }
 
-    public void setMtor_016(String mtor_016) {
-        this.mtor_016 = mtor_016;
+    public void setMtor015(String mtor015) {
+        this.mtor015 = mtor015;
     }
 
-    public String getMtor_017() {
-        return mtor_017;
+    public String getMtor016() {
+        return mtor016;
     }
 
-    public void setMtor_017(String mtor_017) {
-        this.mtor_017 = mtor_017;
+    public void setMtor016(String mtor016) {
+        this.mtor016 = mtor016;
     }
 
-    public String getMtor_019() {
-        return mtor_019;
+    public String getMtor017() {
+        return mtor017;
     }
 
-    public void setMtor_019(String mtor_019) {
-        this.mtor_019 = mtor_019;
+    public void setMtor017(String mtor017) {
+        this.mtor017 = mtor017;
     }
 
-    public String getMtor_020() {
-        return mtor_020;
+    public String getMtor018() {
+        return mtor018;
     }
 
-    public void setMtor_020(String mtor_020) {
-        this.mtor_020 = mtor_020;
+    public void setMtor018(String mtor018) {
+        this.mtor018 = mtor018;
     }
 
-    public List<ResourceTo> getMtor_021() {
-        return mtor_021;
+    public List<ResourceTo> getMtor019() {
+        return mtor019;
     }
 
-    public void setMtor_021(List<ResourceTo> mtor_021) {
-        this.mtor_021 = mtor_021;
+    public void setMtor019(List<ResourceTo> mtor019) {
+        this.mtor019 = mtor019;
     }
 
-    public String getMtor_023() {
-        return mtor_023;
+    public int getMtor021() {
+        return mtor021;
     }
 
-    public void setMtor_023(String mtor_023) {
-        this.mtor_023 = mtor_023;
+    public void setMtor021(int mtor021) {
+        this.mtor021 = mtor021;
     }
 
-    public String getMtor_024() {
-        return mtor_024;
+    public String getMtor022() {
+        return mtor022;
     }
 
-    public void setMtor_024(String mtor_024) {
-        this.mtor_024 = mtor_024;
+    public void setMtor022(String mtor022) {
+        this.mtor022 = mtor022;
     }
-    
+
 }
 

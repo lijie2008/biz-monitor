@@ -31,27 +31,27 @@ public class MonitorTreeOrderTo implements Serializable{
     /**
      * 单据编号
      */
-    private String mtor_002;
+    private String mtor001;
     
     /**
      * 变更类型
      */
-    private String mtor_003;
+    private int mtor002;
     
     /**
      * EDM类
      */
-    private String mtor_004;
+    private String mtor003;
     
     /**
      * 变更树对象根节点
      */
-    private String mtor_005;
+    private String mtor004;
     
     /**
      * 关联的节点集合
      */
-    private List<NodeTo> mtor_006;
+    private List<NodeTo> mtor005;
 
     public String getId() {
         return id;
@@ -61,44 +61,44 @@ public class MonitorTreeOrderTo implements Serializable{
         this.id = id;
     }
 
-    public String getMtor_002() {
-        return mtor_002;
+    public String getMtor001() {
+        return mtor001;
     }
 
-    public void setMtor_002(String mtor_002) {
-        this.mtor_002 = mtor_002;
+    public void setMtor001(String mtor001) {
+        this.mtor001 = mtor001;
     }
 
-    public String getMtor_003() {
-        return mtor_003;
+    public int getMtor002() {
+        return mtor002;
     }
 
-    public void setMtor_003(String mtor_003) {
-        this.mtor_003 = mtor_003;
+    public void setMtor002(int mtor002) {
+        this.mtor002 = mtor002;
     }
 
-    public String getMtor_004() {
-        return mtor_004;
+    public String getMtor003() {
+        return mtor003;
     }
 
-    public void setMtor_004(String mtor_004) {
-        this.mtor_004 = mtor_004;
+    public void setMtor003(String mtor003) {
+        this.mtor003 = mtor003;
     }
 
-    public String getMtor_005() {
-        return mtor_005;
+    public String getMtor004() {
+        return mtor004;
     }
 
-    public void setMtor_005(String mtor_005) {
-        this.mtor_005 = mtor_005;
+    public void setMtor004(String mtor004) {
+        this.mtor004 = mtor004;
     }
 
-    public List<NodeTo> getMtor_006() {
-        return mtor_006;
+    public List<NodeTo> getMtor005() {
+        return mtor005;
     }
 
-    public void setMtor_006(List<NodeTo> mtor_006) {
-        this.mtor_006 = mtor_006;
+    public void setMtor005(List<NodeTo> mtor005) {
+        this.mtor005 = mtor005;
     }
     
 }

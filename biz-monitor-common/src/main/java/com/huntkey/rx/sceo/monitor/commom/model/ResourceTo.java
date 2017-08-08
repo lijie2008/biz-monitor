@@ -35,7 +35,7 @@ public class ResourceTo implements Serializable{
     /**
      * 资源对象
      */
-    private String mtor_022;
+    private String mtor020;
 
     public String getId() {
         return id;
@@ -53,12 +53,12 @@ public class ResourceTo implements Serializable{
         this.pid = pid;
     }
 
-    public String getMtor_022() {
-        return mtor_022;
+    public String getMtor020() {
+        return mtor020;
     }
 
-    public void setMtor_022(String mtor_022) {
-        this.mtor_022 = mtor_022;
+    public void setMtor020(String mtor020) {
+        this.mtor020 = mtor020;
     }
     
 }
