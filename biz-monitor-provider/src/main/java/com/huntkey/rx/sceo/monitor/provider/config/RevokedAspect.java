@@ -50,24 +50,26 @@ public class RevokedAspect {
     @Autowired 
     private RedisService redisService;
     
-    @SuppressWarnings("incomplete-switch")
     @Before(value="@annotation(revoked)",argNames="revoked")
     public void serviceStart(JoinPoint point, Revoked revoked) {
         log.info("服务开始前1 service start before!");
         
         OperateType type = revoked.type();
-        if(type == OperateType.INITIALIZE)
-            return;
         String key = getKey(point);
         Object value = null;
         
         switch(type){
+            
+            case INITIALIZE:
+                log.info("服务前切结束2 end(一开始初始化)");
+                
+                return;
+                
             case NODE:
-                // key - 查临时单
                 
                 break;
+                
             case DETAIL:
-                // key - 查节点详情
                 
                 break;
         }
@@ -95,21 +97,21 @@ public class RevokedAspect {
         String key = getKey(point);
         if(result.getRetCode() != Result.RECODE_SUCCESS){
             originalMap.remove(key);
+            log.info("服务调用正常完成(失败型结束1)4 service end before!");
             return;
         }
-        
-        log.info("服务调用正常完成4 service end before!");
-        
         OperateType type = revoked.type();
         RevokedTo re = new RevokedTo();
         re.setType(type);
         Object obj = originalMap.get(key);
+        
         if(JsonUtil.isEmpity(obj))
             return;
         re.setObj(obj);
         String id = null;
         
         switch(type){
+            
             case INITIALIZE:
                 
                 id = JsonUtil.getJson(result.getData()).getString("id");
@@ -117,17 +119,19 @@ public class RevokedAspect {
                     return;
                 if(!redisService.isEmpity(id))
                    redisService.delete(id);
+                
                 break;
                 
             case NODE:
+                
                 id = JsonUtil.getJson(obj).getString("id");
-                if(id == null || redisService.isEmpity(id)) // 未初始化、非法操作不允许撤销
+                if(id == null || redisService.isEmpity(id)) // 未初始化堆栈进行的操作 不做撤销储备
                     return;
                 break;
                 
             case DETAIL:
                 id = JsonUtil.getJson(obj).getString("pid");
-                if(id == null || redisService.isEmpity(id)) // 未初始化、非法操作不允许撤销
+                if(id == null || redisService.isEmpity(id)) // 未初始化堆栈进行的操作 不做撤销储备
                     return;
                 break;
         }
@@ -135,7 +139,7 @@ public class RevokedAspect {
         redisService.lPush(id, re);
         originalMap.remove(key);
         
-        log.info("服务正常调用完成5 service end after!");
+        log.info("服务正常调用完成4 service end after!");
     }
     
     /**
@@ -166,7 +170,6 @@ public class RevokedAspect {
                     }
                 }
             }
-            
         }
         return null;
     }
