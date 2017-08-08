@@ -46,5 +46,8 @@ public interface HbaseClient {
     
     @RequestMapping(value= "/servicecenter/update", method = RequestMethod.POST)
     Result update(@RequestParam(value = "datas") String datas);
+    
+    @RequestMapping(value= "/monitor/queryTreeNodeResource", method = RequestMethod.GET)
+    Result queryTreeNodeResource(@RequestParam(value="orderId") String orderId,@RequestParam(value="startDate") String startDate, @RequestParam(value="endDate") String endDate);
 }
 

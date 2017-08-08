@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
-import static com.huntkey.rx.sceo.monitor.commom.Constant.*;
+
+import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.*;
 
 import java.util.ArrayList;
 import java.util.List;

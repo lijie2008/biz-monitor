@@ -7,7 +7,7 @@
  *
 */
 
-package com.huntkey.rx.sceo.monitor.commom;
+package com.huntkey.rx.sceo.monitor.commom.constant;
 /**
  * ClassName:Constant
  * Function: 常量
