@@ -1,6 +1,7 @@
 package com.huntkey.rx.sceo.monitor.provider.service;
 
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailSaveTO;
 public interface MonitorService {
 	//监管树临时单预览查询
 	Result tempTree(String tempId,int hasResource,String validDate);
@@ -10,7 +11,8 @@ public interface MonitorService {
 	Result nodeDetail(String nodeId);
 	//节点关联资源查询
 	Result nodeResource(String nodeId);
-	Result saveNodeDetail(String datas);
+	//节点详情保存
+	Result saveNodeDetail(NodeDetailSaveTO nodeDetail);
 	Result deleteNodeResource(String datas);
 	Result changeFormula(String datas);
 	Result addResource(String datas);

@@ -11,7 +11,7 @@ import static com.huntkey.rx.sceo.monitor.commom.Constant.*;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.model.Condition;
-import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailTO;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailSaveTO;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import com.huntkey.rx.sceo.monitor.provider.utils.DBUtils;
@@ -42,7 +42,7 @@ public class MonitorServiceImpl implements MonitorService {
 			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),
 					ErrorMessage._60003.getMsg()); 
 		}
-		result.setData(JsonUtil.getList(nodeArray, NodeDetailTO.class));
+		result.setData(nodeArray);
 		return result;
 	}
 	/**
@@ -91,7 +91,7 @@ public class MonitorServiceImpl implements MonitorService {
 			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),
 					ErrorMessage._60003.getMsg()); 
 		}
-		result.setData(JSONObject.toJavaObject(nodeJson, NodeDetailTO.class));
+		result.setData(nodeJson);
 		return result;
 	}
 	/**
@@ -105,7 +105,7 @@ public class MonitorServiceImpl implements MonitorService {
 		return null;
 	}
 	@Override
-	public Result saveNodeDetail(String datas) {
+	public Result saveNodeDetail(NodeDetailSaveTO datas) {
 		// TODO Auto-generated method stub
 		return null;
 	}

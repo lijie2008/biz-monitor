@@ -7,10 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailSaveTO;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 
 @RestController
@@ -65,9 +67,9 @@ public class MonitorController1 {
 	 * @param nodeId 节点ID
 	 * @return
 	 */
-	@RequestMapping(value="/saveNodeDetail")
-	public Result saveNodeDetail(@RequestParam(value="nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId){
-		return service.nodeResource(nodeId);
+	@RequestMapping(value="/saveNodeDetail",method=RequestMethod.POST)
+	public Result saveNodeDetail(@RequestBody NodeDetailSaveTO nodeDetail){
+		return service.saveNodeDetail(nodeDetail);
 	}
 	
 	
