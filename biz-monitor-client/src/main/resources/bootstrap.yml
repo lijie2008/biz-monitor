@@ -1,6 +1,6 @@
 spring:
   application:
-    name: security-center-client
+    name: biz-monitor-client
 #  cloud:
 #    config:
 #      profile: dev
