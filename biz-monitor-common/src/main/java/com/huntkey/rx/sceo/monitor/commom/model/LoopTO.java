@@ -2,10 +2,10 @@ package com.huntkey.rx.sceo.monitor.commom.model;
 
 import java.io.Serializable;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 public class LoopTO extends JSONObject implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String tableName;
     private String sourceKey;
     private String mergeKey;

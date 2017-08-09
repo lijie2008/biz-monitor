@@ -60,4 +60,13 @@ public class PersistanceConstant {
     public static String STARTPAGE = "startPage";
 
     public static String ROWS = "rows";
+    
+    public static String EDMPCODE = "moni012";
+    
+    public static String MONITORTREEORDER = "monitortreeorder";
+    
+    public static String MTOR_MTOR005A = "monitortreeorder.mtor005";
+    
+    public static String MTOR_MTOR019B = "monitortreeorder.mtor019";
+    
 }

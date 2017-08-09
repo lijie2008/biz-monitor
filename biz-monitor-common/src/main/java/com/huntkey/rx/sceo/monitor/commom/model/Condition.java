@@ -1,7 +1,5 @@
 package com.huntkey.rx.sceo.monitor.commom.model;
 
-import org.springframework.stereotype.Component;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 public class Condition {

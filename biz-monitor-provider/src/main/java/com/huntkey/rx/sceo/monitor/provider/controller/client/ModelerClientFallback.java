@@ -39,6 +39,14 @@ public class ModelerClientFallback implements ModelerClient{
 		return result;
 	}
 
+    @Override
+    public Result getEdmcNameEn(String classId, String edmpCode) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("modeler client getCharacterAndFormat fallback");
+        return result;
+    }
+
 
 }
 

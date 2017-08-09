@@ -39,7 +39,7 @@ public class SearchParam {
 //    }
 
     //初始化数据
-    public void  SearchParam(JSONObject jsonObject){
+    public  SearchParam(JSONObject jsonObject){
         //需要查询的列
         if(jsonObject.containsKey(COLUMNS)){
             JSONArray _columns = jsonObject.getJSONArray(COLUMNS);

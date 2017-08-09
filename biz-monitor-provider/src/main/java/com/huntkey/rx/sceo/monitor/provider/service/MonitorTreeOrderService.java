@@ -11,6 +11,8 @@ package com.huntkey.rx.sceo.monitor.provider.service;
 
 import java.util.List;
 
+import com.alibaba.fastjson.JSONArray;
+import com.huntkey.rx.sceo.monitor.commom.model.EdmClassTo;
 import com.huntkey.rx.sceo.monitor.commom.model.MonitorTreeOrderTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
@@ -63,5 +65,23 @@ public interface MonitorTreeOrderService {
      */
     List<String> queryTreeNodeResource(String orderId, String startDate, String endDate,String excNodeId);
     
+    /**
+     * 
+     * getEdmClass: 获取Edm类信息
+     * @author lijie
+     * @param classId 监管树类ID
+     * @param edmpCode 属性编码
+     * @return
+     */
+    EdmClassTo getEdmClass(String classId, String edmpCode);
+    
+    /**
+     * 
+     * getAllResource: 取出资源类中所有的资源信息
+     * @author lijie
+     * @param edmName
+     * @return
+     */
+    JSONArray getAllResource(String edmName);
 }
 

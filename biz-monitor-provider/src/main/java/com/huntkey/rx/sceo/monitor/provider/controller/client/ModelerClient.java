@@ -49,5 +49,15 @@ public interface ModelerClient {
     @RequestMapping(value={"/classFormats/getCharacterAndFormat"}, method={RequestMethod.GET})
     Result getCharacterAndFormat(@RequestParam(value = "classId") String classId);
     
+    /**
+     * 
+     * getEdmcCode: 查询资源类信息
+     * @author lijie
+     * @param classId 监管树类ID
+     * @param edmpCode 属性编码
+     * @return
+     */
+    @RequestMapping(value = "/properties/values", method = RequestMethod.GET)
+    Result getEdmcNameEn(@RequestParam(value="classId") String classId, @RequestParam(value="edmpCode") String edmpCode);
 }
 
