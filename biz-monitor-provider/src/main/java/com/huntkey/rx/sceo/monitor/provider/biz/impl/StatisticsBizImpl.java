@@ -102,13 +102,13 @@ public class StatisticsBizImpl implements StatisticsBiz {
         }
 
         String monitorId = json.getString(StatisticsConstant.MONITOR_ID);
-        if(StringUtils.isBlank(monitorId)){
+        if (StringUtils.isBlank(monitorId)) {
             result.setRetCode(Result.RECODE_ERROR);
             result.setErrMsg("所属监管类不可为空..");
             return result;
         }
         String periodId = json.getString(StatisticsConstant.PERIOD_ID);
-        if(StringUtils.isBlank(periodId)){
+        if (StringUtils.isBlank(periodId)) {
             result.setRetCode(Result.RECODE_ERROR);
             result.setErrMsg("周期类id不可为空..");
             return result;
@@ -121,29 +121,31 @@ public class StatisticsBizImpl implements StatisticsBiz {
             return result;
         }
         JSONObject treeNode = json.getJSONObject(StatisticsConstant.TREE_NODE);
-        if(treeNode == null){
+        if (treeNode == null) {
             result.setRetCode(Result.RECODE_ERROR);
             result.setErrMsg("查询节点不可为空..");
             return result;
         }
         String treeNodeId = treeNode.getString(StatisticsConstant.ID);
-        if(StringUtils.isBlank(treeNodeId)){
+        if (StringUtils.isBlank(treeNodeId)) {
             result.setRetCode(Result.RECODE_ERROR);
             result.setErrMsg("查询节点id不可为空..");
             return result;
         }
-        
-        treeNode.put(StatisticsConstant.STATISTICS, queryStatistics(monitorId, treeNodeId, periodId, attributeIds)) ;
-        
+
+        treeNode.put(StatisticsConstant.STATISTICS,
+                queryStatistics(monitorId, treeNodeId, periodId, attributeIds));
+
         JSONArray chileNodes = treeNode.getJSONArray(StatisticsConstant.CHILD_NODES);
-        if(chileNodes!=null && !chileNodes.isEmpty()){
-            for(Object o : chileNodes){
-                JSONObject jsonObj = (JSONObject)o;
+        if (chileNodes != null && !chileNodes.isEmpty()) {
+            for (Object o : chileNodes) {
+                JSONObject jsonObj = (JSONObject) o;
                 String id = jsonObj.getString(StatisticsConstant.ID);
-                jsonObj.put(StatisticsConstant.STATISTICS, queryStatistics(monitorId, id, periodId, attributeIds));
+                jsonObj.put(StatisticsConstant.STATISTICS,
+                        queryStatistics(monitorId, id, periodId, attributeIds));
             }
         }
-        
+
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(json);
 
@@ -154,12 +156,10 @@ public class StatisticsBizImpl implements StatisticsBiz {
                                       JSONArray attributeIds) {
 
         //当天 统计数据
-        JSONObject currentDayJson = getDayStatistics(Calendar.getInstance(), monitorId,
-                nodeId);
+        JSONObject currentDayJson = getDayStatistics(Calendar.getInstance(), monitorId, nodeId);
 
         //当月统计数据
-        JSONObject currentMonthJson = getMonthStatistics(Calendar.getInstance(), monitorId,
-                nodeId);
+        JSONObject currentMonthJson = getMonthStatistics(Calendar.getInstance(), monitorId, nodeId);
         //上个月统计数据
         JSONObject lastMonthJson = getMonthStatistics(getLastMonth(), monitorId, nodeId);
         //去年同一时期统计数据（去年的这个月）
@@ -167,8 +167,8 @@ public class StatisticsBizImpl implements StatisticsBiz {
                 monitorId, nodeId);
 
         //传入的财月 统计数据查询
-        JSONObject queryMonthJson = statisticsService.queryStatistics(monitorId, nodeId,
-                periodId, null);
+        JSONObject queryMonthJson = statisticsService.queryStatistics(monitorId, nodeId, periodId,
+                null);
 
         JSONObject lastYearQueryMonthJson = getMonthStatistics(getLastYearQueryMonth(periodId),
                 monitorId, nodeId);
@@ -202,25 +202,60 @@ public class StatisticsBizImpl implements StatisticsBiz {
             //去年同月值
             Integer lastYearCurrentMonthValue = getAttrValue(lastYearCurrentMonthJson, attrId);
             //环比值
-            Double monthLinkRelativeRatio = monthValue.doubleValue() / lastMonthValue.doubleValue();
-            attrJson.put("monthLinkRelativeRatio", monthLinkRelativeRatio);
+            if (lastMonthValue == 0) {
+                attrJson.put("monthLinkRelativeRatio", 0);
+            } else {
+                Double monthLinkRelativeRatio = monthValue.doubleValue()
+                        / lastMonthValue.doubleValue();
+                attrJson.put("monthLinkRelativeRatio", monthLinkRelativeRatio);
+            }
+
             //同比值
-            Double monthLearOnYear = monthValue.doubleValue()
-                    / lastYearCurrentMonthValue.doubleValue();
-            attrJson.put("monthLearOnYear", monthLearOnYear);
+            if (lastYearCurrentMonthValue == 0) {
+                attrJson.put("monthLearOnYear", 0);
+            } else {
+                Double monthLearOnYear = monthValue.doubleValue()
+                        / lastYearCurrentMonthValue.doubleValue();
+                attrJson.put("monthLearOnYear", monthLearOnYear);
+            }
 
             //财月累计值
-            Integer queryMonthValue = getAttrValue(queryMonthJson, attrId);
+            Integer queryMonthValue = getAttrCumulativeValue(queryMonthJson, attrId);
+            attrJson.put("queryMonthValue", queryMonthValue);
             //去年同财月累计值
-            Integer lastYearQueryMonthValue = getAttrValue(lastYearQueryMonthJson, attrId);
+            Integer lastYearQueryMonthValue = getAttrCumulativeValue(lastYearQueryMonthJson,
+                    attrId);
+
             //财月累计值环比
-            Double queryMonthLinkRelativeRatio = queryMonthValue.doubleValue()
-                    / lastYearQueryMonthValue.doubleValue();
-            attrJson.put("queryMonthLinkRelativeRatio", queryMonthLinkRelativeRatio);
+            if (lastYearQueryMonthValue == 0) {
+                attrJson.put("queryMonthLinkRelativeRatio", 0);
+            } else {
+                Double queryMonthLinkRelativeRatio = queryMonthValue.doubleValue()
+                        / lastYearQueryMonthValue.doubleValue();
+                attrJson.put("queryMonthLinkRelativeRatio", queryMonthLinkRelativeRatio);
+            }
+
             json.put(attrId, attrJson);
         }
 
         return null;
+    }
+
+    private Integer getAttrCumulativeValue(JSONObject jsonObj, String attrId) {
+
+        if (jsonObj != null && StringUtils.isNotBlank(attrId)) {
+            JSONArray dataSet = jsonObj.getJSONArray(ServiceCenterConstant.DATA_SET);
+            if (dataSet != null && !dataSet.isEmpty()) {
+                for (Object o : dataSet) {
+                    JSONObject json = (JSONObject) o;
+                    Integer value = json.getInteger("stat012");
+                    if (attrId.equals(value)) {
+                        return value;
+                    }
+                }
+            }
+        }
+        return 0;
     }
 
     /**
@@ -230,10 +265,10 @@ public class StatisticsBizImpl implements StatisticsBiz {
      * @param attrId
      * @return
      */
-    private Integer getAttrValue(JSONObject currentDayJson, String attrId) {
+    private Integer getAttrValue(JSONObject jsonObj, String attrId) {
 
-        if (currentDayJson != null && StringUtils.isNotBlank(attrId)) {
-            JSONArray dataSet = currentDayJson.getJSONArray(ServiceCenterConstant.DATA_SET);
+        if (jsonObj != null && StringUtils.isNotBlank(attrId)) {
+            JSONArray dataSet = jsonObj.getJSONArray(ServiceCenterConstant.DATA_SET);
             if (dataSet != null && !dataSet.isEmpty()) {
                 for (Object o : dataSet) {
                     JSONObject json = (JSONObject) o;
@@ -244,7 +279,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
                 }
             }
         }
-        return null;
+        return 0;
     }
 
     /**
