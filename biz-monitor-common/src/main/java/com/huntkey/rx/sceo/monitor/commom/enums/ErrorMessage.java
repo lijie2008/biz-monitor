@@ -33,7 +33,9 @@ public enum ErrorMessage {
     
     _60007(60007, "EDMClient调用异常"),
     
-    _60008(60008, "EDM类数据不正确");
+    _60008(60008, "EDM类数据不正确"),
+	
+	_60009(60004, "存在不能删除的节点");
         
     private int code;
     

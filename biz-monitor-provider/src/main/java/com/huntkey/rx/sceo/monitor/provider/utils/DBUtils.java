@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
-
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.*;
 
 import java.util.ArrayList;
@@ -73,6 +72,46 @@ public class DBUtils {
         	return null;
         }
 	}
+	/****
+	 * 查询
+	 * @param param 查询参数
+	 * @return JSONObject
+	 */
+	public  String addOrUpdate(String edmName,Object params) {
+		//设置查询参数
+		InputArgument inputArgument=new InputArgument();
+		inputArgument.setEdmName(edmName);
+		inputArgument.addData(params);
+        Result result = hbase.find(inputArgument.toString());
+        //进行查询
+        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
+            String msg = result != null ? result.getErrMsg():null;
+            logger.info(msg);
+            throw new ServiceException("操作ORM查询异常！");
+        }
+        return (String) result.getData();
+	}
+	
+	/****
+	 * 删除(根据id删除)
+	 * @param param 查询参数
+	 * @return JSONObject
+	 */
+	public  String delete(String edmName,Object params) {
+		//设置查询参数
+		InputArgument inputArgument=new InputArgument();
+		inputArgument.setEdmName(edmName);
+		inputArgument.addData(params);
+        Result result = hbase.find(inputArgument.toString());
+        //进行查询
+        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
+            String msg = result != null ? result.getErrMsg():null;
+            logger.info(msg);
+            throw new ServiceException("操作ORM查询异常！");
+        }
+        return (String) result.getData();
+	}
+	
 	/**
 	 * 根据所得数据集循环查询  (处理类型IN循环)
 	 * @param loopJson 循环对象

@@ -31,11 +31,15 @@ public class InputArgument {
         return params;
     }
 
-    public void addData(JSONObject data) {
-    	if(params==null){
-    		params=new JSONArray();
+    public void addData(Object data) {
+    	if(data instanceof JSONObject){
+	    	if(params==null){
+	    		params=new JSONArray();
+	    	}
+	        this.params.add(data);
+    	}else if(data instanceof JSONArray){
+    		this.params=(JSONArray) data;
     	}
-        this.params.add(data);
     }
 
     public String getEdmName() {

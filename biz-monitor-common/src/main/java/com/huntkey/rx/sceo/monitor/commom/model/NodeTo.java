@@ -11,6 +11,8 @@ package com.huntkey.rx.sceo.monitor.commom.model;
 
 import java.io.Serializable;
 
+import org.hibernate.validator.constraints.NotBlank;
+
 /**
  * ClassName:NodeTo 节点对象
  * Date:     2017年8月5日 下午5:21:10
@@ -30,16 +32,19 @@ public class NodeTo implements Serializable{
     /**
      * 关联临时单id
      */
+    @NotBlank(message="监管树临时单ID不能为空")
     private String pid;
     
     /**
      * 节点编号
      */
+    @NotBlank(message="节点编号不能为空")
     private String mtor006;
     
     /**
      * 节点名称
      */
+    @NotBlank(message="节点名称不能为空")
     private String mtor007;
     
     /**
