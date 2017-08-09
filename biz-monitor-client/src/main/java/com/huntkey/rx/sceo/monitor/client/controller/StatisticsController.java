@@ -33,6 +33,9 @@ public class StatisticsController {
 
     @RequestMapping("/query/period")
     public Result getPeriod(@RequestBody(required = false) JSONObject data) {
+        if(data == null){
+            data = new JSONObject();
+        }
         return statisticsClient.queryPeriod(data);
     }
 
