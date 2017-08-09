@@ -27,4 +27,15 @@ public interface ServiceCenterClient {
     @RequestMapping(value = "/servicecenter/find", method = RequestMethod.POST)
     Result queryServiceCenter(@RequestParam(value = "data") String data);
 
+    /**
+     * 根据根节点ID 和时间查询出监管树所有节点
+     * @param edmcNameEn
+     * @param searchDate
+     * @return
+     */
+    @RequestMapping(value = "/servicecenter/business/monitors/trees/nodes", method = RequestMethod.GET)
+    Result getMonitorTreeNodes(@RequestParam(value = "edmcNameEn") String edmcNameEn,
+                               @RequestParam(value = "searchDate") String searchDate,
+                               @RequestParam(value = "rootNodeId") String rootNodeId);
+
 }

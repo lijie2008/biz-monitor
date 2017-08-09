@@ -25,7 +25,7 @@ import com.huntkey.rx.commons.utils.rest.Result;
  * @version
  * @see
  */
-@FeignClient(value = "serviceCenter-provider", fallback = HbaseClientFallback.class,url="http://192.168.13.34:2008")
+@FeignClient(value = "serviceCenter-provider", fallback = HbaseClientFallback.class)
 public interface HbaseClient {
 
     @RequestMapping(value = "/servicecenter/find", method = RequestMethod.POST)
