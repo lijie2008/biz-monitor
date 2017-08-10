@@ -33,7 +33,7 @@ public interface HbaseClient {
 
 
     @RequestMapping(value = "/servicecenter/add", method = RequestMethod.POST)
-    Result add(@RequestParam(value = "datas") String datas);
+    Result add(@RequestBody String datas);
     /**
      * 
      * deleteEsAndHbase: 删除数据
@@ -41,11 +41,11 @@ public interface HbaseClient {
      * @param datas
      * @return
      */
-    @RequestMapping(value= "/servicecenter/delete", method = RequestMethod.DELETE)
-    Result delete(@RequestParam(value = "datas") String datas);
+    @RequestMapping(value= "/servicecenter/delete", method = RequestMethod.POST)
+    Result delete(@RequestBody String datas);
     
     @RequestMapping(value= "/servicecenter/update", method = RequestMethod.POST)
-    Result update(@RequestParam(value = "datas") String datas);
+    Result update(@RequestBody String datas);
     
     @RequestMapping(value= "/monitor/queryTreeNodeResource", method = RequestMethod.GET)
     Result queryTreeNodeResource(@RequestParam(value="orderId") String orderId,@RequestParam(value="startDate",defaultValue="") String startDate,

@@ -81,12 +81,12 @@ public class DBUtils {
 	 * @param params 提交数据
 	 * @return JSONObject
 	 */
-	public  String addOrUpdate(String edmName,Object params) {
+	public  String add(String edmName,Object params) {
 		//设置查询参数
 		InputArgument inputArgument=new InputArgument();
 		inputArgument.setEdmName(edmName);
 		inputArgument.addData(params);
-        Result result = hbase.find(inputArgument.toString());
+        Result result = hbase.add(inputArgument.toString());
         //进行查询
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
             String msg = result != null ? result.getErrMsg():null;
@@ -96,7 +96,21 @@ public class DBUtils {
         }
         return (String) result.getData();
 	}
-	
+	public  String update(String edmName,Object params) {
+		//设置查询参数
+		InputArgument inputArgument=new InputArgument();
+		inputArgument.setEdmName(edmName);
+		inputArgument.addData(params);
+        Result result = hbase.update(inputArgument.toString());
+        //进行查询
+        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
+            String msg = result != null ? result.getErrMsg():null;
+            logger.info(msg);
+            ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), 
+            		ErrorMessage._60002.getMsg());
+        }
+        return (String) result.getData();
+	}
 	/****
 	 * 删除(根据id删除)
 	 * @param params 查询参数

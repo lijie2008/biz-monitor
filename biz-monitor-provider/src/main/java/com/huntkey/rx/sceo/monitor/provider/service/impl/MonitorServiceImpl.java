@@ -23,6 +23,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.Condition;
 import com.huntkey.rx.sceo.monitor.commom.model.InputArgument;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
+import com.huntkey.rx.sceo.monitor.commom.utils.ToolUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.HbaseClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import com.huntkey.rx.sceo.monitor.provider.utils.DBUtils;
@@ -42,13 +43,13 @@ public class MonitorServiceImpl implements MonitorService {
 	@Override
 	public JSONArray tempTree(String tempId, String validDate) {
 		// TODO Auto-generated method stub
-		Result result=new Result();
-		result.setRetCode(Result.RECODE_SUCCESS);
 		//初始化查询参数器
 		Condition condition=new Condition();
 		//组装查询条件
 		condition.addCondition(PID, EQUAL, tempId, true);
-		condition.addCondition(MTOR012, GT, validDate, false);
+		if(!StringUtil.isNullOrEmpty(validDate)){
+			condition.addCondition(MTOR012, GT, ToolUtil.formatDateStr(validDate, YYYY_MM_DD), false);
+		}
 		//查询节点集合表
 		JSONArray nodeArray=DBUtils.getArrayResult(MTOR005,null,condition);
 		if(JsonUtil.isNullOrEmpty(nodeArray)){
@@ -97,6 +98,25 @@ public class MonitorServiceImpl implements MonitorService {
 		condition.addCondition(ID, EQUAL, nodeId, true);
 		//查询节点详情
 		JSONObject nodeJson=queryNode(condition,null);
+		if(nodeJson!=null && !nodeJson.isEmpty()){
+			//查询员工表并且做左连
+			JSONObject staffObj=null;
+			condition.addCondition(ID, EQUAL, nodeJson.getString(MTOR009), true);//主管人
+			staffObj=DBUtils.getObjectResult(STAFF, new String[]{STAF002}, condition);
+			if(staffObj!=null){
+				nodeJson.put("majorStaff", staffObj.getShort(STAF002));
+			}
+			
+			condition.addCondition(ID, EQUAL, nodeJson.getString(MTOR010), true);//协管人
+			staffObj=DBUtils.getObjectResult(STAFF, new String[]{STAF002}, condition);
+			if(staffObj!=null){
+				nodeJson.put("assistStaff", staffObj.getShort(STAF002));
+			}
+			
+		}else{
+			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(), 
+					ErrorMessage._60003.getMsg());
+		}
 		return nodeJson;
 	}
 	/**
@@ -110,19 +130,18 @@ public class MonitorServiceImpl implements MonitorService {
 		return null;
 	}
 	@Override
-	public Result saveNodeDetail(NodeTo nodeDetail) {
+	public String saveNodeDetail(NodeTo nodeDetail) {
 		// TODO Auto-generated method stub
-		Result result=new Result();
-		result.setRetCode(Result.RECODE_SUCCESS);
+		String retStr="";
 		InputArgument inputArgument=new InputArgument();
 		inputArgument.addData(JsonUtil.getJson(nodeDetail));
 		inputArgument.setEdmName(MTOR005);
 		if(StringUtil.isNullOrEmpty(nodeDetail.getId())){
-			result=hbase.add(inputArgument.toString());
+			retStr=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
 		}else{//修改
-			result=hbase.update(inputArgument.toString());
+			retStr=DBUtils.update(MTOR005, JsonUtil.getJson(nodeDetail));
 		}
-		return null;
+		return retStr;
 	}
 	/**
 	 * 删除节点资源
@@ -203,11 +222,11 @@ public class MonitorServiceImpl implements MonitorService {
 			switch (nodeType){
 				case 0://创建子节点
 					condition.addCondition(MTOR013, EQUAL, node.getString(ID), true);//当前节点的子节点
-					condition.addCondition(MTOR016, EQUAL, "", false);//最右侧节点
+					condition.addCondition(MTOR016, EQUAL, NULL, false);//最右侧节点
 					nodeRight=queryNode(condition,null);
-					nodeDetail=setNodePosition(node.getString(ID), "", 
-							nodeRight!=null?nodeRight.getString(ID):"", "",node.getString(PID),1);
-					newNodeId=DBUtils.addOrUpdate(MTOR005, JsonUtil.getJson(nodeDetail));
+					nodeDetail=setNodePosition(node.getString(ID), NULL, 
+							nodeRight!=null?nodeRight.getString(ID):NULL, NULL,node.getString(PID),1);
+					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
 					
 					if(StringUtil.isNullOrEmpty(node.getString(MTOR014))) {
 						//如果父节点以前没有子节点  变更父节点的子节点信息
@@ -218,10 +237,10 @@ public class MonitorServiceImpl implements MonitorService {
 					condition.addCondition(ID, EQUAL, node.getString(MTOR016), true);//当前节点的右节点
 					nodeRight=queryNode(condition,null);
 					//1.创建新的右节点
-					nodeDetail=setNodePosition(node.getString(MTOR013), "", 
-							node.getString(ID), nodeRight!=null?nodeRight.getString(ID):"",
+					nodeDetail=setNodePosition(node.getString(MTOR013), NULL, 
+							node.getString(ID), nodeRight!=null?nodeRight.getString(ID):NULL,
 							node.getString(PID),1);
-					newNodeId=DBUtils.addOrUpdate(MTOR005, JsonUtil.getJson(nodeDetail));
+					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
 					//2.要变更当前节点的右节点信息
 					changeNodePosition(node.getString(ID), 4, newNodeId);
 					//3.变更之前右节点的左节点信息
@@ -232,10 +251,10 @@ public class MonitorServiceImpl implements MonitorService {
 					nodeLeft=queryNode(condition,null);
 					
 					//1.创建新的左节点
-					nodeDetail=setNodePosition(node.getString(MTOR013), "", 
-							node.getString(ID), nodeLeft!=null?nodeLeft.getString(ID):""
+					nodeDetail=setNodePosition(node.getString(MTOR013), NULL, 
+							node.getString(ID), nodeLeft!=null?nodeLeft.getString(ID):NULL
 							,node.getString(PID),1);
-					newNodeId=DBUtils.addOrUpdate(MTOR005, JsonUtil.getJson(nodeDetail));
+					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
 					//2.如果当前节点之前没有左节点 则变更父节点的子节点信息 
 					if(nodeLeft==null){
 						condition.addCondition(ID, EQUAL, node.getString(MTOR013), true);//当前节点的左节点
@@ -300,7 +319,7 @@ public class MonitorServiceImpl implements MonitorService {
 				Map<String, Object> map=new HashMap<String, Object>();
 				map.put(MTOR021, ChangeType.INVALID.getValue());
 				JsonUtil.addAttr(updateNodes, map);
-				DBUtils.addOrUpdate(MTOR005, addNodes);
+				DBUtils.add(MTOR005, addNodes);
 			}else{//没有子节点只删除当前一个节点
 				JSONObject json=new JSONObject();
 				json.put(ID, delNode.getString(ID));
@@ -482,7 +501,7 @@ public class MonitorServiceImpl implements MonitorService {
 				break;	
 		}
 		nodeDetail.setId(nodeId);
-		DBUtils.addOrUpdate(MTOR005, JsonUtil.getJson(nodeDetail));
+		DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
 	}
 
 }

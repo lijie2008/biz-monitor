@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 
@@ -15,17 +16,19 @@ public class ToolUtil {
      * @return
      */
     public static  String formatDateStr(String dateStr,String formatStr) {
-    	SimpleDateFormat sdf = new SimpleDateFormat(formatStr);
-    	Date datetime=null;
-    	try {
-			datetime=(Date) sdf.parse(dateStr);
-			
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			ApplicationException.throwCodeMesg(ErrorMessage._60010.getCode(),
-					ErrorMessage._60010.getMsg());
-		}
-    	String formatDateStr= sdf.format(datetime);
+    	String formatDateStr=null;
+    	if(!StringUtil.isNullOrEmpty(dateStr)){
+	    	SimpleDateFormat sdf = new SimpleDateFormat(formatStr);
+	    	Date datetime=null;
+	    	try {
+				datetime=(Date) sdf.parse(dateStr);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				ApplicationException.throwCodeMesg(ErrorMessage._60010.getCode(),
+						ErrorMessage._60010.getMsg());
+			}
+	    	formatDateStr= sdf.format(datetime);
+    	}
     	return formatDateStr;
     }
     

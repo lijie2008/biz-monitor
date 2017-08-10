@@ -14,7 +14,7 @@ public interface MonitorService {
 	//节点关联资源查询
 	Result nodeResource(String nodeId);
 	//节点详情保存
-	Result saveNodeDetail(NodeTo nodeDetail);
+	String saveNodeDetail(NodeTo nodeDetail);
 	//删除节点资源
 	Result deleteNodeResource(String nodeId,String resourceId);
 	//变更公式

@@ -12,7 +12,10 @@ package com.huntkey.rx.sceo.monitor.commom.model;
 import java.io.Serializable;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.utils.ToolUtil;
 
@@ -35,19 +38,16 @@ public class NodeTo implements Serializable{
     /**
      * 关联临时单id
      */
-    @NotBlank(message="监管树临时单ID不能为空")
     private String pid;
     
     /**
      * 节点编号
      */
-    @NotBlank(message="节点编号不能为空")
     private String mtor006;
     
     /**
      * 节点名称
      */
-    @NotBlank(message="节点名称不能为空")
     private String mtor007;
     
     /**
@@ -174,11 +174,10 @@ public class NodeTo implements Serializable{
     public String getMtor011() {
         return mtor011;
     }
-
+    
     public void setMtor011(String mtor011) {
-        this.mtor011 = ToolUtil.formatDateStr(mtor011, Constant.YYYY_MM_DD);
+        this.mtor011 = mtor011;
     }
-
     public String getMtor012() {
         return mtor012;
     }
@@ -214,7 +213,6 @@ public class NodeTo implements Serializable{
     public String getMtor016() {
         return mtor016;
     }
-
     public void setMtor016(String mtor016) {
         this.mtor016 = mtor016;
     }

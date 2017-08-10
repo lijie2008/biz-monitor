@@ -76,7 +76,10 @@ public class MonitorController {
 	 */
 	@RequestMapping(value="/saveNodeDetail",method=RequestMethod.POST)
 	public Result saveNodeDetail(@RequestBody() @Valid NodeTo nodeDetail){
-		return service.saveNodeDetail(nodeDetail);
+		Result result=new Result();
+		result.setRetCode(Result.RECODE_SUCCESS);
+		result.setData(service.saveNodeDetail(nodeDetail));
+		return result;
 	}
 	/**
 	 * 删除节点资源
@@ -155,8 +158,15 @@ public class MonitorController {
 		result.setData(service.moveNode(nodeId,nodeParentId,nodeLeftId,nodeRightId));
 		return result;
 	}		
-	
-	
+	/**
+	 * 保存节点详情
+	 * @param nodeId 节点ID
+	 * @return
+	 */
+	@RequestMapping(value="/saveMonitorTree",method=RequestMethod.POST)
+	public Result saveMonitorTree(@RequestBody() @Valid NodeTo nodeDetail){
+		return null;
+	}
 	
 	
 	
