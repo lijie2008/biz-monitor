@@ -10,6 +10,12 @@ import com.huntkey.rx.commons.utils.string.StringUtil;
 
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.*;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
@@ -34,7 +40,7 @@ public class MonitorServiceImpl implements MonitorService {
 	 * @return
 	 */
 	@Override
-	public JSONArray tempTree(String tempId, int hasResource, String validDate) {
+	public JSONArray tempTree(String tempId, String validDate) {
 		// TODO Auto-generated method stub
 		Result result=new Result();
 		result.setRetCode(Result.RECODE_SUCCESS);
@@ -90,7 +96,7 @@ public class MonitorServiceImpl implements MonitorService {
 		Condition condition=new Condition();
 		condition.addCondition(ID, EQUAL, nodeId, true);
 		//查询节点详情
-		JSONObject nodeJson=queryNode(condition);
+		JSONObject nodeJson=queryNode(condition,null);
 		return nodeJson;
 	}
 	/**
@@ -183,7 +189,7 @@ public class MonitorServiceImpl implements MonitorService {
 	 * @return
 	 */
 	@Override
-	public String addNode(String nodeId,String nodeType) {
+	public String addNode(String nodeId,int nodeType) {
 		// TODO Auto-generated method stub
 		//根据nodeId查询当前节点信息
 		String newNodeId="";
@@ -191,54 +197,56 @@ public class MonitorServiceImpl implements MonitorService {
 		NodeTo nodeDetail=null;
 		JSONObject nodeRight=null;
 		JSONObject nodeLeft=null;
-		JSONObject nodeParent=null;
+		JSONObject nodeParent=null;  
 		Condition condition=new Condition();
 		if(node!=null){
-			if(StringUtil.isEqual("0", nodeType)){//创建子节点
-				condition.addCondition(MTOR013, EQUAL, node.getString(ID), true);//当前节点的子节点
-				condition.addCondition(MTOR016, EQUAL, "", false);//最右侧节点
-				nodeRight=queryNode(condition);
-				nodeDetail=setNodePosition(node.getString(ID), "", 
-						nodeRight!=null?nodeRight.getString(ID):"", "",node.getString(PID),1);
-				newNodeId=DBUtils.addOrUpdate(MTOR005, JsonUtil.getJson(nodeDetail));
-				
-				if(StringUtil.isNullOrEmpty(node.getString(MTOR014))) {
-					//如果父节点以前没有子节点  变更父节点的子节点信息
-					changeNodePosition(node.getString(ID), 2, newNodeId);
-				}
-				
-			}else if(StringUtil.isEqual("1", nodeType)){//创建右节点
-				condition.addCondition(ID, EQUAL, node.getString(MTOR016), true);//当前节点的右节点
-				nodeRight=queryNode(condition);
-				//1.创建新的右节点
-				nodeDetail=setNodePosition(node.getString(MTOR013), "", 
-						node.getString(ID), nodeRight!=null?nodeRight.getString(ID):"",
-						node.getString(PID),1);
-				newNodeId=DBUtils.addOrUpdate(MTOR005, JsonUtil.getJson(nodeDetail));
-				//2.要变更当前节点的右节点信息
-				changeNodePosition(node.getString(ID), 4, newNodeId);
-				//3.变更之前右节点的左节点信息
-				changeNodePosition(nodeRight.getString(ID), 3, newNodeId);
-				
-			}else{//创建左节点
-				condition.addCondition(ID, EQUAL, node.getString(MTOR015), true);//当前节点的左节点
-				nodeLeft=queryNode(condition);
-				
-				//1.创建新的左节点
-				nodeDetail=setNodePosition(node.getString(MTOR013), "", 
-						node.getString(ID), nodeLeft!=null?nodeLeft.getString(ID):""
-						,node.getString(PID),1);
-				newNodeId=DBUtils.addOrUpdate(MTOR005, JsonUtil.getJson(nodeDetail));
-				//2.如果当前节点之前没有左节点 则变更父节点的子节点信息 
-				if(nodeLeft==null){
-					condition.addCondition(ID, EQUAL, node.getString(MTOR013), true);//当前节点的左节点
-					nodeParent=queryNode(condition);
-					changeNodePosition(nodeParent.getString(ID), 2, newNodeId);
-				}
-				//3.要变更当前节点的左节点信息
-				changeNodePosition(node.getString(ID), 3, newNodeId);
-				//4.变更之前左节点的右节点信息
-				changeNodePosition(nodeLeft.getString(ID), 3, newNodeId);
+			switch (nodeType){
+				case 0://创建子节点
+					condition.addCondition(MTOR013, EQUAL, node.getString(ID), true);//当前节点的子节点
+					condition.addCondition(MTOR016, EQUAL, "", false);//最右侧节点
+					nodeRight=queryNode(condition,null);
+					nodeDetail=setNodePosition(node.getString(ID), "", 
+							nodeRight!=null?nodeRight.getString(ID):"", "",node.getString(PID),1);
+					newNodeId=DBUtils.addOrUpdate(MTOR005, JsonUtil.getJson(nodeDetail));
+					
+					if(StringUtil.isNullOrEmpty(node.getString(MTOR014))) {
+						//如果父节点以前没有子节点  变更父节点的子节点信息
+						changeNodePosition(node.getString(ID), 2, newNodeId);
+					}
+				break;
+				case 1://创建右节点
+					condition.addCondition(ID, EQUAL, node.getString(MTOR016), true);//当前节点的右节点
+					nodeRight=queryNode(condition,null);
+					//1.创建新的右节点
+					nodeDetail=setNodePosition(node.getString(MTOR013), "", 
+							node.getString(ID), nodeRight!=null?nodeRight.getString(ID):"",
+							node.getString(PID),1);
+					newNodeId=DBUtils.addOrUpdate(MTOR005, JsonUtil.getJson(nodeDetail));
+					//2.要变更当前节点的右节点信息
+					changeNodePosition(node.getString(ID), 4, newNodeId);
+					//3.变更之前右节点的左节点信息
+					changeNodePosition(nodeRight.getString(ID), 3, newNodeId);
+				break;
+				case 2://创建左节点
+					condition.addCondition(ID, EQUAL, node.getString(MTOR015), true);//当前节点的左节点
+					nodeLeft=queryNode(condition,null);
+					
+					//1.创建新的左节点
+					nodeDetail=setNodePosition(node.getString(MTOR013), "", 
+							node.getString(ID), nodeLeft!=null?nodeLeft.getString(ID):""
+							,node.getString(PID),1);
+					newNodeId=DBUtils.addOrUpdate(MTOR005, JsonUtil.getJson(nodeDetail));
+					//2.如果当前节点之前没有左节点 则变更父节点的子节点信息 
+					if(nodeLeft==null){
+						condition.addCondition(ID, EQUAL, node.getString(MTOR013), true);//当前节点的左节点
+						nodeParent=queryNode(condition,null);
+						changeNodePosition(nodeParent.getString(ID), 2, newNodeId);
+					}
+					//3.要变更当前节点的左节点信息
+					changeNodePosition(node.getString(ID), 3, newNodeId);
+					//4.变更之前左节点的右节点信息
+					changeNodePosition(nodeLeft.getString(ID), 3, newNodeId);
+				break;	
 			}
 		}
 		return newNodeId;
@@ -246,34 +254,141 @@ public class MonitorServiceImpl implements MonitorService {
 	/**
 	 * 删除节点
 	 * @param nodeId 节点ID
+	 * @param type 0失效 1删除
 	 * @return
 	 */
 	@Override
-	public Result deleteNode(String nodeId) {
+	public String deleteNode(String nodeId,int type) {
 		// TODO Auto-generated method stub
 		//查询出被删除节点信息
 		Condition condition=new Condition();
 		condition.addCondition(ID, EQUAL, nodeId, true);
-		JSONObject delNode=queryNode(condition);
+		JSONObject delNode=queryNode(condition,null);
+		JSONObject nodeParent=null;
+		JSONObject nodeLeft=null;
+		JSONObject nodeRight=null;
 		if(delNode!=null){
 			//1.递归查询删除的节点的子节点(包含子节点的子节点)
-			JSONArray nodes=getChildNode(delNode.getString(ID));
-			if(!JsonUtil.isNullOrEmpty(nodes)){
-				nodes.add(delNode);
-				//循环删除(In)
-			}else{//没有子节点只删除当前一个节点
-				
+			JSONArray nodes=getChildNode(nodeId);
+			JSONObject nodesClassify=classifyNodes(nodes);
+			JSONArray addNodes=null;
+			JSONArray updateNodes=null;
+			if(nodesClassify!=null && nodesClassify.containsKey("addNodes")){//取出新增节点
+				addNodes=JsonUtil.getJsonArrayByAttr(nodesClassify, "addNodes");
 			}
-			//2.删除的节点以及字节点
+			if(nodesClassify!=null && nodesClassify.containsKey("updateNodes")){//取出新增节点
+				updateNodes=JsonUtil.getJsonArrayByAttr(nodesClassify, "updateNodes");
+			}
 			
-			//3.查询删除的节点的子节点
+			//新增节点做删除
+			if(!JsonUtil.isNullOrEmpty(addNodes)){
+				if(type==1){
+					addNodes.add(delNode);
+				}
+				DBUtils.delete(MTOR005, addNodes);
+			}else{//没有子节点只删除当前一个节点
+				JSONObject json=new JSONObject();
+				json.put(ID, delNode.getString(ID));
+				DBUtils.delete(MTOR005, json);
+			}
+			
+			//修改节点失效
+			if(!JsonUtil.isNullOrEmpty(updateNodes)){
+				if(type==0){
+					addNodes.add(delNode);
+				}
+				Map<String, Object> map=new HashMap<String, Object>();
+				map.put(MTOR021, ChangeType.INVALID.getValue());
+				JsonUtil.addAttr(updateNodes, map);
+				DBUtils.addOrUpdate(MTOR005, addNodes);
+			}else{//没有子节点只删除当前一个节点
+				JSONObject json=new JSONObject();
+				json.put(ID, delNode.getString(ID));
+				json.put(MTOR021, ChangeType.INVALID.getValue());
+				DBUtils.delete(MTOR005, json);
+			}
+			
+			//2.查询删除节点之前的父节点 左、右节点信息
+			condition.addCondition(ID, EQUAL, delNode.getString(MTOR013),true);
+			nodeParent=queryNode(condition, null);
+			if(nodeParent==null){//如果父节点为空
+				ApplicationException.throwCodeMesg(ErrorMessage._60009.getCode(), 
+						ErrorMessage._60009.getMsg());
+			}
+			condition.addCondition(ID, EQUAL, delNode.getString(MTOR015),true);
+			nodeLeft=queryNode(condition, null);
+			
+			condition.addCondition(ID, EQUAL, delNode.getString(MTOR016),true);
+			nodeRight=queryNode(condition, null);
+			//3.变更各节点信息
+			//a.如果删除的节点没有左右节点 
+			if(nodeLeft==null && nodeRight==null){
+				changeNodePosition(nodeParent.getString(ID), 2, "");//将父节点的子节点置空
+			}
+			//b.如果删除的节点没有左节点右有节点   
+			else if(nodeLeft==null && nodeRight!=null){
+				changeNodePosition(nodeParent.getString(ID), 2, nodeRight.getString(ID));//更改父节点的子节点为右节点
+				changeNodePosition(nodeRight.getString(ID), 3, "");//右节点的左节点置空
+			}
+			//c.如果删除的节点有左节点没有右节点  
+			else if(nodeLeft!=null && nodeRight==null){
+				changeNodePosition(nodeLeft.getString(ID), 4, "");//将左节点的右节点置空
+			}
+			//d.如果存在左右节点
+			else{
+				changeNodePosition(nodeLeft.getString(ID), 4, nodeRight.getString(ID));//将左节点的右节点变更成右节点
+				changeNodePosition(nodeRight.getString(ID), 3, nodeLeft.getString(ID));//将右节点的左节点变更成左节点
+			}
+			
 		}
-		return null;
+		return nodeId;
+	}
+	//将节点分类为修改的和新增的
+	private JSONObject classifyNodes(JSONArray nodes) {
+		// TODO Auto-generated method stub
+		JSONObject allNodes=new JSONObject();
+		JSONArray updateNodes=new JSONArray();
+		JSONArray addNodes=new JSONArray();
+		JSONObject node=new JSONObject();
+		for(Object obj:nodes){
+			node=JsonUtil.getJson(obj);
+			if(node!=null){
+				if(StringUtil.isEqual(node.getString(MTOR021), ChangeType.UPDATE.toString())){
+					updateNodes.add(node);
+				}else{
+					addNodes.add(node);
+				}
+			}
+		}
+		if(!JsonUtil.isNullOrEmpty(updateNodes)){
+			allNodes.put("updateNodes", updateNodes);
+		}
+		if(!JsonUtil.isNullOrEmpty(addNodes)){
+			allNodes.put("addNodes", addNodes);
+		}
+		return allNodes;
 	}
 	@Override
-	public Result moveNode(String nodeId) {
+	public String moveNode(String nodeId,String nodeParentId,String nodeLeftId,String nodeRightId) {
 		// TODO Auto-generated method stub
-		return null;
+		if(!StringUtil.isNullOrEmpty(nodeParentId)){//如果存在父节点
+			changeNodePosition(nodeId, 1, nodeParentId);//变更移动节点的父节点
+		}
+		
+		if(!StringUtil.isNullOrEmpty(nodeLeftId)){//变更左节点
+			changeNodePosition(nodeId, 3, nodeLeftId);//变更移动节点的左节点
+			changeNodePosition(nodeLeftId, 4, nodeId);//左节点的右节点变更
+			
+		}else{
+			//1.如果左节点为空  则将移动节点做为父节点的子节点
+			changeNodePosition(nodeParentId, 2, nodeId);
+		}
+		if(!StringUtil.isNullOrEmpty(nodeRightId)){//变更右节点
+			changeNodePosition(nodeId, 4, nodeRightId);//变更移动节点的右节点
+			changeNodePosition(nodeRightId, 3, nodeId);//变更右节点的左节点
+		}
+		
+		return nodeId;
 	}
 	
 	//递归查询子节点
@@ -281,16 +396,12 @@ public class MonitorServiceImpl implements MonitorService {
 		JSONArray allNodes=new JSONArray();
 		Condition condition=new Condition();
 		condition.addCondition(MTOR014, EQUAL, nodeId, true);
-		JSONArray nodes=queryNodes(condition);
+		condition.addCondition(MTOR021, LT, ChangeType.INVALID.toString(), false);
+		JSONArray nodes=queryNodes(condition,new String[]{ID});
 		while(!JsonUtil.isNullOrEmpty(nodes)){
 			for(Object obj:nodes){
 				JSONObject json=JsonUtil.getJson(obj);
 				if(json!=null){
-					//判断子节点的状态 不为新增则要提示 0表示失效 1表示新增  2表示编辑
-					if(!StringUtil.isEqual(json.getString(MTOR021),ChangeType.ADD.toString())){
-						ApplicationException.throwCodeMesg(ErrorMessage._60009.getCode(), 
-								ErrorMessage._60009.getMsg());
-					}
 					allNodes.add(json);//添加本节点
 					nodes=getChildNode(json.getString(ID));
 					allNodes=JsonUtil.mergeJsonArray(allNodes,nodes);
@@ -305,26 +416,26 @@ public class MonitorServiceImpl implements MonitorService {
 	 * @param condition 查询条件
 	 * @return
 	 */
-	private JSONObject queryNode(Condition condition){
-		JSONObject nodeJson=DBUtils.getObjectResult(MTOR005,null,condition);
+	private JSONObject queryNode(Condition condition,String[] columns){
+		JSONObject nodeJson=DBUtils.getObjectResult(MTOR005,columns,condition);
 		if(nodeJson==null){
 			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),
 					ErrorMessage._60003.getMsg()); 
 		}
-		return null;
+		return nodeJson;
 	}
 	/***
 	 * 查询节点集信息
 	 * @param condition 查询条件
 	 * @return
 	 */
-	private JSONArray queryNodes(Condition condition){
-		JSONArray nodes=DBUtils.getArrayResult(MTOR005,null,condition);
+	private JSONArray queryNodes(Condition condition,String[] columns){
+		JSONArray nodes=DBUtils.getArrayResult(MTOR005,columns,condition);
 		if(nodes==null){
 			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),
 					ErrorMessage._60003.getMsg()); 
 		}
-		return null;
+		return nodes;
 	}
 	/**
 	 * 新增节点设置节点的方位信息
@@ -346,6 +457,7 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setPid(treeId);
 		return node;
 	}
+	
 	
 	/**
 	 * 改变节点的位置

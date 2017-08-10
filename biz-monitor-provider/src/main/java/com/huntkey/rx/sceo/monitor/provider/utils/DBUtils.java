@@ -13,7 +13,8 @@ import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
+import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
+import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.model.Condition;
 import com.huntkey.rx.sceo.monitor.commom.model.InputArgument;
 import com.huntkey.rx.sceo.monitor.commom.model.LoopTO;
@@ -43,7 +44,8 @@ public class DBUtils {
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
             String msg = result != null ? result.getErrMsg():null;
             logger.info(msg);
-            throw new ServiceException("操作ORM查询异常！");
+            ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), 
+            		ErrorMessage._60002.getMsg());
         }
         return JsonUtil.getJsonArrayByAttr(result.getData(), DATASET);
 	} 
@@ -63,7 +65,8 @@ public class DBUtils {
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
             String msg = result != null ? result.getErrMsg():null;
             logger.info(msg);
-            throw new ServiceException("操作ORM查询异常！");
+            ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), 
+            		ErrorMessage._60002.getMsg());
         }
         JSONArray arr=JsonUtil.getJsonArrayByAttr(result.getData(), DATASET);
         if(arr!=null && arr.size()>0){
@@ -73,8 +76,9 @@ public class DBUtils {
         }
 	}
 	/****
-	 * 查询
-	 * @param param 查询参数
+	 * 新增修改
+	 * @param edmName 表名
+	 * @param params 提交数据
 	 * @return JSONObject
 	 */
 	public  String addOrUpdate(String edmName,Object params) {
@@ -87,14 +91,15 @@ public class DBUtils {
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
             String msg = result != null ? result.getErrMsg():null;
             logger.info(msg);
-            throw new ServiceException("操作ORM查询异常！");
+            ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), 
+            		ErrorMessage._60002.getMsg());
         }
         return (String) result.getData();
 	}
 	
 	/****
 	 * 删除(根据id删除)
-	 * @param param 查询参数
+	 * @param params 查询参数
 	 * @return JSONObject
 	 */
 	public  String delete(String edmName,Object params) {
@@ -102,16 +107,16 @@ public class DBUtils {
 		InputArgument inputArgument=new InputArgument();
 		inputArgument.setEdmName(edmName);
 		inputArgument.addData(params);
-        Result result = hbase.find(inputArgument.toString());
+        Result result = hbase.delete(inputArgument.toString());
         //进行查询
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
             String msg = result != null ? result.getErrMsg():null;
             logger.info(msg);
-            throw new ServiceException("操作ORM查询异常！");
+            ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), 
+            		ErrorMessage._60002.getMsg());
         }
         return (String) result.getData();
 	}
-	
 	/**
 	 * 根据所得数据集循环查询  (处理类型IN循环)
 	 * @param loopJson 循环对象

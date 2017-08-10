@@ -4,6 +4,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.Range;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,7 +18,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 
 @RestController
-@RequestMapping("/monitor")
+@RequestMapping("/monitors")
 @Validated
 public class MonitorController1 {
 	@Autowired 
@@ -31,11 +32,10 @@ public class MonitorController1 {
 	 */
 	@RequestMapping(value="/tempTree")
 	public Result tempTree(@RequestParam(value="tempId") @NotBlank(message="监管树临时单ID不能为空") String tempId,
-			@RequestParam(value="containResource",required=false,defaultValue="0") int containResource,
 			@RequestParam(value="validDate",required=false) String validDate){
 		Result result=new Result();
 		result.setRetCode(Result.RECODE_SUCCESS);
-		result.setData(service.tempTree(tempId,containResource,validDate));
+		result.setData(service.tempTree(tempId,validDate));
 		return result;
 	}
 	/**
@@ -85,8 +85,8 @@ public class MonitorController1 {
 	 * @return
 	 */
 	@RequestMapping(value="/deleteNodeResource",method=RequestMethod.DELETE)
-	public Result deleteNodeResource(@RequestParam("nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
-		@RequestParam("resourceId") @NotBlank(message="资源ID不能为空") String resourceId){
+	public Result deleteNodeResource(@RequestParam(value="nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
+		@RequestParam(value="resourceId") @NotBlank(message="资源ID不能为空") String resourceId){
 		return service.deleteNodeResource(nodeId,resourceId);
 	}
 	
@@ -97,8 +97,8 @@ public class MonitorController1 {
 	 * @return
 	 */
 	@RequestMapping(value="/changeFormula",method=RequestMethod.GET)
-	public Result changeFormula(@RequestParam("nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
-		@RequestParam("formularId") String formularId){
+	public Result changeFormula(@RequestParam(value="nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
+		@RequestParam(value="formularId") String formularId){
 		return service.changeFormula(nodeId,formularId);
 	}
 	
@@ -109,8 +109,8 @@ public class MonitorController1 {
 	 * @return
 	 */
 	@RequestMapping(value="/addResource",method=RequestMethod.GET)
-	public Result addResource(@RequestParam("nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
-		@RequestParam("resourceIds") @NotBlank(message="资源ID不能为空") String[] resourceIds){
+	public Result addResource(@RequestParam(value="nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
+		@RequestParam(value="resourceIds") @NotBlank(message="资源ID不能为空") String[] resourceIds){
 		return service.addResource(nodeId,resourceIds);
 	}
 	
@@ -121,8 +121,9 @@ public class MonitorController1 {
 	 * @return
 	 */
 	@RequestMapping(value="/addNode",method=RequestMethod.GET)
-	public Result addNode(@RequestParam("nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
-		@RequestParam("nodeType") @NotBlank(message="资源ID不能为空") String nodeType){
+	public Result addNode(@RequestParam(value="nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
+		@RequestParam(value="nodeType") @Range(min=0,max=2,message="0：创建子节点 1：创建上节点 2：创建下节点") 
+		int nodeType){
 		Result result=new Result();
 		result.setRetCode(Result.RECODE_SUCCESS);
 		result.setData(service.addNode(nodeId,nodeType));
@@ -131,16 +132,29 @@ public class MonitorController1 {
 	/**
 	 * 删除节点
 	 * @param nodeId 节点ID
+	 * @param type 0代表失效 1代表删除
 	 * @return
 	 */
 	@RequestMapping(value="/deleteNode",method=RequestMethod.GET)
-	public Result deleteNode(@RequestParam("nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId){
+	public Result deleteNode(@RequestParam(value="nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
+			@RequestParam(value="type") @Range(min=0,max=1,message="0：节点失效 1：节点删除") int type){
 		Result result=new Result();
 		result.setRetCode(Result.RECODE_SUCCESS);
-		result.setData(service.deleteNode(nodeId));
+		result.setData(service.deleteNode(nodeId,type));
+		return result;
+	}
+	
+	@RequestMapping(value="/moveNode",method=RequestMethod.GET)
+	public Result moveNode(@RequestParam(value="nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
+			@RequestParam(value="nodeParentId") String nodeParentId,
+			@RequestParam(value="nodeLeftId") String nodeLeftId,
+			@RequestParam(value="nodeRightId") String nodeRightId
+			){
+		Result result=new Result();
+		result.setRetCode(Result.RECODE_SUCCESS);
+		result.setData(service.moveNode(nodeId,nodeParentId,nodeLeftId,nodeRightId));
 		return result;
 	}		
-	
 	
 	
 	

@@ -13,6 +13,9 @@ import java.io.Serializable;
 
 import org.hibernate.validator.constraints.NotBlank;
 
+import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
+import com.huntkey.rx.sceo.monitor.commom.utils.ToolUtil;
+
 /**
  * ClassName:NodeTo 节点对象
  * Date:     2017年8月5日 下午5:21:10
@@ -173,7 +176,7 @@ public class NodeTo implements Serializable{
     }
 
     public void setMtor011(String mtor011) {
-        this.mtor011 = mtor011;
+        this.mtor011 = ToolUtil.formatDateStr(mtor011, Constant.YYYY_MM_DD);
     }
 
     public String getMtor012() {
