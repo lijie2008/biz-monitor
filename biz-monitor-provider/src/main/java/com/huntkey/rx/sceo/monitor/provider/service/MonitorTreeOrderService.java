@@ -55,7 +55,7 @@ public interface MonitorTreeOrderService {
     
     /**
      * 
-     * queryTreeNode: 查询当前临时单里已使用的资源信息
+     * queryTreeNodeUsingResource: 查询当前临时单里已使用的资源信息
      * @author lijie
      * @param orderId
      * @param startDate
@@ -63,7 +63,7 @@ public interface MonitorTreeOrderService {
      * @param excNodeId - 此id的资源不统计
      * @return
      */
-    List<String> queryTreeNodeResource(String orderId, String startDate, String endDate,String excNodeId);
+    List<String> queryTreeNodeUsingResource(String orderId, String startDate, String endDate,String excNodeId);
     
     /**
      * 
@@ -83,5 +83,55 @@ public interface MonitorTreeOrderService {
      * @return
      */
     JSONArray getAllResource(String edmName);
+    
+    /**
+     * 
+     * queryRootNode:查询树根节点
+     * @author lijie
+     * @param orderId 临时单ID
+     * @return
+     */
+    NodeTo queryRootNode(String orderId);
+    
+    /**
+     * 
+     * queryRootChildrenNode: 查询根节点下的子节点的 最后一个子节点
+     * @author lijie
+     * @param orderId
+     * @param rootNodeId
+     * @return
+     */
+    NodeTo queryRootChildrenNode(String orderId,String rootNodeId);
+    
+    /**
+     * 
+     * queryTreeNodeResource: 查询当前临时单里已使用的资源信息
+     * @author lijie
+     * @param orderId
+     * @param startDate
+     * @param endDate - 可为空 空代表最大的失效日期
+     * @param excNodeId - 此id的资源不统计
+     * @return
+     */
+    List<ResourceTo> queryTreeNodeResource(String orderId, String startDate, String endDate,String excNodeId);
+    
+    /**
+     * 
+     * queryTreeNodeResource: 查询临时单下所有节点信息
+     * @author lijie
+     * @param orderId
+     * @return
+     */
+    List<NodeTo> queryTreeNode(String orderId);
+    
+    /**
+     * 
+     * queryEdmClassName: 查询Edm类名称
+     * @author lijie
+     * @param id 类ID
+     * @return
+     */
+    String queryEdmClassName(String id);
+    
 }
 

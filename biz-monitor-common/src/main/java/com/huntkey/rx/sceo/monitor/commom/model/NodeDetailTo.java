@@ -35,5 +35,6 @@ public class NodeDetailTo extends NodeTo implements Serializable{
     public void setMtor019(List<ResourceTo> mtor019) {
         this.mtor019 = mtor019;
     }
+
 }
 

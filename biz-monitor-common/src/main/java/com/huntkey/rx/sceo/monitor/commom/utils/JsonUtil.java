@@ -16,10 +16,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailTo;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 
 /**
  * ClassName:JsonUtil json操作工具类
@@ -68,7 +71,7 @@ public class JsonUtil {
      * @return
      * @throws IOException
      */
-    public static final String getJsonString(Object o) throws IOException {
+    public static final String getJsonString(Object o) {
         if(isEmpity(o)){
             return null;
         }
@@ -224,7 +227,7 @@ public class JsonUtil {
         try{
             Iterator<Object> it = arry.iterator();
             while(it.hasNext()){
-                JSONObject obj = (JSONObject)it.next();
+                JSONObject obj = JsonUtil.getJson(it.next());
                 list.add(JSONObject.toJavaObject(obj, clazz));
             }
         }catch(Exception e){
@@ -341,5 +344,25 @@ public class JsonUtil {
     		return true;
     	}
         return false;
+    }
+    
+    public static void main(String[] args) {
+        JSONArray list = new JSONArray();
+        NodeTo t1 = new NodeTo();
+        t1.setId("51515");
+        t1.setMtor006("545454545");
+        NodeTo t2 = new NodeTo();
+        t2.setId("qqqqq");
+        t2.setMtor006("qqqqq");
+        list.add(t1);
+        list.add(t2);
+        List<Object> to = list.stream().collect(Collectors.toList());
+        String arry = JsonUtil.getJsonArrayString(to);
+        System.out.println(arry);
+        List<String> resourceIds = JsonUtil.getList(to, NodeTo.class).stream().map(NodeTo::getId).collect(Collectors.toList());
+        System.out.println(resourceIds.stream().toArray()[0]);
+        NodeDetailTo TO3 = JsonUtil.getObject(JsonUtil.getJsonString(t2), NodeDetailTo.class);
+        System.out.println(TO3.getId());
+        
     }
 }
