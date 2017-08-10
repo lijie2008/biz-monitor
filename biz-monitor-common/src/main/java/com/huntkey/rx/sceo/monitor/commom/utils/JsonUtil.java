@@ -23,6 +23,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
+import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 
 /**
  * ClassName:JsonUtil json操作工具类
@@ -347,22 +348,13 @@ public class JsonUtil {
     }
     
     public static void main(String[] args) {
-        JSONArray list = new JSONArray();
-        NodeTo t1 = new NodeTo();
-        t1.setId("51515");
-        t1.setMtor006("545454545");
-        NodeTo t2 = new NodeTo();
-        t2.setId("qqqqq");
-        t2.setMtor006("qqqqq");
-        list.add(t1);
-        list.add(t2);
-        List<Object> to = list.stream().collect(Collectors.toList());
-        String arry = JsonUtil.getJsonArrayString(to);
-        System.out.println(arry);
-        List<String> resourceIds = JsonUtil.getList(to, NodeTo.class).stream().map(NodeTo::getId).collect(Collectors.toList());
-        System.out.println(resourceIds.stream().toArray()[0]);
-        NodeDetailTo TO3 = JsonUtil.getObject(JsonUtil.getJsonString(t2), NodeDetailTo.class);
-        System.out.println(TO3.getId());
+        List<NodeDetailTo> list = new ArrayList<NodeDetailTo>();
+        NodeDetailTo to = new NodeDetailTo();
+        to.setId("1111111");
+        to.setMtor006("1asdasdasdasd");
+        list.add(to);
         
+        System.out.println(JSON.toJSON(JSON.parseArray(JSON.toJSONString(list), TargetNodeTo.class).get(0)));
     }
+    
 }

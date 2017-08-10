@@ -16,6 +16,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.EdmClassTo;
 import com.huntkey.rx.sceo.monitor.commom.model.MonitorTreeOrderTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
+import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 
 /**
  * ClassName:MonitorTreeOrderService 临时单服务
@@ -133,5 +134,44 @@ public interface MonitorTreeOrderService {
      */
     String queryEdmClassName(String id);
     
+    /**
+     * 
+     * updateTargetNode:(描述这个方法的作用)
+     * @author lijie
+     * @param edmName 目标表的edmName
+     * @param node 当前节点信息
+     */
+    void updateTargetNode(String edmName , TargetNodeTo node);
+    
+    /**
+     * 
+     * getTargetAllChildNode: 获取目标表当前节点下的所有子节点信息
+     * @author lijie
+     * @param edmName 目标类
+     * @param nodeId 上级节点id
+     * @param endDate 失效时间
+     * @return
+     */
+    JSONArray getTargetAllChildNode(String edmName, String nodeId,String endDate);
+    
+    /**
+     * 
+     * batchUpdateTargetNode: 批量更新目标表数据
+     * @author lijie
+     * @param edmName 目标类
+     * @param nodes 目标表节点集合
+     * @return
+     */
+    void batchUpdateTargetNode(String edmName, JSONArray nodes);
+    
+    /**
+     * 
+     * batchAddTargetNode: 批量新增目标表数据
+     * @author lijie
+     * @param edmName 目标类
+     * @param nodes 目标表节点集合
+     * @return
+     */
+    void batchAddTargetNode(String edmName, JSONArray nodes);
 }
 

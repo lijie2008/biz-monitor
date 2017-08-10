@@ -9,8 +9,6 @@
 
 package com.huntkey.rx.sceo.monitor.commom.model;
 
-import java.io.Serializable;
-
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -20,10 +18,8 @@ import org.hibernate.validator.constraints.NotBlank;
  * @version  
  * @see 	 
  */
-public class NodeTo implements Serializable{
+public class NodeTo {
     
-    private static final long serialVersionUID = 1L;
-
     /**
      * 节点id
      */

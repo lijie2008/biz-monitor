@@ -33,6 +33,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.PagenationParam;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.commom.model.SortParam;
+import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.HbaseClient;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
@@ -277,18 +278,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         return null;
     }
     
-    public String queryParam(String edmName, List<ConditionParam> cnds, 
-                             PagenationParam pagenation, List<SortParam> sort){
-        JSONObject json = new JSONObject();
-        JSONObject search = new JSONObject();
-        search.put(PersistanceConstant.CONDITIONS, cnds);
-        search.put(PersistanceConstant.PAGENATION, pagenation);
-        search.put("orderBy", sort);
-        json.put("search", search);
-        json.put(PersistanceConstant.EDMNAME, edmName);
-        return json.toJSONString();
-    }
-
     @Override
     public List<NodeTo> queryTreeNode(String orderId) {
         
@@ -331,8 +320,58 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         }
         return null;
     }
-    
-    
 
+    @Override
+    public void updateTargetNode(String edmName, TargetNodeTo node) {
+        
+        Result result = client.updateTargetNode(edmName, node);
+        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
+            ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), ErrorMessage._60007.getMsg());
+    }
+
+    @Override
+    public JSONArray getTargetAllChildNode(String edmName, String nodeId, String endDate) {
+        
+        Result result = client.getTargetAllChildNode(edmName, nodeId, endDate);
+        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
+            ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), ErrorMessage._60007.getMsg());
+        
+        return JsonUtil.getJsonArray(JsonUtil.getJsonString(result.getData()));
+    }
+
+    @Override
+    public void batchUpdateTargetNode(String edmName, JSONArray nodes) {
+        
+        Result result = client.update(new FullInputArgument(mergeParam(edmName, nodes)).getJson().toString());
+        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
+            ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), ErrorMessage._60007.getMsg());
+    }
+    
+    private String queryParam(String edmName, List<ConditionParam> cnds, 
+                             PagenationParam pagenation, List<SortParam> sort){
+        JSONObject json = new JSONObject();
+        JSONObject search = new JSONObject();
+        search.put(PersistanceConstant.CONDITIONS, cnds);
+        search.put(PersistanceConstant.PAGENATION, pagenation);
+        search.put("orderBy", sort);
+        json.put("search", search);
+        json.put(PersistanceConstant.EDMNAME, edmName);
+        return json.toJSONString();
+    }
+    
+    private String mergeParam(String edmName, JSONArray params){
+        JSONObject json = new JSONObject();
+        json.put(PersistanceConstant.PARAMS, params);
+        json.put(PersistanceConstant.EDMNAME, edmName);
+        return json.toJSONString();
+    }
+
+    @Override
+    public void batchAddTargetNode(String edmName, JSONArray nodes) {
+        
+        Result result = client.add(new FullInputArgument(mergeParam(edmName, nodes)).getJson().toString());
+        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
+            ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), ErrorMessage._60007.getMsg());
+    }   
 }
 

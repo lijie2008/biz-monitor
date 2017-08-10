@@ -9,7 +9,9 @@
 
 package com.huntkey.rx.sceo.monitor.provider.controller;
 
+import java.sql.Date;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,9 +22,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.constant.PersistanceConstant;
 import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
@@ -32,6 +36,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.MonitorTreeOrderTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
+import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
@@ -210,8 +215,8 @@ public class MonitorTreeOrderController {
         
         // 根据EDM 取出对应的目标监管类
         String mtor003 = order.getMtor003();
-        String edmCname = service.queryEdmClassName(mtor003);
-        if(JsonUtil.isEmpity(edmCname))
+        String edmName = service.queryEdmClassName(mtor003);
+        if(JsonUtil.isEmpity(edmName))
             ApplicationException.throwCodeMesg(ErrorMessage._60008.getCode(),ErrorMessage._60008.getMsg());
         
         // 节点信息
@@ -224,7 +229,7 @@ public class MonitorTreeOrderController {
         Map<String, List<ResourceTo>> groupResource = resources.stream().collect(Collectors.groupingBy(ResourceTo::getPid));
         
         List<NodeDetailTo> nodes = new ArrayList<NodeDetailTo>();
-        treeNodes.stream().forEach(s->{
+        treeNodes.stream().filter(s->ChangeType.valueOf(s.getMtor021()) != ChangeType.INVALID).forEach(s->{
             NodeDetailTo nodeDetail = JsonUtil.getObject(JsonUtil.getJsonString(s), NodeDetailTo.class);
             nodeDetail.setMtor019(groupResource.get(nodeDetail.getId()));
             nodes.add(nodeDetail);
@@ -233,27 +238,46 @@ public class MonitorTreeOrderController {
         ChangeType type = ChangeType.valueOf(order.getMtor002());
         
         switch(type){
-            
             case ADD:
-                
                 break;
-                
             case UPDATE:
-                // 找到根节点 - 修改根节点信息
-                // 将表里的其他字段失效日期大于当天的 全部修改为 当前日期
-                break;
-                
+                // 更新根节点信息
+                String targetRootNodeId = order.getMtor004();
+                if(StringUtil.isNullOrEmpty(targetRootNodeId))
+                    ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"目标根节点" + ErrorMessage._60005.getMsg());
+                NodeDetailTo node = nodes.stream().filter(s -> JsonUtil.isEmpity(s.getMtor013())).findFirst().get();
+                TargetNodeTo targetNode = JsonUtil.getObject(JsonUtil.getJsonString(node), TargetNodeTo.class);
+                targetNode.setId(targetRootNodeId);
+                node.getMtor019().stream().forEach(s -> {
+                    s.setId("");
+                    s.setPid(targetRootNodeId);
+                });
+               service.updateTargetNode(edmName, targetNode);
+               
+               // 更新其他节点信息(失效日期大于当天的，全部置为当天)
+               JSONArray targetChildNodes = service.getTargetAllChildNode(edmName, targetRootNodeId, new Date(System.currentTimeMillis()).toString());
+               Map<String, Object> map = new HashMap<String, Object>();
+               map.put("moni005", new Date(System.currentTimeMillis()).toString());
+               targetChildNodes = JsonUtil.addAttr(targetChildNodes, map);
+               service.batchUpdateTargetNode(edmName, targetChildNodes);
+               
+               nodes.remove(node);
+               break;
             default:
-                
                 ApplicationException.throwCodeMesg(ErrorMessage._60000.getCode(),"变更标记" + ErrorMessage._60000.getMsg());
         }
         
         // 新增节点信息
-        
-        // JSONFiled不标记id 和 pid
-        
-        // 找到根节点 直接手动加上id 和 pid属性 - 修改
-        
+        List<TargetNodeTo> targetNodes = JSON.parseArray(JsonUtil.getJsonArrayString(nodes), TargetNodeTo.class);
+        targetNodes.stream().forEach(s->{
+            s.setId("");
+            if(!JsonUtil.isEmpity(s.getMoni015()))
+                s.getMoni015().stream().forEach(t->{
+                    t.setId("");
+                    t.setPid("");
+                });
+         });
+        service.batchAddTargetNode(edmName, JSON.parseArray(JSON.toJSONString(targetNodes)));
         return result;
     }
     

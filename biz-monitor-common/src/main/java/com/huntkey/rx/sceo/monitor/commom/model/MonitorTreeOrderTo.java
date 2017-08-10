@@ -9,8 +9,6 @@
 
 package com.huntkey.rx.sceo.monitor.commom.model;
 
-import java.io.Serializable;
-
 /**
  * ClassName:MonitorTreeOrderTo 临时单To
  * Date:     2017年8月5日 下午5:15:35
@@ -18,10 +16,8 @@ import java.io.Serializable;
  * @version  
  * @see 	 
  */
-public class MonitorTreeOrderTo implements Serializable{
+public class MonitorTreeOrderTo {
     
-    private static final long serialVersionUID = 1L;
-
     /**
      * 临时单id
      */

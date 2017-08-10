@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 
 /**
  * ClassName:HbaseClient
@@ -34,13 +35,7 @@ public interface HbaseClient {
 
     @RequestMapping(value = "/servicecenter/add", method = RequestMethod.POST)
     Result add(@RequestParam(value = "datas") String datas);
-    /**
-     * 
-     * deleteEsAndHbase: 删除数据
-     * @author lijie
-     * @param datas
-     * @return
-     */
+    
     @RequestMapping(value= "/servicecenter/delete", method = RequestMethod.DELETE)
     Result delete(@RequestParam(value = "datas") String datas);
     
@@ -50,5 +45,13 @@ public interface HbaseClient {
     @RequestMapping(value= "/monitor/queryTreeNodeResource", method = RequestMethod.GET)
     Result queryTreeNodeResource(@RequestParam(value="orderId") String orderId,@RequestParam(value="startDate",defaultValue="") String startDate,
                                  @RequestParam(value="endDate",defaultValue="") String endDate, @RequestParam(defaultValue="") String excNodeId);
+    
+    @RequestMapping(value= "/monitor/updateTargetNode", method = RequestMethod.POST)
+    Result updateTargetNode(@RequestParam(value="edmName") String edmName, @RequestBody TargetNodeTo node);
+    
+    @RequestMapping(value= "/monitor/getTargetAllChildNode", method = RequestMethod.GET)
+    Result getTargetAllChildNode(@RequestParam(value="edmName") String edmName, 
+                                 @RequestParam(value="nodeId") String nodeId,@RequestParam(value="endDate",defaultValue = "") String endDate);
+
 }
 
