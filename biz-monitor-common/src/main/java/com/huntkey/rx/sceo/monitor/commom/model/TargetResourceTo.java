@@ -8,6 +8,9 @@
 */
 
 package com.huntkey.rx.sceo.monitor.commom.model;
+
+import com.alibaba.fastjson.annotation.JSONField;
+
 /**
  * ClassName:TargetResourceTo 目标表关联资源属性集
  * Date:     2017年8月9日 下午5:56:08
@@ -45,7 +48,8 @@ public class TargetResourceTo {
     public String getMoni016() {
         return moni016;
     }
-
+    
+    @JSONField(name="mtor020")
     public void setMoni016(String moni016) {
         this.moni016 = moni016;
     }

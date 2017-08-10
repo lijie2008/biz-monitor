@@ -11,6 +11,8 @@ package com.huntkey.rx.sceo.monitor.commom.model;
 
 import java.util.List;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 /**
  * TargetNodeTo 监管类  - 节点信息
  * Date:     2017年8月9日 下午5:44:02
@@ -108,11 +110,12 @@ public class TargetNodeTo {
     public void setId(String id) {
         this.id = id;
     }
-
+    
     public String getMoni001() {
         return moni001;
     }
-
+    
+    @JSONField(name="mtor006")
     public void setMoni001(String moni001) {
         this.moni001 = moni001;
     }
@@ -121,6 +124,7 @@ public class TargetNodeTo {
         return moni002;
     }
 
+    @JSONField(name="mtor007")
     public void setMoni002(String moni002) {
         this.moni002 = moni002;
     }
@@ -129,6 +133,7 @@ public class TargetNodeTo {
         return moni003;
     }
 
+    @JSONField(name="mtor008")
     public void setMoni003(String moni003) {
         this.moni003 = moni003;
     }
@@ -136,7 +141,8 @@ public class TargetNodeTo {
     public String getMoni004() {
         return moni004;
     }
-
+    
+    @JSONField(name="mtor011")
     public void setMoni004(String moni004) {
         this.moni004 = moni004;
     }
@@ -144,7 +150,8 @@ public class TargetNodeTo {
     public String getMoni005() {
         return moni005;
     }
-
+    
+    @JSONField(name="mtor012")
     public void setMoni005(String moni005) {
         this.moni005 = moni005;
     }
@@ -152,7 +159,8 @@ public class TargetNodeTo {
     public String getMoni006() {
         return moni006;
     }
-
+    
+    @JSONField(name="mtor013")
     public void setMoni006(String moni006) {
         this.moni006 = moni006;
     }
@@ -160,7 +168,8 @@ public class TargetNodeTo {
     public String getMoni007() {
         return moni007;
     }
-
+    
+    @JSONField(name="mtor014")
     public void setMoni007(String moni007) {
         this.moni007 = moni007;
     }
@@ -169,6 +178,7 @@ public class TargetNodeTo {
         return moni008;
     }
 
+    @JSONField(name="mtor015")
     public void setMoni008(String moni008) {
         this.moni008 = moni008;
     }
@@ -176,7 +186,8 @@ public class TargetNodeTo {
     public String getMoni009() {
         return moni009;
     }
-
+    
+    @JSONField(name="mtor016")
     public void setMoni009(String moni009) {
         this.moni009 = moni009;
     }
@@ -197,11 +208,11 @@ public class TargetNodeTo {
         this.moni011 = moni011;
     }
 
-
     public String getMoni013() {
         return moni013;
     }
-
+    
+    @JSONField(name="mtor017")
     public void setMoni013(String moni013) {
         this.moni013 = moni013;
     }
@@ -209,7 +220,8 @@ public class TargetNodeTo {
     public String getMoni014() {
         return moni014;
     }
-
+    
+    @JSONField(name="mtor018")
     public void setMoni014(String moni014) {
         this.moni014 = moni014;
     }
@@ -218,6 +230,7 @@ public class TargetNodeTo {
         return moni015;
     }
 
+    @JSONField(name="mtor019")
     public void setMoni015(List<TargetResourceTo> moni015) {
         this.moni015 = moni015;
     }
@@ -225,7 +238,8 @@ public class TargetNodeTo {
     public String getMoni017() {
         return moni017;
     }
-
+    
+    @JSONField(name="mtor022")
     public void setMoni017(String moni017) {
         this.moni017 = moni017;
     }
