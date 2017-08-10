@@ -79,7 +79,7 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
             List<Map<String, Object>> groupList = edmPropertyGroupDataMapper.select(paramMap);
             if(groupList != null && !groupList.isEmpty()){
                 JSONArray jsonArray = new JSONArray();
-                for(Map<String, Object> m : list){
+                for(Map<String, Object> m : groupList){
                     Object o = m.get("edpg_edmc_id");
                     if(o != null){
                         String edpgEdmcId = (String)o;
