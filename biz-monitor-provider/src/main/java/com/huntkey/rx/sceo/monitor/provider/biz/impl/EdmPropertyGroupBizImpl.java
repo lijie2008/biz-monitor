@@ -64,6 +64,7 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
         if (list == null || list.isEmpty()) {
             result.setRetCode(Result.RECODE_ERROR);
             result.setErrMsg("根据参数查询结果为空");
+            return result;
         }
         //取出数据
         Map<String, Object> map = list.get(0);
@@ -85,7 +86,8 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
                         Result r = modelerProviderClient.checkIsChileNode(edmMonitorId,edpgEdmcId);
                         if(r.getRetCode() == Result.RECODE_SUCCESS){
                             Boolean bool = (Boolean) r.getData();
-                            if(bool && edpgEdmcId.equals(jsonObject.get("edpg_edmc_id"))){
+                            //v结果为true时 排除查询条件自身
+                            if(bool && !edpgEdmcId.equals(jsonObject.get("edpg_edmc_id"))){
                                 jsonArray.add(JsonUtil.getJson(m));
                             }
                         }
