@@ -1,4 +1,4 @@
-package com.huntkey.rx.sceo.monitor.provider.controller.client;
+package com.huntkey.rx.sceo.monitor.provider.controller;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
@@ -20,7 +20,7 @@ import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 @RestController
 @RequestMapping("/monitors")
 @Validated
-public class MonitorController1 {
+public class MonitorController {
 	@Autowired 
 	MonitorService service;
 	/***

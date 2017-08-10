@@ -181,9 +181,9 @@ public class MonitorTreeOrderController {
         // 创建其他节点
         String nodeId = null;
         if(JsonUtil.isEmpity(lastRootChildNode)){
-            nodeId = mService.addNode(rootNode.getId(),"0");
+            nodeId = mService.addNode(rootNode.getId(),0);
         }else{
-            nodeId = mService.addNode(lastRootChildNode.getId(),"2");
+            nodeId = mService.addNode(lastRootChildNode.getId(),2);
         }
         mService.addResource(nodeId, JsonUtil.getList(datas, NodeTo.class).parallelStream().map(NodeTo::getId).collect(Collectors.toList()).stream().toArray(String[]::new));
         return result;
