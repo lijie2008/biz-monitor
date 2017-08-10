@@ -28,6 +28,11 @@ public class RevokedTo {
         return obj;
     }
 
+    public RevokedTo(Object obj, OperateType type){
+        this.obj = obj;
+        this.type = type;
+    }
+    
     public void setObj(Object obj) {
         this.obj = obj;
     }

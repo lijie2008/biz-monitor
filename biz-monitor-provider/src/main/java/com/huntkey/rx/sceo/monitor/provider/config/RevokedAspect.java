@@ -11,8 +11,11 @@ package com.huntkey.rx.sceo.monitor.provider.config;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -20,16 +23,22 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailTo;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
+import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
+import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
 import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
 
 /**
@@ -43,103 +52,76 @@ import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
 @Component
 public class RevokedAspect {
     
-    private static Logger log = Logger.getLogger(RevokedAspect.class);
-    
     private static Map<String,Object> originalMap = new ConcurrentHashMap<String, Object>();
     
     @Autowired 
     private RedisService redisService;
     
+    @Autowired
+    private MonitorTreeOrderService service;
+    
+    // 服务前
     @Before(value="@annotation(revoked)",argNames="revoked")
     public void serviceStart(JoinPoint point, Revoked revoked) {
-        log.info("服务开始前1 service start before!");
         
-        OperateType type = revoked.type();
-        String key = getKey(point);
-        Object value = null;
-        
-        switch(type){
-            
-            case INITIALIZE:
-                log.info("服务前切结束2 end(一开始初始化)");
+        String key = getKey(point,revoked.type());
+        switch(revoked.type()){
+            case INITIALIZE: 
+                return;
                 
+            case NODE: 
+                String orderId = getNode(key).getPid();
+                originalMap.put(key, getTree(orderId));
+                break;
+            case DETAIL: 
+                originalMap.put(key,  getNode(key));
+                break;
+        }
+    }
+    
+    // 服务异常
+    @AfterThrowing(value="@annotation(revoked)", throwing="e")
+    public void serviceException(JoinPoint point, Revoked revoked,Exception e){
+        String key = getKey(point,revoked.type());
+        originalMap.remove(key);
+    }
+    
+    // 服务正常完成后
+    @AfterReturning(value="@annotation(revoked)",argNames="revoked,result",returning = "result")
+    public void serviceEnd(JoinPoint point, Revoked revoked,Result result){
+        String key = getKey(point,revoked.type());
+        if(result.getRetCode() != Result.RECODE_SUCCESS){
+            originalMap.remove(key);
+            return;
+        }
+        Object obj = originalMap.get(key);
+        if(revoked.type() != OperateType.INITIALIZE && JsonUtil.isEmpity(obj))
+            return;
+        String orderId = null;
+        switch(revoked.type()){
+            case INITIALIZE:
+                orderId = JsonUtil.getJson(result.getData()).getString(Constant.ID);
+                if(orderId == null)
+                    return;
+                if(!redisService.isEmpity(orderId))
+                   redisService.delete(orderId);
+                redisService.lPush(orderId, new RevokedTo(getTree(orderId), revoked.type()));
                 return;
                 
             case NODE:
-                
+                JSONArray arry = JSON.parseArray(JSONArray.toJSONString(obj));
+                orderId = JsonUtil.isEmpity(arry) ? null : arry.getJSONObject(0).getString(Constant.PID);
                 break;
                 
             case DETAIL:
-                
+                orderId = JsonUtil.getJson(obj).getString(Constant.PID);
                 break;
         }
         
-        originalMap.put(key, value);
-        
-        log.info("服务前切结束2 end");
-    }
-    
-    @AfterThrowing(value="@annotation(revoked)", throwing="e")
-    public void serviceException(JoinPoint point, Revoked revoked,Exception e){
-        log.info("服务异常前3 exception!");
-        
-        String key = getKey(point);
-        originalMap.remove(key);
-        
-        log.info("服务异常后4 exception!");
-    }
-    
-    
-    @AfterReturning(value="@annotation(revoked)",argNames="revoked,result",returning = "result")
-    public void serviceEnd(JoinPoint point, Revoked revoked,Result result){
-        log.info("服务调用正常完成3 service end before!");
-        
-        String key = getKey(point);
-        if(result.getRetCode() != Result.RECODE_SUCCESS){
-            originalMap.remove(key);
-            log.info("服务调用正常完成(失败型结束1)4 service end before!");
+        if(orderId == null || redisService.isEmpity(orderId)) // 未初始化堆栈进行的操作 不做撤销储备
             return;
-        }
-        OperateType type = revoked.type();
-        RevokedTo re = new RevokedTo();
-        re.setType(type);
-        Object obj = originalMap.get(key);
-        
-        if(JsonUtil.isEmpity(obj))
-            return;
-        re.setObj(obj);
-        String id = null;
-        
-        switch(type){
-            
-            case INITIALIZE:
-                
-                id = JsonUtil.getJson(result.getData()).getString("id");
-                if(id == null)
-                    return;
-                if(!redisService.isEmpity(id))
-                   redisService.delete(id);
-                
-                break;
-                
-            case NODE:
-                
-                id = JsonUtil.getJson(obj).getString("id");
-                if(id == null || redisService.isEmpity(id)) // 未初始化堆栈进行的操作 不做撤销储备
-                    return;
-                break;
-                
-            case DETAIL:
-                id = JsonUtil.getJson(obj).getString("pid");
-                if(id == null || redisService.isEmpity(id)) // 未初始化堆栈进行的操作 不做撤销储备
-                    return;
-                break;
-        }
-        
-        redisService.lPush(id, re);
+        redisService.lPush(orderId, new RevokedTo(obj, revoked.type()));
         originalMap.remove(key);
-        
-        log.info("服务正常调用完成4 service end after!");
     }
     
     /**
@@ -149,7 +131,9 @@ public class RevokedAspect {
      * @param point
      * @return
      */
-    public String getKey(JoinPoint point){
+    public String getKey(JoinPoint point,OperateType type){
+        if(type == OperateType.INITIALIZE)
+            return null;
         Method method = ((MethodSignature)point.getSignature()).getMethod();
         Annotation[][] types = method.getParameterAnnotations();
         
@@ -172,6 +156,47 @@ public class RevokedAspect {
             }
         }
         return null;
+    }
+    
+    /**
+     * 
+     * getTree:查询监管树节点结构
+     * @author lijie
+     * @param key 监管树id
+     * @return
+     */
+    private List<NodeDetailTo> getTree(String key) {
+        List<NodeTo> treeNodes = service.queryTreeNode(key);
+        if(JsonUtil.isEmpity(treeNodes))
+            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"节点" + ErrorMessage._60005.getMsg());
+        
+        // 资源信息
+        List<ResourceTo> allResource = service.queryTreeNodeResource(key, null, null, null);
+        Map<String, List<ResourceTo>> groupResource = allResource.stream().collect(Collectors.groupingBy(ResourceTo::getPid));
+        
+        List<NodeDetailTo> nodes = new ArrayList<NodeDetailTo>();
+        treeNodes.stream().forEach(s->{
+            NodeDetailTo nodeDetail = JsonUtil.getObject(JsonUtil.getJsonString(s), NodeDetailTo.class);
+            nodeDetail.setMtor019(groupResource.get(nodeDetail.getId()));
+            nodes.add(nodeDetail);
+        });
+        
+        return nodes;
+    }
+    
+    /**
+     * 
+     * getNode:查询节点详细
+     * @author lijie
+     * @param key
+     * @return
+     */
+    private NodeDetailTo getNode(String key) {
+        NodeTo node = service.queryNode(key);
+        List<ResourceTo> resources = service.queryResource(key);
+        NodeDetailTo detail = JSON.parseObject(JSON.toJSONString(node),NodeDetailTo.class);
+        detail.setMtor019(resources);
+        return detail;
     }
 }
 

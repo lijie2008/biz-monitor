@@ -30,16 +30,19 @@ import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.constant.PersistanceConstant;
 import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
+import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.model.EdmClassTo;
 import com.huntkey.rx.sceo.monitor.commom.model.MonitorTreeOrderTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
+import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
 import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
+import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
 
 /**
  * ClassName:MonitorTreeOrderController 临时单据类
@@ -57,6 +60,9 @@ public class MonitorTreeOrderController {
     
     @Autowired
     private MonitorService mService;
+    
+    @Autowired
+    private RedisService redisService;
     
     /**
      * 
@@ -280,6 +286,42 @@ public class MonitorTreeOrderController {
         service.batchAddTargetNode(edmName, JSON.parseArray(JSON.toJSONString(targetNodes)));
         return result;
     }
+    
+    /**
+     * 
+     * queryNotUsingResource: 撤销操作
+     * @author lijie
+     * @param orderId 临时单ID
+     * @return
+     */
+    @RequestMapping(value="/revoked", method = RequestMethod.GET)
+    public Result revoked(@RequestParam String orderId){
+       
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        
+        if(JsonUtil.isEmpity(orderId))
+            ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(),ErrorMessage._60004.getMsg());
+        if(redisService.size(orderId) == 0)
+            ApplicationException.throwCodeMesg(ErrorMessage._60011.getCode(), ErrorMessage._60011.getMsg());
+        if(redisService.size(orderId) == 1)
+            result.setData(new RevokedTo(null, OperateType.INITIALIZE));
+        RevokedTo re = (RevokedTo)redisService.lPop(orderId);
+        
+        switch(re.getType()){
+            case NODE:
+                // 更新 新增
+                
+                break;
+            case DETAIL:
+                // 只是更新节点信息 - 资源信息等
+                
+                break;
+             default:
+                 ApplicationException.throwCodeMesg(ErrorMessage._60000.getCode(), ErrorMessage._60000.getMsg());
+        }
+        return result;
+    } 
     
     
 }
