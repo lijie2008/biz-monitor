@@ -6,7 +6,7 @@ import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 public interface MonitorService {
 	//监管树临时单预览查询
-	JSONArray tempTree(String tempId,int hasResource,String validDate);
+	JSONArray tempTree(String tempId,String validDate);
 	//监管树临时单预览是否包含资源
 	Result containResource(String[] nodes);
 	//节点详情查询
@@ -14,7 +14,7 @@ public interface MonitorService {
 	//节点关联资源查询
 	Result nodeResource(String nodeId);
 	//节点详情保存
-	Result saveNodeDetail(NodeTo nodeDetail);
+	String saveNodeDetail(NodeTo nodeDetail);
 	//删除节点资源
 	Result deleteNodeResource(String nodeId,String resourceId);
 	//变更公式
@@ -23,9 +23,9 @@ public interface MonitorService {
 	Result addResource(String nodeId,String[] resourceIds);
 	Result saveTemp(String datas);
 	//新增节点
-	String addNode(String nodeId,String nodeType);
+	String addNode(String nodeId,int nodeType);
 	//删除节点
-	Result deleteNode(String nodeId);
+	String deleteNode(String nodeId,int type);
 	//移动节点
-	Result moveNode(String datas);
+	String moveNode(String nodeId,String nodeParentId,String nodeLeftId,String nodeRightId);
 }

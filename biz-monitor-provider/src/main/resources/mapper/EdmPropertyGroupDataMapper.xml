@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huntkey.rx.sceo.monitor.provider.orm.dao.EdmPropertyGroupDataMapper">
+
+	<select id="select" parameterType="java.util.Map" resultType="java.util.HashMap">
+		SELECT edpg_property_group,edpg_edmc_id,edpg_edmp_id FROM edm_property_group
+		WHERE 1=1 
+    <if test="edpg_property_group != null">
+      AND edpg_property_group = #{edpg_property_group} 
+    </if>
+		<if test="edpg_edmc_id != null">
+			AND edpg_edmc_id = #{edpg_edmc_id} 
+		</if>
+		<if test="edpg_edmp_id != null">
+			AND edpg_edmp_id = #{edpg_edmp_id} 
+		</if>
+	</select>
+
+</mapper>
