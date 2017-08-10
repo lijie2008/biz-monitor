@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.biz.EdmPropertyGroupBiz;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerProviderClient;
 import com.huntkey.rx.sceo.monitor.provider.orm.dao.EdmPropertyGroupDataMapper;
@@ -85,7 +86,7 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
                         if(r.getRetCode() == Result.RECODE_SUCCESS){
                             Boolean bool = (Boolean) r.getData();
                             if(bool && edpgEdmcId.equals(jsonObject.get("edpg_edmc_id"))){
-                                jsonArray.add(m);
+                                jsonArray.add(JsonUtil.getJson(m));
                             }
                         }
                     }
