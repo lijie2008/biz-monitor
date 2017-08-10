@@ -34,7 +34,7 @@ eureka:
 druid:
   jdbc:
     driveClassName: com.mysql.jdbc.Driver
-    jdbcUrl: jdbc:mysql://192.168.13.52:3306/sceo_user_center
+    jdbcUrl: jdbc:mysql://192.168.13.52:3306/biz_modeler
     jdbcUsername: root
     jdbcPassword: hk123
     maxActive: 20
