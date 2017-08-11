@@ -19,6 +19,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.ServiceCenterConstant;
+import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.StatisticsService;
 
@@ -60,13 +61,17 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override
     public JSONObject queryStatistics(String monitorClass, String monitorId, String periodId,
                                       String attributeId) {
+        LOG.info("查询统计类信息开始,monitorClass:{},monitorId:{},periodId:{},attributeId:{}",new Object [] {monitorClass,monitorId,periodId,attributeId});
+        long time = System.currentTimeMillis();
 
         String queryString = getQueryString(monitorClass, monitorId, periodId, attributeId);
         
         Result result = serviceCenterClient.queryServiceCenter(queryString);
         
         if (result.getRetCode() == Result.RECODE_SUCCESS) {
-            return (JSONObject) result.getData();
+            JSONObject obj = JsonUtil.getJson(result.getData());
+            LOG.info("查询统计类信息结束,结果:{},用时:{}",JsonUtil.getJsonString(obj),System.currentTimeMillis()-time);
+            return obj;
         } else {
             LOG.error("查询统计类信息错误.errMsg:{}", result.getErrMsg());
         }

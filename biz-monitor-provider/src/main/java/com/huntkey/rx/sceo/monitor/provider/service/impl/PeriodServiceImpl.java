@@ -20,6 +20,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.ServiceCenterConstant;
 import com.huntkey.rx.sceo.monitor.commom.StatisticsConstant;
+import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.PeriodService;
 
@@ -51,6 +52,8 @@ public class PeriodServiceImpl implements PeriodService {
     @Override
     public JSONObject queryPeriod(String id, String year, String type, String beginTime,
                                   String endTime) {
+        LOG.info("查询周期类开始,id:{},year:{},type:{},beginTime:{},endTime:{}",new Object [] {id,year,type,beginTime,endTime});
+        long time = System.currentTimeMillis();
 
         Result result = new Result();
 
@@ -60,12 +63,12 @@ public class PeriodServiceImpl implements PeriodService {
 
         //处理查询结果 拼接财年显示内容    peid001+"F"+peid005 的格式拼接
         if (result.getData() != null && result.getRetCode() == Result.RECODE_SUCCESS) {
-            JSONObject jsonObj = (JSONObject) result.getData();
+            JSONObject jsonObj =  JsonUtil.getJson(result.getData());
             JSONArray jsonArray = jsonObj.getJSONArray(ServiceCenterConstant.DATA_SET);
             if (jsonArray != null && !jsonArray.isEmpty()) {
                 StringBuilder sb = new StringBuilder();
                 for (Object obj : jsonArray) {
-                    JSONObject jo = (JSONObject) obj;
+                    JSONObject jo = JsonUtil.getJson(obj);
                     sb.append(jo.getString(StatisticsConstant.PEID001)).append(StatisticsConstant.SYMBOL_F);
                     String peid005 = jo.getString(StatisticsConstant.PEID005);
                     if (StringUtils.isNotBlank(peid005)) {
@@ -79,6 +82,7 @@ public class PeriodServiceImpl implements PeriodService {
                     sb.delete(0, sb.length());
                 }
             }
+            LOG.info("查询周期类信息结束,结果:{},用时:{}",JsonUtil.getJsonString(jsonObj),System.currentTimeMillis()-time);
 
             return jsonObj;
         }else{

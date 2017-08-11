@@ -12,6 +12,8 @@ package com.huntkey.rx.sceo.monitor.provider.biz.impl;
 import java.util.Calendar;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,7 @@ import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.DateConstant;
 import com.huntkey.rx.sceo.monitor.commom.ServiceCenterConstant;
 import com.huntkey.rx.sceo.monitor.commom.StatisticsConstant;
+import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.biz.StatisticsBiz;
 import com.huntkey.rx.sceo.monitor.provider.service.PeriodService;
 import com.huntkey.rx.sceo.monitor.provider.service.StatisticsService;
@@ -36,6 +39,8 @@ import com.huntkey.rx.sceo.monitor.provider.service.StatisticsService;
  */
 @Service("statisticsBiz")
 public class StatisticsBizImpl implements StatisticsBiz {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(StatisticsBizImpl.class);
 
     @Autowired
     PeriodService periodService;
@@ -62,7 +67,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
 
         if (json == null || json.isEmpty()) {
             Integer year = Calendar.getInstance().get(Calendar.YEAR);
-            jsonObj = periodService.queryPeriod(null, year.toString(), "M", null, null);
+            jsonObj = periodService.queryPeriod(null, year.toString(), "m", null, null);
         } else {
             String id = json.getString(StatisticsConstant.ID);
             String year = json.getString(StatisticsConstant.YEAR);
@@ -133,19 +138,21 @@ public class StatisticsBizImpl implements StatisticsBiz {
             return result;
         }
 
-        treeNode.put(StatisticsConstant.STATISTICS,
-                queryStatistics(monitorId, treeNodeId, periodId, attributeIds));
+        JSONObject js = queryStatistics(monitorId, treeNodeId, periodId, attributeIds);
+        treeNode.put(StatisticsConstant.STATISTICS, js);
 
+        //k果有子节点  查询子节点统计数据
         JSONArray chileNodes = treeNode.getJSONArray(StatisticsConstant.CHILD_NODES);
         if (chileNodes != null && !chileNodes.isEmpty()) {
             for (Object o : chileNodes) {
-                JSONObject jsonObj = (JSONObject) o;
+                JSONObject jsonObj = JsonUtil.getJson(o);
                 String id = jsonObj.getString(StatisticsConstant.ID);
                 jsonObj.put(StatisticsConstant.STATISTICS,
                         queryStatistics(monitorId, id, periodId, attributeIds));
             }
         }
 
+        json.put(StatisticsConstant.TREE_NODE, treeNode);
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(json);
 
@@ -154,6 +161,9 @@ public class StatisticsBizImpl implements StatisticsBiz {
 
     public JSONObject queryStatistics(String monitorId, String nodeId, String periodId,
                                       JSONArray attributeIds) {
+        
+        LOG.info("查询节点统计数据开始,monitorId:{},nodeId:{},periodId:{},attributeIds:{}",new Object []{monitorId,nodeId,periodId,JsonUtil.getJsonString(attributeIds)});
+        long time = System.currentTimeMillis();
 
         //当天 统计数据
         JSONObject currentDayJson = getDayStatistics(Calendar.getInstance(), monitorId, nodeId);
@@ -173,9 +183,10 @@ public class StatisticsBizImpl implements StatisticsBiz {
         JSONObject lastYearQueryMonthJson = getMonthStatistics(getLastYearQueryMonth(periodId),
                 monitorId, nodeId);
 
+        //最终统计结果
         JSONObject obj = processResult(attributeIds, currentDayJson, currentMonthJson,
                 lastMonthJson, lastYearCurrentMonthJson, queryMonthJson, lastYearQueryMonthJson);
-
+        LOG.info("查询节点统计数据结束,结果:{},用时:{}",JsonUtil.getJsonString(obj),System.currentTimeMillis()-time);
         return obj;
     }
 
@@ -238,7 +249,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
             json.put(attrId, attrJson);
         }
 
-        return null;
+        return json;
     }
 
     private Integer getAttrCumulativeValue(JSONObject jsonObj, String attrId) {
@@ -247,7 +258,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
             JSONArray dataSet = jsonObj.getJSONArray(ServiceCenterConstant.DATA_SET);
             if (dataSet != null && !dataSet.isEmpty()) {
                 for (Object o : dataSet) {
-                    JSONObject json = (JSONObject) o;
+                    JSONObject json = JsonUtil.getJson(o);
                     Integer value = json.getInteger("stat012");
                     if (attrId.equals(value)) {
                         return value;
@@ -271,7 +282,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
             JSONArray dataSet = jsonObj.getJSONArray(ServiceCenterConstant.DATA_SET);
             if (dataSet != null && !dataSet.isEmpty()) {
                 for (Object o : dataSet) {
-                    JSONObject json = (JSONObject) o;
+                    JSONObject json = JsonUtil.getJson(o);
                     Integer value = json.getInteger("stat011");
                     if (attrId.equals(value)) {
                         return value;
@@ -313,13 +324,19 @@ public class StatisticsBizImpl implements StatisticsBiz {
         Integer lastYear = year - 1;
         //yyyy-MM-dd
         String beginTime = json.getString("peid003");
-        //月
-        String month = beginTime.trim().substring(5, 7);
-        //日
-        String day = beginTime.trim().substring(8, 10);
 
         Calendar cl = Calendar.getInstance();
-        cl.set(lastYear, Integer.parseInt(month), Integer.parseInt(day));
+        if (StringUtils.isNotBlank(beginTime)) {
+            String[] times = beginTime.split("-");
+            if (times.length == 3) {
+                //月
+                String month = times[1];
+                //日
+                String day = times[2];
+
+                cl.set(lastYear, Integer.parseInt(month), Integer.parseInt(day));
+            }
+        }
 
         return cl;
 
@@ -407,9 +424,16 @@ public class StatisticsBizImpl implements StatisticsBiz {
             return null;
         }
 
-        JSONObject period = (JSONObject) todayArray.get(0);
+        JSONObject period = JsonUtil.getJson(todayArray.get(0));
         return period.getString(StatisticsConstant.ID);
 
+    }
+
+    public static void main(String[] args) {
+        Calendar cl = Calendar.getInstance();
+        cl.set(Calendar.DAY_OF_MONTH, 1);
+        String firstDay = DateUtil.parseFormatDate(cl.getTime(), DateConstant.FORMATE_YYYY_MM_DD);
+        System.out.println(firstDay);
     }
 
 }
