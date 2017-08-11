@@ -26,7 +26,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
  * @version
  * @see
  */
-@FeignClient(value = "serviceCenter-provider", fallback = HbaseClientFallback.class,url="http://192.168.13.34:2008")
+@FeignClient(value = "serviceCenter-provider", fallback = HbaseClientFallback.class)
 public interface HbaseClient {
 
     @RequestMapping(value = "/servicecenter/find", method = RequestMethod.POST)
@@ -41,7 +41,7 @@ public interface HbaseClient {
     
     @RequestMapping(value= "/servicecenter/update", method = RequestMethod.POST)
     Result update(@RequestBody String datas);
-    
+
     @RequestMapping(value= "/monitor/queryTreeNodeResource", method = RequestMethod.GET)
     Result queryTreeNodeResource(@RequestParam(value="orderId") String orderId,@RequestParam(value="startDate",defaultValue="") String startDate,
                                  @RequestParam(value="endDate",defaultValue="") String endDate, @RequestParam(value="excNodeId",defaultValue="") String excNodeId);

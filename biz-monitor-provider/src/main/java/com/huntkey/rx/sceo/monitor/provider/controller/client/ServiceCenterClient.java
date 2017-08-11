@@ -9,6 +9,7 @@
 package com.huntkey.rx.sceo.monitor.provider.controller.client;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,6 +26,17 @@ import com.huntkey.rx.commons.utils.rest.Result;
 public interface ServiceCenterClient {
 
     @RequestMapping(value = "/servicecenter/find", method = RequestMethod.POST)
-    Result queryServiceCenter(@RequestParam(value = "data") String data);
+    Result queryServiceCenter(@RequestBody String data);
+
+    /**
+     * 根据根节点ID 和时间查询出监管树所有节点
+     * @param edmcNameEn
+     * @param searchDate
+     * @return
+     */
+    @RequestMapping(value = "/servicecenter/business/monitors/trees/nodes", method = RequestMethod.GET)
+    Result getMonitorTreeNodes(@RequestParam(value = "edmcNameEn") String edmcNameEn,
+                               @RequestParam(value = "searchDate") String searchDate,
+                               @RequestParam(value = "rootNodeId") String rootNodeId);
 
 }
