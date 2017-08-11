@@ -1,37 +1,33 @@
 /**
  * Project Name:biz-monitor-common
- * File Name:ResourceTo.java
+ * File Name:TargetResourceTo.java
  * Package Name:com.huntkey.rx.sceo.monitor.commom.model
- * Date:2017年8月5日下午5:25:59
+ * Date:2017年8月9日下午5:56:08
  * Copyright (c) 2017 嘉源锐信 All Rights Reserved.
  *
 */
 
 package com.huntkey.rx.sceo.monitor.commom.model;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 /**
- * ClassName:ResourceTo 节点关联资源信息
- * Date:     2017年8月5日 下午5:25:59
+ * ClassName:TargetResourceTo 目标表关联资源属性集
+ * Date:     2017年8月9日 下午5:56:08
  * @author   lijie
  * @version  
  * @see 	 
  */
-public class ResourceTo {
+public class TargetResourceTo {
     
-    /**
-     * 关联资源id
-     */
     private String id;
     
-    /**
-     * 关联节点id
-     */
     private String pid;
     
     /**
      * 资源对象
      */
-    private String mtor020;
+    private String moni016;
 
     public String getId() {
         return id;
@@ -49,12 +45,13 @@ public class ResourceTo {
         this.pid = pid;
     }
 
-    public String getMtor020() {
-        return mtor020;
+    public String getMoni016() {
+        return moni016;
     }
-
-    public void setMtor020(String mtor020) {
-        this.mtor020 = mtor020;
+    
+    @JSONField(name="mtor020")
+    public void setMoni016(String moni016) {
+        this.moni016 = moni016;
     }
     
 }

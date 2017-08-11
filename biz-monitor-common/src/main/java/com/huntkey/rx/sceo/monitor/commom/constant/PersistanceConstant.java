@@ -69,4 +69,6 @@ public class PersistanceConstant {
     
     public static String MTOR_MTOR019B = "monitortreeorder.mtor019";
     
+    public static String PARAMS = "params";
+    
 }

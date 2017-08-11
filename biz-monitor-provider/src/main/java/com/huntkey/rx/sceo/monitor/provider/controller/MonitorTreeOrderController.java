@@ -9,7 +9,11 @@
 
 package com.huntkey.rx.sceo.monitor.provider.controller;
 
+import java.sql.Date;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,18 +22,27 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.constant.PersistanceConstant;
+import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
+import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.model.EdmClassTo;
 import com.huntkey.rx.sceo.monitor.commom.model.MonitorTreeOrderTo;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
+import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
+import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
+import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
+import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
 
 /**
  * ClassName:MonitorTreeOrderController 临时单据类
@@ -44,6 +57,12 @@ public class MonitorTreeOrderController {
     
     @Autowired
     private MonitorTreeOrderService service;
+    
+    @Autowired
+    private MonitorService mService;
+    
+    @Autowired
+    private RedisService redisService;
     
     /**
      * 
@@ -79,16 +98,16 @@ public class MonitorTreeOrderController {
         if(JsonUtil.isEmpity(resources))
             return result;
         
-        List<String> usedResourceIds = service.queryTreeNodeResource(orderId, node.getMtor011(), node.getMtor012(),null);
+        List<String> usedResourceIds = service.queryTreeNodeUsingResource(orderId, node.getMtor011(), node.getMtor012(),null);
         
         List<Object> datas = resources.parallelStream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
                 .collect(Collectors.toList());
         
-        int totalSize = datas == null ? 0 : datas.size();
+        int totalSize = datas.size();
         
         JSONObject obj = new JSONObject();
         obj.put("totalSize", totalSize);
-        obj.put("data", JsonUtil.isEmpity(datas)?null : datas.subList((currentPage-1)*pageSize < 0 ? 0 : (currentPage-1)*pageSize > totalSize?totalSize:(currentPage-1)*pageSize, (currentPage*pageSize)>totalSize?totalSize:currentPage*pageSize));
+        obj.put("data", totalSize == 0 ? null : datas.subList((currentPage-1)*pageSize < 0 ? 0 : (currentPage-1)*pageSize > totalSize?totalSize:(currentPage-1)*pageSize, (currentPage*pageSize)>totalSize?totalSize:currentPage*pageSize));
         result.setData(obj);
         return result;
     }
@@ -122,7 +141,7 @@ public class MonitorTreeOrderController {
            return result;
         
         // 查询已被节点使用的资源信息 - 集合2
-        List<String> usedResourceIds = service.queryTreeNodeResource(node.getPid(), startDate, endDate, nodeId);
+        List<String> usedResourceIds = service.queryTreeNodeUsingResource(node.getPid(), startDate, endDate, nodeId);
         if(JsonUtil.isEmpity(usedResourceIds))
             return result;
        
@@ -134,11 +153,9 @@ public class MonitorTreeOrderController {
     
     /**
      * 
-     * checkNodeResource: 节点时间区间修改检查
+     * addOtherNode: 将未分配的资源归类到其他节点上
      * @author lijie
-     * @param nodeId 节点ID
-     * @param startDate 生效时间
-     * @param endDate 失效时间
+     * @param orderId 临时单Id
      * @return
      */
     @RequestMapping(value="/addOtherNode", method = RequestMethod.GET)
@@ -146,30 +163,166 @@ public class MonitorTreeOrderController {
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
+        if(JsonUtil.isEmpity(orderId))
+            ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(),ErrorMessage._60004.getMsg());
+        // 查询未分配资源集合
+        MonitorTreeOrderTo order = service.queryOrder(orderId);
+        if(JsonUtil.isEmpity(order))
+            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),ErrorMessage._60005.getMsg());
+        String mtor003 = order.getMtor003();
+        EdmClassTo edmClass = service.getEdmClass(mtor003, PersistanceConstant.EDMPCODE);
+        if(JsonUtil.isEmpity(edmClass) || JsonUtil.isEmpity(edmClass.getEdmcNameEn()))
+            ApplicationException.throwCodeMesg(ErrorMessage._60008.getCode(),ErrorMessage._60008.getMsg());
+        String resourceEdmName = edmClass.getEdmcNameEn();
+        JSONArray resources = service.getAllResource(resourceEdmName);
+        if(JsonUtil.isEmpity(resources))
+            return result;
+        List<String> usedResourceIds = service.queryTreeNodeUsingResource(orderId, null, null,null);
+        List<Object> datas = resources.parallelStream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
+                .collect(Collectors.toList());
+        if(datas.size() == 0)
+            return result;
+
+        // 查询根节点 和 最后一个子节点
+        NodeTo rootNode = service.queryRootNode(orderId);
+        if(JsonUtil.isEmpity(rootNode))
+            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"根节点"+ErrorMessage._60005.getMsg());
+        NodeTo lastRootChildNode = service.queryRootChildrenNode(orderId, rootNode.getId());
+        
+        // 创建其他节点
+        String nodeId = null;
+        if(JsonUtil.isEmpity(lastRootChildNode)){
+            nodeId = mService.addNode(rootNode.getId(),0);
+        }else{
+            nodeId = mService.addNode(lastRootChildNode.getId(),2);
+        }
+        mService.addResource(nodeId, JsonUtil.getList(datas, NodeTo.class).parallelStream().map(NodeTo::getId).collect(Collectors.toList()).stream().toArray(String[]::new));
+        return result;
+    }
+    
+    /**
+     * 
+     * store: 临时单入库
+     * @author lijie
+     * @param orderId 临时单Id
+     * @return
+     */
+    @RequestMapping(value="/store", method = RequestMethod.GET)
+    public Result store(@RequestParam String orderId){
+       
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        if(JsonUtil.isEmpity(orderId))
+            ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(),ErrorMessage._60004.getMsg());
+        
+        MonitorTreeOrderTo order = service.queryOrder(orderId);
+        if(JsonUtil.isEmpity(order))
+            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"临时单" + ErrorMessage._60005.getMsg());
+        
+        // 根据EDM 取出对应的目标监管类
+        String mtor003 = order.getMtor003();
+        String edmName = service.queryEdmClassName(mtor003);
+        if(JsonUtil.isEmpity(edmName))
+            ApplicationException.throwCodeMesg(ErrorMessage._60008.getCode(),ErrorMessage._60008.getMsg());
+        
+        // 节点信息
+        List<NodeTo> treeNodes = service.queryTreeNode(orderId);
+        if(JsonUtil.isEmpity(treeNodes))
+            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"节点" + ErrorMessage._60005.getMsg());
+        
+        // 资源信息
+        List<ResourceTo> resources = service.queryTreeNodeResource(orderId, null, null, null);
+        Map<String, List<ResourceTo>> groupResource = resources.stream().collect(Collectors.groupingBy(ResourceTo::getPid));
+        
+        List<NodeDetailTo> nodes = new ArrayList<NodeDetailTo>();
+        treeNodes.stream().filter(s->ChangeType.valueOf(s.getMtor021()) != ChangeType.INVALID).forEach(s->{
+            NodeDetailTo nodeDetail = JsonUtil.getObject(JsonUtil.getJsonString(s), NodeDetailTo.class);
+            nodeDetail.setMtor019(groupResource.get(nodeDetail.getId()));
+            nodes.add(nodeDetail);
+        });
+        
+        ChangeType type = ChangeType.valueOf(order.getMtor002());
+        
+        switch(type){
+            case ADD:
+                break;
+            case UPDATE:
+                // 更新根节点信息
+                String targetRootNodeId = order.getMtor004();
+                if(StringUtil.isNullOrEmpty(targetRootNodeId))
+                    ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"目标根节点" + ErrorMessage._60005.getMsg());
+                NodeDetailTo node = nodes.stream().filter(s -> JsonUtil.isEmpity(s.getMtor013())).findFirst().get();
+                TargetNodeTo targetNode = JsonUtil.getObject(JsonUtil.getJsonString(node), TargetNodeTo.class);
+                targetNode.setId(targetRootNodeId);
+                node.getMtor019().stream().forEach(s -> {
+                    s.setId("");
+                    s.setPid(targetRootNodeId);
+                });
+               service.updateTargetNode(edmName, targetNode);
+               
+               // 更新其他节点信息(失效日期大于当天的，全部置为当天)
+               JSONArray targetChildNodes = service.getTargetAllChildNode(edmName, targetRootNodeId, new Date(System.currentTimeMillis()).toString());
+               Map<String, Object> map = new HashMap<String, Object>();
+               map.put("moni005", new Date(System.currentTimeMillis()).toString());
+               targetChildNodes = JsonUtil.addAttr(targetChildNodes, map);
+               service.batchUpdateTargetNode(edmName, targetChildNodes);
+               
+               nodes.remove(node);
+               break;
+            default:
+                ApplicationException.throwCodeMesg(ErrorMessage._60000.getCode(),"变更标记" + ErrorMessage._60000.getMsg());
+        }
+        
+        // 新增节点信息
+        List<TargetNodeTo> targetNodes = JSON.parseArray(JsonUtil.getJsonArrayString(nodes), TargetNodeTo.class);
+        targetNodes.stream().forEach(s->{
+            s.setId("");
+            if(!JsonUtil.isEmpity(s.getMoni015()))
+                s.getMoni015().stream().forEach(t->{
+                    t.setId("");
+                    t.setPid("");
+                });
+         });
+        service.batchAddTargetNode(edmName, JSON.parseArray(JSON.toJSONString(targetNodes)));
+        return result;
+    }
+    
+    /**
+     * 
+     * queryNotUsingResource: 撤销操作
+     * @author lijie
+     * @param orderId 临时单ID
+     * @return
+     */
+    @RequestMapping(value="/revoked", method = RequestMethod.GET)
+    public Result revoked(@RequestParam String orderId){
+       
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
         
         if(JsonUtil.isEmpity(orderId))
             ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(),ErrorMessage._60004.getMsg());
-
-        NodeTo node = service.queryNode(orderId);
-        if(JsonUtil.isEmpity(node) || JsonUtil.isEmpity(node.getPid()))
-            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),ErrorMessage._60005.getMsg());
-    
-        // 查询当前节点已经拥有的资源 - 集合1
-       List<ResourceTo> nodeResources = service.queryResource(orderId);
-       
-       if(JsonUtil.isEmpity(nodeResources))
-           return result;
+        if(redisService.size(orderId) == 0)
+            ApplicationException.throwCodeMesg(ErrorMessage._60011.getCode(), ErrorMessage._60011.getMsg());
+        if(redisService.size(orderId) == 1)
+            result.setData(new RevokedTo(null, OperateType.INITIALIZE));
+        RevokedTo re = (RevokedTo)redisService.lPop(orderId);
         
-        // 查询已被节点使用的资源信息 - 集合2
-        List<String> usedResourceIds = service.queryTreeNodeResource(node.getPid(), null, null, "");
-        if(JsonUtil.isEmpity(usedResourceIds))
-            return result;
-       
-        // 查询  集合1 和 集合2 的id是否有重合部分
-        if(nodeResources.parallelStream().anyMatch(re -> usedResourceIds.contains(re.getMtor020())))
-            ApplicationException.throwCodeMesg(ErrorMessage._60006.getCode(),ErrorMessage._60006.getMsg());
+        switch(re.getType()){
+            case NODE:
+                // 更新 新增
+                
+                break;
+            case DETAIL:
+                // 只是更新节点信息 - 资源信息等
+                
+                break;
+             default:
+                 ApplicationException.throwCodeMesg(ErrorMessage._60000.getCode(), ErrorMessage._60000.getMsg());
+        }
         return result;
-    }
+    } 
+    
     
 }
 

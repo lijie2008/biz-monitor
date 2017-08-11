@@ -14,8 +14,8 @@ import com.alibaba.druid.pool.DruidDataSource;
 /**
  * Created by xuyf on 2017/4/27 0027.
  */
-@Configuration(value = "MybatisConfiguration")
-@MapperScan("com.huntkey.rx.sceo.monitor.provider.dao")
+@Configuration
+@MapperScan("com.huntkey.rx.sceo.monitor.provider.orm")
 public class MybatisConfiguration {
 
     @Value("${druid.jdbc.driveClassName}")
@@ -91,4 +91,5 @@ public class MybatisConfiguration {
         }
         return datasource;
     }
+    
 }

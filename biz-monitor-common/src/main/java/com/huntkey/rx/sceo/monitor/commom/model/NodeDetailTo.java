@@ -9,7 +9,6 @@
 
 package com.huntkey.rx.sceo.monitor.commom.model;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -19,9 +18,7 @@ import java.util.List;
  * @version  
  * @see 	 
  */
-public class NodeDetailTo extends NodeTo implements Serializable{
-    
-    private static final long serialVersionUID = 1L;
+public class NodeDetailTo extends NodeTo {
     
     /**
      * 关联资源对象集合
@@ -35,5 +32,6 @@ public class NodeDetailTo extends NodeTo implements Serializable{
     public void setMtor019(List<ResourceTo> mtor019) {
         this.mtor019 = mtor019;
     }
+
 }
 

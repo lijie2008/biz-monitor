@@ -9,7 +9,6 @@
 
 package com.huntkey.rx.sceo.monitor.commom.model;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -19,9 +18,7 @@ import java.util.List;
  * @version  
  * @see 	 
  */
-public class MonitorTreeOrderDetailTo extends MonitorTreeOrderTo implements Serializable{
-    
-    private static final long serialVersionUID = 1L;
+public class MonitorTreeOrderDetailTo extends MonitorTreeOrderTo {
     
     /**
      * 关联的节点集合

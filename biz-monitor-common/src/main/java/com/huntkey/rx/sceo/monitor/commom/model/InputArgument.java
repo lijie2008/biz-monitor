@@ -21,9 +21,6 @@ public class InputArgument {
     // 6. 分页信息
     private JSONObject pagenation;
 
-    // 8. 需要入索引的字段
-    private String [] esFileds;
-
     // 9. 需要排序的字段
     private JSONArray orders;
 
@@ -86,15 +83,6 @@ public class InputArgument {
         this.columns = columns;
     }
 
-
-    public String[] getEsFileds() {
-        return esFileds;
-    }
-
-    public void setEsFileds(String[] esFileds) {
-        this.esFileds = esFileds;
-    }
-
     public JSONArray getOrders() {
         return orders;
     }
@@ -119,13 +107,10 @@ public class InputArgument {
         if(pagenation!=null){
         	search.put("pagenation", pagenation);
         }
-        if(esFileds!=null && esFileds.length>0){
-        	jsonObject.put("esFileds", esFileds);
-        }
         if(!StringUtil.isNullOrEmpty(orders)){
         	search.put("orders", orders);
         }
-        if(search!=null){
+        if(search!=null && !search.isEmpty()){
         	jsonObject.put("search", search);
         }
         return jsonObject.toString();

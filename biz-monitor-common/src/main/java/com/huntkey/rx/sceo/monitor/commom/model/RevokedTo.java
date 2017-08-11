@@ -9,8 +9,6 @@
 
 package com.huntkey.rx.sceo.monitor.commom.model;
 
-import java.io.Serializable;
-
 import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
 
 /**
@@ -20,10 +18,8 @@ import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
  * @version  
  * @see 	 
  */
-public class RevokedTo implements Serializable{
+public class RevokedTo {
     
-    private static final long serialVersionUID = 1L;
-
     private Object obj;
     
     private OperateType type;
@@ -32,6 +28,11 @@ public class RevokedTo implements Serializable{
         return obj;
     }
 
+    public RevokedTo(Object obj, OperateType type){
+        this.obj = obj;
+        this.type = type;
+    }
+    
     public void setObj(Object obj) {
         this.obj = obj;
     }

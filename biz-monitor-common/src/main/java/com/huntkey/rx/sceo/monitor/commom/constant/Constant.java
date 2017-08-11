@@ -121,6 +121,10 @@ public interface Constant {
     
     String MTOR019="monitortreeorder.mtor019";//监管树临时单_资源集合表
     
+    String MTOR009="mtor009";//主管人
+    
+    String MTOR010="mtor010";//协管人
+    
     String MTOR012="mtor012";//监管树临时单_资源集合表_失效时间字段
     
     String MTOR020="mtor020";//资源对象ID
@@ -135,9 +139,10 @@ public interface Constant {
     
     String MTOR021="mtor021";//监管更新标记
     
+    String NULL="null";//空标记
     
+    String STAFF="staff";//员工表
     
-    
-    
+    String STAF002="staf002";//员工姓名字段
 }
 

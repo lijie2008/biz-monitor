@@ -16,6 +16,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.EdmClassTo;
 import com.huntkey.rx.sceo.monitor.commom.model.MonitorTreeOrderTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
+import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 
 /**
  * ClassName:MonitorTreeOrderService 临时单服务
@@ -55,7 +56,7 @@ public interface MonitorTreeOrderService {
     
     /**
      * 
-     * queryTreeNode: 查询当前临时单里已使用的资源信息
+     * queryTreeNodeUsingResource: 查询当前临时单里已使用的资源信息
      * @author lijie
      * @param orderId
      * @param startDate
@@ -63,7 +64,7 @@ public interface MonitorTreeOrderService {
      * @param excNodeId - 此id的资源不统计
      * @return
      */
-    List<String> queryTreeNodeResource(String orderId, String startDate, String endDate,String excNodeId);
+    List<String> queryTreeNodeUsingResource(String orderId, String startDate, String endDate,String excNodeId);
     
     /**
      * 
@@ -83,5 +84,94 @@ public interface MonitorTreeOrderService {
      * @return
      */
     JSONArray getAllResource(String edmName);
+    
+    /**
+     * 
+     * queryRootNode:查询树根节点
+     * @author lijie
+     * @param orderId 临时单ID
+     * @return
+     */
+    NodeTo queryRootNode(String orderId);
+    
+    /**
+     * 
+     * queryRootChildrenNode: 查询根节点下的子节点的 最后一个子节点
+     * @author lijie
+     * @param orderId
+     * @param rootNodeId
+     * @return
+     */
+    NodeTo queryRootChildrenNode(String orderId,String rootNodeId);
+    
+    /**
+     * 
+     * queryTreeNodeResource: 查询当前临时单里已使用的资源信息
+     * @author lijie
+     * @param orderId
+     * @param startDate
+     * @param endDate - 可为空 空代表最大的失效日期
+     * @param excNodeId - 此id的资源不统计
+     * @return
+     */
+    List<ResourceTo> queryTreeNodeResource(String orderId, String startDate, String endDate,String excNodeId);
+    
+    /**
+     * 
+     * queryTreeNodeResource: 查询临时单下所有节点信息
+     * @author lijie
+     * @param orderId
+     * @return
+     */
+    List<NodeTo> queryTreeNode(String orderId);
+    
+    /**
+     * 
+     * queryEdmClassName: 查询Edm类名称
+     * @author lijie
+     * @param id 类ID
+     * @return
+     */
+    String queryEdmClassName(String id);
+    
+    /**
+     * 
+     * updateTargetNode:(描述这个方法的作用)
+     * @author lijie
+     * @param edmName 目标表的edmName
+     * @param node 当前节点信息
+     */
+    void updateTargetNode(String edmName , TargetNodeTo node);
+    
+    /**
+     * 
+     * getTargetAllChildNode: 获取目标表当前节点下的所有子节点信息
+     * @author lijie
+     * @param edmName 目标类
+     * @param nodeId 上级节点id
+     * @param endDate 失效时间
+     * @return
+     */
+    JSONArray getTargetAllChildNode(String edmName, String nodeId,String endDate);
+    
+    /**
+     * 
+     * batchUpdateTargetNode: 批量更新目标表数据
+     * @author lijie
+     * @param edmName 目标类
+     * @param nodes 目标表节点集合
+     * @return
+     */
+    void batchUpdateTargetNode(String edmName, JSONArray nodes);
+    
+    /**
+     * 
+     * batchAddTargetNode: 批量新增目标表数据
+     * @author lijie
+     * @param edmName 目标类
+     * @param nodes 目标表节点集合
+     * @return
+     */
+    void batchAddTargetNode(String edmName, JSONArray nodes);
 }
 
