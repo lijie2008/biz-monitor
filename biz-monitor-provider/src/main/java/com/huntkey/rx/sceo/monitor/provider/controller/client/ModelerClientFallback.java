@@ -47,6 +47,13 @@ public class ModelerClientFallback implements ModelerClient{
         return result;
     }
 
+    @Override
+    public Result getEntityByVersionAndEnglishName(String edmdVer, String edmcNameEn) {
+        
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 
 }
 
