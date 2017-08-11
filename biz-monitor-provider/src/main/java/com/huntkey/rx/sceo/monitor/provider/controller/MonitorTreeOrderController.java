@@ -279,11 +279,11 @@ public class MonitorTreeOrderController {
             s.setId("");
             if(!JsonUtil.isEmpity(s.getMoni015()))
                 s.getMoni015().stream().forEach(t->{
-                    t.setId("");
-                    t.setPid("");
+                    t.setId(null);
+                    t.setPid(null);
                 });
          });
-        service.batchAddTargetNode(edmName, JSON.parseArray(JSON.toJSONString(targetNodes)));
+        service.batchAdd(edmName, JSON.parseArray(JSON.toJSONString(targetNodes)));
         return result;
     }
     
@@ -314,12 +314,15 @@ public class MonitorTreeOrderController {
                 
                 break;
             case DETAIL:
-                // 只是更新节点信息 - 资源信息等
-                
+                // 只是更新节点信息 - 新增资源信息等
+                NodeDetailTo to = JSON.parseObject(JSON.toJSONString(re), NodeDetailTo.class);
+                service.updateNodeAndResource(PersistanceConstant.MTOR_MTOR005A,to);
+                re.setObj(to.getId());
                 break;
              default:
                  ApplicationException.throwCodeMesg(ErrorMessage._60000.getCode(), ErrorMessage._60000.getMsg());
         }
+        result.setData(re);
         return result;
     } 
     

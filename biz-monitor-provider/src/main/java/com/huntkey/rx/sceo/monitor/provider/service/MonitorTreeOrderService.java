@@ -14,6 +14,7 @@ import java.util.List;
 import com.alibaba.fastjson.JSONArray;
 import com.huntkey.rx.sceo.monitor.commom.model.EdmClassTo;
 import com.huntkey.rx.sceo.monitor.commom.model.MonitorTreeOrderTo;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
@@ -166,12 +167,41 @@ public interface MonitorTreeOrderService {
     
     /**
      * 
-     * batchAddTargetNode: 批量新增目标表数据
+     * batchAdd: 批量新增数据
      * @author lijie
      * @param edmName 目标类
      * @param nodes 目标表节点集合
      * @return
      */
-    void batchAddTargetNode(String edmName, JSONArray nodes);
+    void batchAdd(String edmName, JSONArray nodes);
+
+    /**
+     * 
+     * updateNodeAndResource: 更新临时单节点和资源信息
+     * @author lijie
+     * @param edmName edm类名
+     * @param to
+     */
+    void updateNodeAndResource(String edmName, NodeDetailTo to);
+    
+    /**
+     * 
+     * updateNode: 更新临时单节点信息
+     * @author lijie
+     * @param edmName edm类名
+     * @param to
+     */
+    void updateNode(String edmName, NodeDetailTo to);
+    
+    /**
+     * 
+     * batchDeleteResource: 批量删除临时单资源信息
+     * @author lijie
+     * @param edmName edm
+     * @param ids 资源id信息
+     */
+    void batchDeleteResource(String edmName, List<String> ids);
+    
+    
 }
 

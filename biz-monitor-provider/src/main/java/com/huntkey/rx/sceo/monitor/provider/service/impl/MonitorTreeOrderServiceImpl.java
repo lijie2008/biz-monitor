@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,6 +30,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.ConditionParam;
 import com.huntkey.rx.sceo.monitor.commom.model.EdmClassTo;
 import com.huntkey.rx.sceo.monitor.commom.model.FullInputArgument;
 import com.huntkey.rx.sceo.monitor.commom.model.MonitorTreeOrderTo;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.PagenationParam;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
@@ -367,11 +369,49 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     }
 
     @Override
-    public void batchAddTargetNode(String edmName, JSONArray nodes) {
+    public void batchAdd(String edmName, JSONArray nodes) {
         
         Result result = client.add(new FullInputArgument(mergeParam(edmName, nodes)).getJson().toString());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), ErrorMessage._60007.getMsg());
+    }
+
+    @Override
+    public void updateNodeAndResource(String edmName, NodeDetailTo to) {
+        List<ResourceTo> resources = queryResource(to.getId());
+        List<String> resourceIds = resources.parallelStream().map(ResourceTo::getId).collect(Collectors.toList());
+        batchDeleteResource(PersistanceConstant.MTOR_MTOR019B, resourceIds);
+        resources = to.getMtor019();
+        to.setMtor019(null);
+        
+        // 更新节点
+        updateNode(edmName,to);
+        // 新增资源信息
+        if(resources == null || resources.size() == 0)
+            return;
+        resources.parallelStream().forEach(s->{
+            s.setId(null);
+        });
+        batchAdd(PersistanceConstant.MTOR_MTOR019B, JSONArray.parseArray(JSON.toJSONString(resources)));
+    }
+
+    @Override
+    public void batchDeleteResource(String edmName, List<String> ids) {
+        Result result = client.delete(new FullInputArgument( mergeParam(edmName, JSON.parseArray(JSON.toJSONString(ids)))).toString());
+        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
+            ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), ErrorMessage._60007.getMsg());
+    }
+
+    @Override
+    public void updateNode(String edmName, NodeDetailTo to) {
+        
+        JSONArray array = new JSONArray();
+        array.add(to);
+        // 修改节点信息
+        Result result = client.update(new FullInputArgument( mergeParam(edmName, array)).toString());
+        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
+            ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), ErrorMessage._60007.getMsg());
+        
     }   
 }
 
