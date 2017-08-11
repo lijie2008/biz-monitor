@@ -23,6 +23,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.biz.EdmPropertyGroupBiz;
+import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerProviderClient;
 import com.huntkey.rx.sceo.monitor.provider.orm.dao.EdmPropertyGroupDataMapper;
 
@@ -45,6 +46,9 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
     
     @Autowired
     ModelerProviderClient modelerProviderClient;
+    
+    @Autowired
+    ModelerClient modelerClient;
 
     @Override
     public Result getMonitorIds(JSONObject jsonObject) {
@@ -88,7 +92,11 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
                             Boolean bool = (Boolean) r.getData();
                             //v结果为true时 排除查询条件自身
                             if(bool && !edpgEdmcId.equals(jsonObject.get("edpg_edmc_id"))){
-                                jsonArray.add(JsonUtil.getJson(m));
+                                Result re = modelerClient.queryEdmClassById(edpgEdmcId);
+                                if(re.getRetCode() == Result.RECODE_SUCCESS && re.getData() != null){
+                                    JSONObject js = JsonUtil.getJson(re.getData());
+                                    jsonArray.add(js.get("edmcNameEn"));
+                                }
                             }
                         }
                     }
