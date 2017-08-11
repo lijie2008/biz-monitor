@@ -11,11 +11,9 @@ package com.huntkey.rx.sceo.monitor.provider.config;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -71,7 +69,7 @@ public class RevokedAspect {
                 
             case NODE: 
                 String orderId = getNode(key).getPid();
-                originalMap.put(key, getTree(orderId));
+                originalMap.put(key, service.getAllNodesAndResource(orderId));
                 break;
             case DETAIL: 
                 originalMap.put(key,  getNode(key));
@@ -105,7 +103,7 @@ public class RevokedAspect {
                     return;
                 if(!redisService.isEmpity(orderId))
                    redisService.delete(orderId);
-                redisService.lPush(orderId, new RevokedTo(getTree(orderId), revoked.type()));
+                redisService.lPush(orderId, new RevokedTo(service.getAllNodesAndResource(orderId), revoked.type()));
                 return;
                 
             case NODE:
@@ -156,32 +154,6 @@ public class RevokedAspect {
             }
         }
         return null;
-    }
-    
-    /**
-     * 
-     * getTree:查询监管树节点结构
-     * @author lijie
-     * @param key 监管树id
-     * @return
-     */
-    private List<NodeDetailTo> getTree(String key) {
-        List<NodeTo> treeNodes = service.queryTreeNode(key);
-        if(JsonUtil.isEmpity(treeNodes))
-            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"节点" + ErrorMessage._60005.getMsg());
-        
-        // 资源信息
-        List<ResourceTo> allResource = service.queryTreeNodeResource(key, null, null, null);
-        Map<String, List<ResourceTo>> groupResource = allResource.stream().collect(Collectors.groupingBy(ResourceTo::getPid));
-        
-        List<NodeDetailTo> nodes = new ArrayList<NodeDetailTo>();
-        treeNodes.stream().forEach(s->{
-            NodeDetailTo nodeDetail = JsonUtil.getObject(JsonUtil.getJsonString(s), NodeDetailTo.class);
-            nodeDetail.setMtor019(groupResource.get(nodeDetail.getId()));
-            nodes.add(nodeDetail);
-        });
-        
-        return nodes;
     }
     
     /**

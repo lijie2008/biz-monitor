@@ -157,13 +157,13 @@ public interface MonitorTreeOrderService {
     
     /**
      * 
-     * batchUpdateTargetNode: 批量更新目标表数据
+     * batchUpdate: 批量更新目标表数据
      * @author lijie
      * @param edmName 目标类
      * @param nodes 目标表节点集合
      * @return
      */
-    void batchUpdateTargetNode(String edmName, JSONArray nodes);
+    void batchUpdate(String edmName, JSONArray nodes);
     
     /**
      * 
@@ -202,6 +202,24 @@ public interface MonitorTreeOrderService {
      */
     void batchDeleteResource(String edmName, List<String> ids);
     
+    /**
+     * 
+     * queryTargetNode: 根据上级节点查询所有的节点信息
+     * @author lijie
+     * @param edmName edm
+     * @param fieldName 字段名称
+     * @param orderId 临时单id
+     */
+    List<NodeDetailTo> queryTargetNode(String edmName, String fieldName, String orderId);
+    
+    /**
+     * 
+     * getAllNodesAndResource: 查询临时单下所有的节点和资源信息
+     * @author lijie
+     * @param orderId 临时单ID
+     * @return
+     */
+    List<NodeDetailTo> getAllNodesAndResource(String orderId);
     
 }
 

@@ -16,14 +16,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailTo;
-import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
-import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 
 /**
  * ClassName:JsonUtil json操作工具类
@@ -346,15 +342,4 @@ public class JsonUtil {
     	}
         return false;
     }
-    
-    public static void main(String[] args) {
-        List<NodeDetailTo> list = new ArrayList<NodeDetailTo>();
-        NodeDetailTo to = new NodeDetailTo();
-        to.setId("1111111");
-        to.setMtor006("1asdasdasdasd");
-        list.add(to);
-        
-        System.out.println(JSON.toJSON(JSON.parseArray(JSON.toJSONString(list), TargetNodeTo.class).get(0)));
-    }
-    
 }

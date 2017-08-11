@@ -12,6 +12,7 @@ package com.huntkey.rx.sceo.monitor.provider.service.impl;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -342,7 +343,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     }
 
     @Override
-    public void batchUpdateTargetNode(String edmName, JSONArray nodes) {
+    public void batchUpdate(String edmName, JSONArray nodes) {
         
         Result result = client.update(new FullInputArgument(mergeParam(edmName, nodes)).getJson().toString());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
@@ -412,6 +413,49 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), ErrorMessage._60007.getMsg());
         
-    }   
+    }
+
+    @Override
+    public List<NodeDetailTo> queryTargetNode(String edmName, String fieldName, String orderId) {
+        ConditionParam cnd = new ConditionParam();
+        cnd.setAttr(fieldName);
+        cnd.setOperator("=");
+        cnd.setValue(orderId);
+        List<ConditionParam> cnds = new ArrayList<ConditionParam>();
+        cnds.add(cnd);
+        Result result = client.find(new FullInputArgument(queryParam(edmName, cnds, null, null)).toString());
+        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
+            ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), ErrorMessage._60007.getMsg());
+        if(!JsonUtil.isEmpity(result.getData())){
+            JSONObject data = JsonUtil.getJson(result.getData());
+            JSONArray dataset = data.getJSONArray(PersistanceConstant.DATASET);
+            if(!JsonUtil.isEmpity(dataset)){
+                return JSON.parseArray(dataset.toJSONString(), NodeDetailTo.class);
+            }
+        }
+        
+        return null;
+        
+    }
+
+    @Override
+    public List<NodeDetailTo> getAllNodesAndResource(String orderId) {
+        List<NodeTo> treeNodes = queryTreeNode(orderId);
+        if(JsonUtil.isEmpity(treeNodes))
+            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"节点" + ErrorMessage._60005.getMsg());
+        
+        // 资源信息
+        List<ResourceTo> allResource = queryTreeNodeResource(orderId, null, null, null);
+        Map<String, List<ResourceTo>> groupResource = allResource.stream().collect(Collectors.groupingBy(ResourceTo::getPid));
+        
+        List<NodeDetailTo> nodes = new ArrayList<NodeDetailTo>();
+        treeNodes.stream().forEach(s->{
+            NodeDetailTo nodeDetail = JsonUtil.getObject(JsonUtil.getJsonString(s), NodeDetailTo.class);
+            nodeDetail.setMtor019(groupResource.get(nodeDetail.getId()));
+            nodes.add(nodeDetail);
+        });
+        return nodes;
+    }
+    
 }
 
