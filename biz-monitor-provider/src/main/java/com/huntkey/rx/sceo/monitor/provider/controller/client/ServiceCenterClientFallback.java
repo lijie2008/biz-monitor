@@ -34,5 +34,13 @@ public class ServiceCenterClientFallback implements ServiceCenterClient{
         return result;
     }
 
+    @Override
+    public Result getMonitorTreeNodes(String edmcNameEn, String searchDate, String rootNodeId) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("监管服务无法连接共享服务中心树节点查询服务！");
+        return result;
+    }
+
 }
 

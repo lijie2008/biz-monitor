@@ -22,10 +22,20 @@ public class MonitorTreeController {
     @GetMapping("/trees/nodes")
     public Result getMonitorTreeNodes(@RequestParam String edmcNameEn,
                                       @RequestParam String searchDate,
-                                      @RequestParam String rootNodeId){
+                                      @RequestParam(required = false,defaultValue = "") String rootNodeId){
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(monitorTreeService.getMonitorTreeNodes(edmcNameEn,searchDate,rootNodeId));
+        return result;
+    }
+
+    @GetMapping
+    public Result getMonitors(@RequestParam(required = false) String treeName,
+                              @RequestParam String beginTime,
+                              @RequestParam String endTime){
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(monitorTreeService.getEntityByVersionAndEnglishName(treeName,beginTime,endTime));
         return result;
     }
 }

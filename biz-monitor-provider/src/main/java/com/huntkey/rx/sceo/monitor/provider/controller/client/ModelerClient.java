@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.validation.Valid;
+
 
 @FeignClient(value = "modeler-provider", fallback = ModelerClientFallback.class)
 public interface ModelerClient {
@@ -59,5 +61,15 @@ public interface ModelerClient {
      */
     @RequestMapping(value = "/properties/values", method = RequestMethod.GET)
     Result getEdmcNameEn(@RequestParam(value="classId") String classId, @RequestParam(value="edmpCode") String edmpCode);
+
+    /**
+     * 根据modeler版本和类英文名查询类的所有实体子孙类
+     * @param edmdVer
+     * @param edmcNameEn
+     * @return
+     */
+    @RequestMapping(value = "/classes/entity",method = RequestMethod.GET)
+    Result getEntityByVersionAndEnglishName(@RequestParam(value = "edmdVer") String edmdVer,
+                                            @RequestParam(value = "edmcNameEn") String edmcNameEn);
 }
 

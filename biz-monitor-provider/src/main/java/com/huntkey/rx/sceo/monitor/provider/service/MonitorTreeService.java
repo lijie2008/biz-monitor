@@ -18,4 +18,13 @@ public interface MonitorTreeService {
      * @return
      */
     JSONArray getMonitorTreeNodes(String edmcNameEn, String searchDate, String rootNodeId);
+
+    /**
+     * 查询监管树类列表，并根据查询条件统计监管类下监管树的数量
+     * @param treeName
+     * @param beginTime
+     * @param endTime
+     * @return
+     */
+    JSONArray getEntityByVersionAndEnglishName(String treeName,String beginTime,String endTime);
 }

@@ -25,7 +25,7 @@ import com.huntkey.rx.sceo.monitor.client.service.StatisticsClient;
  * @author   caozhenx
  */
 @RestController
-@RequestMapping("/client/statistics")
+@RequestMapping("/v1/statistics")
 public class StatisticsController {
 
     @Autowired
