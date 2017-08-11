@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.client.service.hystrix.EdmPropertyGroupClientFallback;
 
 /**
  * ClassName:StatisticsService

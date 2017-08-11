@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.client.service.hystrix.StatisticsClientFallback;
 
 /**
  * ClassName:StatisticsService

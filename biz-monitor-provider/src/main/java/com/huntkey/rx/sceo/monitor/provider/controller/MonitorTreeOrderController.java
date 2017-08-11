@@ -249,7 +249,7 @@ public class MonitorTreeOrderController {
     
     /**
      * 
-     * queryNotUsingResource: 撤销操作
+     * revoked: 撤销操作
      * @author lijie
      * @param orderId 临时单ID
      * @return

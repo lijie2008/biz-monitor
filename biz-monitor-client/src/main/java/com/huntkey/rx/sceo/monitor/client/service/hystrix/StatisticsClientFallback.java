@@ -7,32 +7,40 @@
  *
 */
 
-package com.huntkey.rx.sceo.monitor.client.service;
+package com.huntkey.rx.sceo.monitor.client.service.hystrix;
 
 import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.client.service.StatisticsClient;
 
 /**
  * ClassName:StatisticsClientFallback
  * Function: 
  * Date:     2017年6月30日 下午5:39:00
- * @author   lijie
+ * @author   caozhenx
  * @version  
  * @see 	 
  */
 @Component
-public class EdmPropertyGroupClientFallback implements EdmPropertyGroupClient{
+public class StatisticsClientFallback implements StatisticsClient{
 
     @Override
-    public Result getMonitorIds(JSONObject data) {
+    public Result queryPeriod(JSONObject data) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("biz monitor provider client getMonitorIds fallback");
+        result.setErrMsg("statistics client queryPeriod fallback");
         return result;
     }
 
+    @Override
+    public Result queryStatistics(JSONObject data) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("statistics client queryStatistics fallback");
+        return result;
+    }
 
 
 
