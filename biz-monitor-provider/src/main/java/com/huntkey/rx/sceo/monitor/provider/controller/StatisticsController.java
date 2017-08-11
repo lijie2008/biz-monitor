@@ -39,7 +39,6 @@ public class StatisticsController {
     
     @RequestMapping("/query/statistics")
     public Result getStatistics(@RequestBody JSONObject data) {
-        System.out.println(data.toJSONString());
         return statisticsBiz.queryStatistics(data);
     }
 
