@@ -19,6 +19,15 @@ public class MonitorTreeController {
     @Autowired
     MonitorTreeService monitorTreeService;
 
+    /**
+     * 查询某个时间的指定监管树所有节点
+     * 若有根节点ID则根据根节点ID查询
+     * 无根节点ID则先根据时间查询出根节点ID
+     * @param edmcNameEn
+     * @param searchDate
+     * @param rootNodeId
+     * @return
+     */
     @GetMapping("/trees/nodes")
     public Result getMonitorTreeNodes(@RequestParam String edmcNameEn,
                                       @RequestParam String searchDate,
@@ -29,10 +38,17 @@ public class MonitorTreeController {
         return result;
     }
 
+    /**
+     * 查询监管树类列表，并根据查询条件统计监管类下监管树的数量
+     * @param treeName
+     * @param beginTime
+     * @param endTime
+     * @return
+     */
     @GetMapping
     public Result getMonitors(@RequestParam(required = false) String treeName,
-                              @RequestParam String beginTime,
-                              @RequestParam String endTime){
+                              @RequestParam(required = false) String beginTime,
+                              @RequestParam(required = false) String endTime){
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(monitorTreeService.getEntityByVersionAndEnglishName(treeName,beginTime,endTime));

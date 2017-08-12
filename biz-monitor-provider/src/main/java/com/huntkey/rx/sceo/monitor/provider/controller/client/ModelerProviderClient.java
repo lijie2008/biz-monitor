@@ -21,6 +21,7 @@ import com.huntkey.rx.commons.utils.rest.Result;
  * @author caozhenx
  */
 @FeignClient(value = "modeler-provider", fallback = ModelerProviderClientFallback.class)
+//@FeignClient(value = "modeler-provider", fallback = ModelerProviderClientFallback.class,url = "http://192.168.13.34:2002")
 public interface ModelerProviderClient {
 
     @RequestMapping(value = "/classes/child/{id}/{sid}")

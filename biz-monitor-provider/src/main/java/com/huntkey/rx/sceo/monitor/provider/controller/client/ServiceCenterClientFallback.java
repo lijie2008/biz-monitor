@@ -24,7 +24,13 @@ import com.huntkey.rx.commons.utils.rest.Result;
  */
 @Component
 public class ServiceCenterClientFallback implements ServiceCenterClient{
-
+    @Override
+    public Result countByConditions(String data) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("countByConditions监管服务无法连接共享服务中心树节点查询服务！");
+        return result;
+    }
 
     @Override
     public Result queryServiceCenter(String data) {
@@ -42,5 +48,12 @@ public class ServiceCenterClientFallback implements ServiceCenterClient{
         return result;
     }
 
+    @Override
+    public Result getMonitorClasses(String treeName, String beginTime, String endTime, String edmdVer, String edmcNameEn) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("监管服务无法连接共享服务中心getMonitorClasses服务！");
+        return result;
+    }
 }
 

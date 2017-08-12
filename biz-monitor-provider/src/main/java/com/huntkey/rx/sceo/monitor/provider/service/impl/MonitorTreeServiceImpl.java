@@ -6,10 +6,10 @@ import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.model.ConditionParam;
-import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,14 +22,20 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 
     @Autowired
     ServiceCenterClient serviceCenterClient;
-
-    @Autowired
-    ModelerClient modelerClient;
+    @Value("${edm.version}")
+    private String edmdVer;
+    @Value("${edm.edmcNameEn.monitor}")
+    private String edmcNameEn;
 
     @Override
-    public JSONArray getEntityByVersionAndEnglishName(String treeName, String beginTime, String endTime) {
-        modelerClient.getEntityByVersionAndEnglishName("v1.0","monitor");
-        return null;
+    public Result getEntityByVersionAndEnglishName(String treeName, String beginTime, String endTime) {
+
+
+        Result monitorClassesResult = serviceCenterClient.getMonitorClasses(treeName, beginTime, endTime, edmdVer, edmcNameEn);
+        if (monitorClassesResult.getRetCode() != Result.RECODE_SUCCESS) {
+            throw new ServiceException(monitorClassesResult.getErrMsg());
+        }
+        return monitorClassesResult;
     }
 
     @Override
@@ -101,7 +107,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                 if (childrenNpdeResult.getRetCode() != Result.RECODE_SUCCESS) {
                     throw new ServiceException(childrenNpdeResult.getErrMsg());
                 } else {
-                    JSONArray childrenArray = new JSONArray((List<Object>)childrenNpdeResult.getData());
+                    JSONArray childrenArray = new JSONArray((List<Object>) childrenNpdeResult.getData());
                     childrenArray.add(rootNode);
                     return childrenArray;
                 }
