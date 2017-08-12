@@ -2,6 +2,7 @@ package com.huntkey.rx.sceo.monitor.provider.service;
 
 
 import com.alibaba.fastjson.JSONArray;
+import com.huntkey.rx.commons.utils.rest.Result;
 
 /**
  * Created by zhaomj on 2017/8/9.
@@ -26,5 +27,5 @@ public interface MonitorTreeService {
      * @param endTime
      * @return
      */
-    JSONArray getEntityByVersionAndEnglishName(String treeName,String beginTime,String endTime);
+    Result getEntityByVersionAndEnglishName(String treeName, String beginTime, String endTime);
 }

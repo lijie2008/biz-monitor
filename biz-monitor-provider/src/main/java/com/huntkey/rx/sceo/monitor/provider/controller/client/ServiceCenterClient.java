@@ -39,4 +39,28 @@ public interface ServiceCenterClient {
                                @RequestParam(value = "searchDate") String searchDate,
                                @RequestParam(value = "rootNodeId") String rootNodeId);
 
+    /**
+     * 查询监管树类列表，并根据查询条件统计监管类下监管树的数量
+     * @param treeName
+     * @param beginTime
+     * @param endTime
+     * @param edmdVer
+     * @param edmcNameEn
+     * @return
+     */
+    @RequestMapping(value = "/servicecenter/business/monitors", method = RequestMethod.GET)
+    Result getMonitorClasses(@RequestParam(value = "treeName") String treeName,
+                                    @RequestParam(value = "beginTime") String beginTime,
+                                    @RequestParam(value = "endTime") String endTime,
+                                    @RequestParam(value = "edmdVer") String edmdVer,
+                                    @RequestParam(value = "edmcNameEn") String edmcNameEn);
+
+    /**
+     * 统计函数，支持查询条件
+     * @param data
+     * @return
+     */
+    @RequestMapping(value = "/servicecenter/count",method = RequestMethod.POST)
+    Result countByConditions(@RequestBody String data);
+
 }

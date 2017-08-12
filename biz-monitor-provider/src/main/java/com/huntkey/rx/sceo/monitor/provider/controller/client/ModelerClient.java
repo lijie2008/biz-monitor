@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
 
-
 @FeignClient(value = "modeler-provider", fallback = ModelerClientFallback.class)
+//@FeignClient(value = "modeler-provider", fallback = ModelerClientFallback.class,url = "http://192.168.13.34:2002")
 public interface ModelerClient {
 
 	/**

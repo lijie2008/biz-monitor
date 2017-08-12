@@ -49,9 +49,10 @@ public class ModelerClientFallback implements ModelerClient{
 
     @Override
     public Result getEntityByVersionAndEnglishName(String edmdVer, String edmcNameEn) {
-        
-        // TODO Auto-generated method stub
-        return null;
+		Result result = new Result();
+		result.setRetCode(Result.RECODE_ERROR);
+		result.setErrMsg("ModelerClient getEntityByVersionAndEnglishName fallback");
+		return result;
     }
 
 
