@@ -8,11 +8,11 @@ public interface MonitorService {
 	//监管树临时单预览查询
 	JSONArray tempTree(String tempId,String validDate);
 	//监管树临时单预览是否包含资源
-	Result containResource(String[] nodes);
+	JSONArray containResource(String[] nodes,String classId);
 	//节点详情查询
 	JSONObject nodeDetail(String nodeId);
 	//节点关联资源查询
-	Result nodeResource(String nodeId);
+	JSONArray nodeResource(String nodeId,String classId);
 	//节点详情保存
 	String saveNodeDetail(NodeTo nodeDetail);
 	//删除节点资源
