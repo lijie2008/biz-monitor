@@ -75,7 +75,8 @@ public class MonitorTreeOrderController {
      * @return
      */
     @RequestMapping(value="/queryNotUsingResource", method = RequestMethod.GET)
-    public Result queryNotUsingResource(@RequestParam String orderId, @RequestParam String nodeId, @RequestParam(defaultValue = "1") int currentPage, @RequestParam(defaultValue="20") int pageSize){
+    public Result queryNotUsingResource(@RequestParam String orderId, @RequestParam String nodeId,
+                                        @RequestParam(defaultValue = "1",required=false) int currentPage, @RequestParam(defaultValue="20",required=false) int pageSize){
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
@@ -107,7 +108,8 @@ public class MonitorTreeOrderController {
         
         JSONObject obj = new JSONObject();
         obj.put("totalSize", totalSize);
-        obj.put("data", totalSize == 0 ? null : datas.subList((currentPage-1)*pageSize < 0 ? 0 : (currentPage-1)*pageSize > totalSize?totalSize:(currentPage-1)*pageSize, (currentPage*pageSize)>totalSize?totalSize:currentPage*pageSize));
+        obj.put("data", totalSize == 0 ? null : datas.subList((currentPage-1)*pageSize < 0 ? 0 : 
+            (currentPage-1)*pageSize > totalSize?totalSize:(currentPage-1)*pageSize, (currentPage*pageSize)>totalSize?totalSize:currentPage*pageSize));
         result.setData(obj);
         return result;
     }

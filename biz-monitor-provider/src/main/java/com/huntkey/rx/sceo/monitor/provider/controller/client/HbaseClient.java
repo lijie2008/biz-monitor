@@ -26,7 +26,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
  * @version
  * @see
  */
-@FeignClient(value = "serviceCenter-provider", fallback = HbaseClientFallback.class)
+@FeignClient(value = "serviceCenter-provider", fallback = HbaseClientFallback.class,url="192.168.13.34:2008")
 public interface HbaseClient {
 
     @RequestMapping(value = "/servicecenter/find", method = RequestMethod.POST)
@@ -34,7 +34,7 @@ public interface HbaseClient {
 
 
     @RequestMapping(value = "/servicecenter/add", method = RequestMethod.POST)
-    Result add(@RequestParam(value = "datas") String datas);
+    Result add(@RequestBody String datas);
     
     @RequestMapping(value= "/servicecenter/delete", method = RequestMethod.POST)
     Result delete(@RequestBody String datas);

@@ -45,8 +45,12 @@ public class MonitorController {
 	 */
 	@RequestMapping(value="/containResource")
 	public Result containResource(@RequestParam(value="nodes") @NotBlank(message="监管树临时单节点ID数组不能为空") 
-	@Size(min=1) String[] nodes){
-		return service.containResource(nodes);
+	@Size(min=1) String[] nodes,
+	@RequestParam(value="classId") @NotBlank(message="监管树类ID不能为空") String classId){
+		Result result=new Result();
+		result.setRetCode(Result.RECODE_SUCCESS);
+		result.setData(service.containResource(nodes,classId));
+		return result;
 	}
 	/**
 	 * 查询节点详情
@@ -66,8 +70,12 @@ public class MonitorController {
 	 * @return
 	 */
 	@RequestMapping(value="/nodeResource")
-	public Result nodeResource(@RequestParam(value="nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId){
-		return service.nodeResource(nodeId);
+	public Result nodeResource(@RequestParam(value="nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
+			@RequestParam(value="classId") @NotBlank(message="监管树类ID不能为空") String classId){
+		Result result=new Result();
+		result.setRetCode(Result.RECODE_SUCCESS);
+		result.setData(service.nodeResource(nodeId,classId));
+		return result;
 	}
 	/**
 	 * 保存节点详情
@@ -158,17 +166,5 @@ public class MonitorController {
 		result.setData(service.moveNode(nodeId,nodeParentId,nodeLeftId,nodeRightId));
 		return result;
 	}		
-	/**
-	 * 保存节点详情
-	 * @param nodeId 节点ID
-	 * @return
-	 */
-	@RequestMapping(value="/saveMonitorTree",method=RequestMethod.POST)
-	public Result saveMonitorTree(@RequestBody() @Valid NodeTo nodeDetail){
-		return null;
-	}
-	
-	
-	
 	
 }

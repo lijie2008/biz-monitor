@@ -144,5 +144,6 @@ public interface Constant {
     String STAFF="staff";//员工表
     
     String STAF002="staf002";//员工姓名字段
+    
 }
 

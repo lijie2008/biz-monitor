@@ -20,11 +20,14 @@ import com.huntkey.rx.sceo.monitor.commom.model.InputArgument;
 import com.huntkey.rx.sceo.monitor.commom.model.LoopTO;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.HbaseClient;
+import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 
 @Component
 public class DBUtils {
 	@Autowired
 	HbaseClient hbase;
+	@Autowired
+	ModelerClient modelerClient;
 	private Logger logger=LoggerFactory.getLogger(DBUtils.class);
 	/***
 	 * 查询结果集多条
@@ -131,6 +134,64 @@ public class DBUtils {
         }
         return (String) result.getData();
 	}
+	/****
+	 * 查询资源表信息
+	 * @param classId 类ID
+	 * @param edmpCode 
+	 * @return JSONObject
+	 */
+	public  JSONObject getEdmcNameEn(String classId,String edmpCode) {
+		//设置查询参数
+        Result result = modelerClient.getEdmcNameEn(classId, edmpCode);
+        //进行查询
+        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
+            String msg = result != null ? result.getErrMsg():null;
+            logger.info(msg);
+            ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), 
+            		ErrorMessage._60007.getMsg());
+        }
+        JSONObject json=JsonUtil.getJson(result.getData());
+        if(json!=null && !json.isEmpty()){
+        	json=(JSONObject) json.get("value");
+        }
+        return json;
+	}
+	/****
+	 * 根据类ID查询类信息
+	 * @param classId 类ID
+	 * @return JSONObject
+	 */
+	public  JSONObject queryEdmClassById(String classId) {
+		//设置查询参数
+        Result result = modelerClient.queryEdmClassById(classId);
+        //进行查询
+        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
+            String msg = result != null ? result.getErrMsg():null;
+            logger.info(msg);
+            ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), 
+            		ErrorMessage._60007.getMsg());
+        }
+        JSONObject json=JsonUtil.getJson(result.getData());
+        return json;
+	}
+	/****
+	 * 根据类ID查询类信息
+	 * @param id 类ID
+	 * @return JSONObject
+	 */
+	public  JSONObject getCharacterAndFormat(String classId) {
+		//设置查询参数
+        Result result = modelerClient.getCharacterAndFormat(classId);
+        //进行查询
+        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
+            String msg = result != null ? result.getErrMsg():null;
+            logger.info(msg);
+            ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), 
+            		ErrorMessage._60007.getMsg());
+        }
+        JSONObject json=JsonUtil.getJson(result.getData());
+        return json;
+	}
 	/**
 	 * 根据所得数据集循环查询  (处理类型IN循环)
 	 * @param loopJson 循环对象
@@ -146,7 +207,7 @@ public class DBUtils {
 		String sourceKey=loopJson.getSourceKey();
 		String mergeKey=loopJson.getMergeKey();
 		String[] column= loopJson.getColumns();
-		Condition condition= loopJson.getCondition();
+		Condition condition= loopJson.getCondition()==null?new Condition():loopJson.getCondition();
 		JSONArray jsonArrNew=null;
 		JSONArray jsonArrSub=null;
 		//取出loopArr中的循环字段
@@ -165,7 +226,7 @@ public class DBUtils {
  		//取得数据集id集合
  		if(list!=null && list.size()>0){ 			
 	 		for(String listValue :list){
-	 			condition.addCondition(sourceKey, "=", listValue, true);
+	 			condition.addCondition(sourceKey, "=", listValue, false);
 	 			jsonArrSub=getArrayResult(tableName, column,condition);
 	 			jsonArrNew=JsonUtil.mergeJsonArray(jsonArrNew,jsonArrSub);
 	 		}

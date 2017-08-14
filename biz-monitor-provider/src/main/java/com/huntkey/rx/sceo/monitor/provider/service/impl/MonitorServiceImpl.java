@@ -7,21 +7,18 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.commons.utils.string.StringUtil;
-
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.*;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
 import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.model.Condition;
 import com.huntkey.rx.sceo.monitor.commom.model.InputArgument;
+import com.huntkey.rx.sceo.monitor.commom.model.JoinTO;
+import com.huntkey.rx.sceo.monitor.commom.model.LoopTO;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
+import com.huntkey.rx.sceo.monitor.commom.utils.DataUtil;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.commom.utils.ToolUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.HbaseClient;
@@ -64,26 +61,22 @@ public class MonitorServiceImpl implements MonitorService {
 	 * @return
 	 */
 	@Override
-	public Result containResource(String[] nodes) {
+	public JSONArray containResource(String[] nodes,String classId) {
 		// TODO Auto-generated method stub
-		Condition condition=new Condition();
 		Result result=new Result();
 		result.setRetCode(Result.RECODE_SUCCESS);
-		JSONArray resourceArray=new JSONArray();
-		JSONObject resourceObj=new JSONObject();
-		//mode018表和资源表关联查询
+		
+		//循环查询资源表
+		JSONArray resourceArr=new JSONArray();
+		JSONArray resourceArrNew=new JSONArray();
 		for(String node:nodes){
-			condition.addCondition(PID, EQUAL, node, true);
-			resourceObj=DBUtils.getObjectResult(MTOR019,null,condition);
-			if(resourceObj!=null){
-				resourceArray.add(resourceObj);
+			if(!StringUtil.isNullOrEmpty(node)){
+				resourceArr=nodeResource(node, classId);
+				JsonUtil.mergeJsonArray(resourceArr, resourceArrNew);
 			}
 		}
 		
-		//循环查询资源表
-		
-		result.setData(resourceArray);
-		return null;
+		return resourceArrNew;
 	}
 	/**
 	 * 查询节点详情
@@ -104,13 +97,13 @@ public class MonitorServiceImpl implements MonitorService {
 			condition.addCondition(ID, EQUAL, nodeJson.getString(MTOR009), true);//主管人
 			staffObj=DBUtils.getObjectResult(STAFF, new String[]{STAF002}, condition);
 			if(staffObj!=null){
-				nodeJson.put("majorStaff", staffObj.getShort(STAF002));
+				nodeJson.put("majorStaff", staffObj.getString(STAF002));
 			}
 			
 			condition.addCondition(ID, EQUAL, nodeJson.getString(MTOR010), true);//协管人
 			staffObj=DBUtils.getObjectResult(STAFF, new String[]{STAF002}, condition);
 			if(staffObj!=null){
-				nodeJson.put("assistStaff", staffObj.getShort(STAF002));
+				nodeJson.put("assistStaff", staffObj.getString(STAF002));
 			}
 			
 		}else{
@@ -125,9 +118,35 @@ public class MonitorServiceImpl implements MonitorService {
 	 * @return
 	 */
 	@Override
-	public Result nodeResource(String nodeId) {
+	public JSONArray nodeResource(String nodeId,String classId) {
 		// TODO Auto-generated method stub
-		return null;
+		String resourceTab="",resourceClassId="";//资源表 资源类ID
+		JSONArray resources=null;
+		//根据类ID查询出资源表
+		JSONObject resourceObj=DBUtils.getEdmcNameEn(classId, "moni012");
+		if(resourceObj!=null && !resourceObj.isEmpty()){
+			resourceTab=resourceObj.getString("edmcNameEn").toLowerCase();
+			resourceClassId=resourceObj.getString(ID);
+		}else{
+			ApplicationException.throwCodeMesg(ErrorMessage._60012.getCode(), 
+					ErrorMessage._60012.getMsg());
+		}
+		//根据节点ID查询出关联资源结果集
+		Condition condition=new Condition();
+		condition.addCondition(PID, EQUAL, nodeId, true);
+		JSONArray resourceArr=DBUtils.getArrayResult(MTOR019, null, condition);
+		if(!JsonUtil.isNullOrEmpty(resourceArr)){
+			LoopTO loop=new LoopTO(resourceTab,ID,MTOR021,null,null);
+			//循环查询资源表
+			resources=DBUtils.loopQuery(loop, resourceArr);
+			//数据集做交集
+			JoinTO join=new JoinTO(MTOR021,ID,new String[]{"text"});
+			resourceArr=DataUtil.mergeJsonArray(resourceArr, resources, join);
+		}else{
+			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(), 
+					ErrorMessage._60003.getMsg());
+		}
+		return resourceArr;
 	}
 	@Override
 	public String saveNodeDetail(NodeTo nodeDetail) {
@@ -223,19 +242,19 @@ public class MonitorServiceImpl implements MonitorService {
 				case 0://创建子节点
 					condition.addCondition(MTOR013, EQUAL, node.getString(ID), true);//当前节点的子节点
 					condition.addCondition(MTOR016, EQUAL, NULL, false);//最右侧节点
-					nodeRight=queryNode(condition,null);
+					nodeRight=DBUtils.getObjectResult(MTOR005,null,condition);
 					nodeDetail=setNodePosition(node.getString(ID), NULL, 
 							nodeRight!=null?nodeRight.getString(ID):NULL, NULL,node.getString(PID),1);
 					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
 					
-					if(StringUtil.isNullOrEmpty(node.getString(MTOR014))) {
+					if(StringUtil.isEqual(NULL, node.getString(MTOR014))) {
 						//如果父节点以前没有子节点  变更父节点的子节点信息
 						changeNodePosition(node.getString(ID), 2, newNodeId);
 					}
 				break;
-				case 1://创建右节点
+				case 2://创建右节点
 					condition.addCondition(ID, EQUAL, node.getString(MTOR016), true);//当前节点的右节点
-					nodeRight=queryNode(condition,null);
+					nodeRight=DBUtils.getObjectResult(MTOR005,null,condition);
 					//1.创建新的右节点
 					nodeDetail=setNodePosition(node.getString(MTOR013), NULL, 
 							node.getString(ID), nodeRight!=null?nodeRight.getString(ID):NULL,
@@ -246,9 +265,9 @@ public class MonitorServiceImpl implements MonitorService {
 					//3.变更之前右节点的左节点信息
 					changeNodePosition(nodeRight.getString(ID), 3, newNodeId);
 				break;
-				case 2://创建左节点
+				case 1://创建左节点
 					condition.addCondition(ID, EQUAL, node.getString(MTOR015), true);//当前节点的左节点
-					nodeLeft=queryNode(condition,null);
+					nodeLeft=DBUtils.getObjectResult(MTOR005,null,condition);
 					
 					//1.创建新的左节点
 					nodeDetail=setNodePosition(node.getString(MTOR013), NULL, 
@@ -485,23 +504,23 @@ public class MonitorServiceImpl implements MonitorService {
 	 * @param positionNodeId 给出位置节点ID
 	 */
 	private void changeNodePosition(String nodeId,int changeTpye,String positionNodeId){
-		NodeTo nodeDetail=new NodeTo();
+		JSONObject json=new JSONObject();
 		switch(changeTpye){
 			case 1://改变父节点位置
-				nodeDetail.setMtor013(positionNodeId);
+				json.put(MTOR013,positionNodeId);
 				break;
 			case 2://改变子节点位置
-				nodeDetail.setMtor014(positionNodeId);
+				json.put(MTOR014,positionNodeId);
 				break;
 			case 3://改变左节点位置
-				nodeDetail.setMtor015(positionNodeId);
+				json.put(MTOR015,positionNodeId);
 				break;
 			case 4://改变右节点位置
-				nodeDetail.setMtor016(positionNodeId);
+				json.put(MTOR016,positionNodeId);
 				break;	
 		}
-		nodeDetail.setId(nodeId);
-		DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
+		json.put(ID,nodeId);
+		DBUtils.update(MTOR005, json);
 	}
 
 }
