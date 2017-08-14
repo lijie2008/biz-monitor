@@ -26,7 +26,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
  * @version
  * @see
  */
-@FeignClient(value = "serviceCenter-provider", fallback = HbaseClientFallback.class,url="192.168.13.34:2008")
+@FeignClient(value = "serviceCenter-provider", fallback = HbaseClientFallback.class)
 public interface HbaseClient {
 
     @RequestMapping(value = "/servicecenter/find", method = RequestMethod.POST)
@@ -52,5 +52,10 @@ public interface HbaseClient {
     @RequestMapping(value= "/monitor/getTargetAllChildNode", method = RequestMethod.GET)
     Result getTargetAllChildNode(@RequestParam(value="edmName") String edmName, 
                                  @RequestParam(value="nodeId") String nodeId,@RequestParam(value="endDate",defaultValue = "") String endDate);
+    
+    @RequestMapping(value= "/servicecenter/business/monitors/trees/nodes", method = RequestMethod.GET)
+    Result getMonitorTreeNodes(@RequestParam(value = "edmcNameEn") String edmcNameEn,
+            @RequestParam(value = "searchDate") String searchDate,
+            @RequestParam(value = "rootNodeId") String rootNodeId);
 }
 

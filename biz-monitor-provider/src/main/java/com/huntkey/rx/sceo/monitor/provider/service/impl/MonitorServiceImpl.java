@@ -469,8 +469,10 @@ public class MonitorServiceImpl implements MonitorService {
 				JSONObject json=JsonUtil.getJson(obj);
 				if(json!=null){
 					allNodes.add(json);//添加本节点
-					nodes=getChildNode(json.getString(ID));
-					allNodes=JsonUtil.mergeJsonArray(allNodes,nodes);
+					if(StringUtil.isEqual(NULL,json.getString(MTOR014))){
+						nodes=getChildNode(json.getString(ID));
+						allNodes=JsonUtil.mergeJsonArray(allNodes,nodes);
+					}
 				}
 			}
 		}
@@ -551,4 +553,64 @@ public class MonitorServiceImpl implements MonitorService {
 		DBUtils.update(MTOR005, json);
 	}
 
+	@Override
+	public String addClassTree(int type, String beginDate, String endDate, 
+			String classId,String treeId,String edmEn) {
+		// TODO Auto-generated method stub
+		//1.生成监管类临时单
+		JSONObject jsonTemp=new JSONObject();
+		jsonTemp.put(MTOR001, "");
+		jsonTemp.put(MTOR002, ChangeType.ADD.getValue());
+		jsonTemp.put(MTOR003, classId);
+		String tempId=DBUtils.add(MONITORTREEORDER, jsonTemp);
+		
+		switch(type){
+			case 0://直接跳转到新增界面
+				//生效日期设置成当前日期
+				addRootNode(tempId,beginDate,endDate);
+				break;
+			case 1://提示界面新增
+				addRootNode(tempId,beginDate,endDate);
+				break;
+			case 2://提示界面复制
+				//1.根据根节点ID 查询正式树表的所有节点
+				getChildNodeFormal(treeId);
+				break;	
+		}
+		return null;
+	}
+	private void addRootNode(String pid,String beginDate,String endDate) {
+		// TODO Auto-generated method stub
+		NodeTo node=new NodeTo();
+		node.setMtor007(INITNODENAME);
+		node.setMtor011(beginDate);
+		node.setMtor012(endDate);
+		node.setMtor013(NULL);
+		node.setMtor014(NULL);
+		node.setMtor015(NULL);
+		node.setMtor016(NULL);
+		node.setPid(pid);
+	}
+	
+	//递归查询正式表子节点
+	private JSONArray getChildNodeFormal(String nodeId){
+		JSONArray allNodes=new JSONArray();
+		Condition condition=new Condition();
+		condition.addCondition(ID, EQUAL, nodeId, true);
+		JSONArray nodes=DBUtils.getArrayResult(DEPTTREE,null,condition);
+		while(!JsonUtil.isNullOrEmpty(nodes)){
+			for(Object obj:nodes){
+				JSONObject json=JsonUtil.getJson(obj);
+				if(json!=null){
+					allNodes.add(json);//添加本节点
+					if(StringUtil.isEqual(NULL,json.getString("moni007"))){
+						nodes=getChildNodeFormal(json.getString(ID));
+						allNodes=JsonUtil.mergeJsonArray(allNodes,nodes);
+					}
+				}
+			}
+		}
+		return allNodes;
+	}
+	
 }
