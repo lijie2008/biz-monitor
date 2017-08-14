@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
 /**
  * Created by zhaomj on 2017/8/11.
  */
@@ -24,5 +26,15 @@ public interface MonitorTreeClient {
                               @RequestParam(value = "beginTime") String beginTime,
                               @RequestParam(value = "endTime") String endTime);
 
+    @RequestMapping(value = "/monitors/trees",method = RequestMethod.GET)
+    Result getMonitorTrees(@RequestParam(value = "treeName", required = false) String treeName,
+                           @RequestParam(value = "edmcNameEn") String edmcNameEn,
+                           @RequestParam(value = "beginTime", required = false) String beginTime,
+                           @RequestParam(value = "endTime", required = false) String endTime);
 
+
+    @RequestMapping(value = "/monitors/trees/resources",method = RequestMethod.GET)
+    Result getNodeResources(@RequestParam(value = "name", required = false) String name,
+                            @RequestParam(value = "nodes") List<String> nodes,
+                            @RequestParam(value = "edmcId") String edmcId);
 }

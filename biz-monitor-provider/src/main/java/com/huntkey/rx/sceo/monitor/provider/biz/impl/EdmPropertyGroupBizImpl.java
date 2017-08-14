@@ -24,12 +24,11 @@ import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.biz.EdmPropertyGroupBiz;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
-import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerProviderClient;
 import com.huntkey.rx.sceo.monitor.provider.orm.dao.EdmPropertyGroupDataMapper;
 
 /**
  * ClassName:EdmPropertyGroupBizImpl
- * Function: TODO ADD FUNCTION
+ * Function: edm属性关联分组表查询 业务逻辑层
  * Date:     2017年8月10日 上午8:53:48
  * @author   caozhenx
  * @version  
@@ -37,21 +36,22 @@ import com.huntkey.rx.sceo.monitor.provider.orm.dao.EdmPropertyGroupDataMapper;
  */
 @Service("edmPropertyGroupBiz")
 public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
-    
+
+    private String dot_split = ".";
+
+    private String relate_feild = "depttree.moni015";
+
     @Value("${edm.edmMonitorId}")
-    private String edmMonitorId ;
+    private String edmMonitorId;
 
     @Autowired
     EdmPropertyGroupDataMapper edmPropertyGroupDataMapper;
-    
-    @Autowired
-    ModelerProviderClient modelerProviderClient;
-    
+
     @Autowired
     ModelerClient modelerClient;
 
     @Override
-    public Result getMonitorIds(JSONObject jsonObject) {
+    public Result getMonitorInfo(JSONObject jsonObject) {
 
         Result result = new Result();
 
@@ -81,21 +81,30 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
             paramMap.put("edpg_property_group", edpgPropertyGroup);
             //根据 分组值查询
             List<Map<String, Object>> groupList = edmPropertyGroupDataMapper.select(paramMap);
-            if(groupList != null && !groupList.isEmpty()){
+            if (groupList != null && !groupList.isEmpty()) {
                 JSONArray jsonArray = new JSONArray();
-                for(Map<String, Object> m : groupList){
+                for (Map<String, Object> m : groupList) {
                     Object o = m.get("edpg_edmc_id");
-                    if(o != null){
-                        String edpgEdmcId = (String)o;
-                        Result r = modelerProviderClient.checkIsChileNode(edmMonitorId,edpgEdmcId);
-                        if(r.getRetCode() == Result.RECODE_SUCCESS){
+                    if (o != null) {
+                        String edpgEdmcId = (String) o;
+                        Result r = modelerClient.checkIsChileNode(edmMonitorId, edpgEdmcId);
+                        if (r.getRetCode() == Result.RECODE_SUCCESS) {
                             Boolean bool = (Boolean) r.getData();
                             //v结果为true时 排除查询条件自身
-                            if(bool && !edpgEdmcId.equals(jsonObject.get("edpg_edmc_id"))){
+                            if (bool && !edpgEdmcId.equals(jsonObject.get("edpg_edmc_id"))) {
                                 Result re = modelerClient.queryEdmClassById(edpgEdmcId);
-                                if(re.getRetCode() == Result.RECODE_SUCCESS && re.getData() != null){
+                                if (re.getRetCode() == Result.RECODE_SUCCESS
+                                        && re.getData() != null) {
+                                    JSONObject jsonObj = new JSONObject();
+                                    
                                     JSONObject js = JsonUtil.getJson(re.getData());
-                                    jsonArray.add(js.get("edmcNameEn"));
+                                    jsonObj.put("edmcNameEn", js.getString("edmcNameEn"));
+                                    
+                                    String edmcShortName = js.getString("edmcShortName") ;
+                                    String tableName = getTableName(relate_feild,edmcShortName);
+                                    
+                                    jsonObj.put("tableName", tableName);
+                                    jsonArray.add(jsonObj);
                                 }
                             }
                         }
@@ -104,7 +113,7 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
                 result.setData(jsonArray);
                 result.setRetCode(Result.RECODE_SUCCESS);
             }
-            
+
         }
 
         return result;
@@ -130,6 +139,42 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
         }
 
         return paramMap;
+    }
+
+    private String getTableName(String edmName, String shortName) {
+        if (StringUtils.isBlank(edmName)) {
+            return null;
+        }
+
+        // 去掉前后空格
+        edmName = edmName.trim();
+        while (edmName.startsWith(" ")) {
+            edmName = edmName.substring(1);
+        }
+
+//        // 如果参数不包含“.”, 说明传入的就是类名，因为约定，类名就是表名，直接返回；
+//        if (!edmName.contains(dot_split)) {
+//            // 如果以 _link结尾的，表示操作关联表
+//            if (edmName.endsWith("_link")) {
+//                return shortName + suffix;
+//            } else {
+//                return edmName;
+//            }
+//        }
+
+        // 有效性校验，1. 不用用'.'打头或者结尾， 2. 不能包含二个或以上连续的'.',
+        if (edmName.startsWith(dot_split)
+                || edmName.endsWith(dot_split) || edmName.contains("..")) {
+            throw new IllegalArgumentException("参数edm名称'" + edmName + "'无效!");
+        }
+
+        String[] subs = edmName.split("\\.");
+        int size = subs.length;
+        char c = (char) (95 + size);
+
+        String tableName = shortName + "_" + subs[size - 1] + c;
+
+        return tableName;
     }
 
 }

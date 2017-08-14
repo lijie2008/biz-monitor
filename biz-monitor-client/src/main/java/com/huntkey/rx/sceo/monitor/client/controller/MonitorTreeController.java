@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
  * Created by zhaomj on 2017/8/11.
  */
@@ -21,17 +23,35 @@ public class MonitorTreeController {
     @GetMapping("/trees/nodes")
     public Result getMonitorTreeNodes(@RequestParam String edmcNameEn,
                                       @RequestParam String searchDate,
-                                      @RequestParam(required = false,defaultValue = "") String rootNodeId){
-        Result result = treeClient.getMonitorTreeNodes(edmcNameEn,searchDate,rootNodeId);
+                                      @RequestParam(required = false, defaultValue = "") String rootNodeId) {
+        Result result = treeClient.getMonitorTreeNodes(edmcNameEn, searchDate, rootNodeId);
         return result;
     }
 
     @GetMapping
     public Result getMonitors(@RequestParam(required = false) String treeName,
-                              @RequestParam String beginTime,
-                              @RequestParam String endTime){
-        Result result = treeClient.getMonitors(treeName,beginTime,endTime);
+                              @RequestParam(required = false) String beginTime,
+                              @RequestParam(required = false) String endTime) {
+        Result result = treeClient.getMonitors(treeName, beginTime, endTime);
         return result;
     }
+
+    @GetMapping("/trees")
+    public Result getMonitorTrees(@RequestParam(required = false) String treeName,
+                                  @RequestParam String edmcNameEn,
+                                  @RequestParam(required = false) String beginTime,
+                                  @RequestParam(required = false) String endTime) {
+        Result result = treeClient.getMonitorTrees(treeName, edmcNameEn, beginTime, endTime);
+        return result;
+    }
+
+    @GetMapping("/trees/resources")
+    public Result getNodeResources(@RequestParam(required = false) String name,
+                                   @RequestParam List<String> nodes,
+                                   @RequestParam String edmcId) {
+        Result result = treeClient.getNodeResources(name, nodes, edmcId);
+        return result;
+    }
+
 
 }

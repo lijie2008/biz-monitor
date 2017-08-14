@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
  * Created by zhaomj on 2017/8/9.
  */
@@ -52,6 +54,35 @@ public class MonitorTreeController {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(monitorTreeService.getEntityByVersionAndEnglishName(treeName,beginTime,endTime));
+        return result;
+    }
+
+    /**
+     * 根据监管类英文名查询监管类下的监管树
+     * @param treeName
+     * @param edmcNameEn
+     * @param beginTime
+     * @param endTime
+     * @return
+     */
+    @GetMapping("/trees")
+    public Result getMonitorTrees(@RequestParam(required = false) String treeName,
+                                  @RequestParam String edmcNameEn,
+                                  @RequestParam(required = false) String beginTime,
+                                  @RequestParam(required = false) String endTime){
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(monitorTreeService.getMonitorTrees(treeName,edmcNameEn,beginTime,endTime));
+        return result;
+    }
+
+    @GetMapping("/trees/resources")
+    public Result getNodeResources(@RequestParam(required = false) String name,
+                                   @RequestParam List<String> nodes,
+                                   @RequestParam String edmcId){
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(monitorTreeService.getNodeResources(name,nodes,edmcId));
         return result;
     }
 }

@@ -21,9 +21,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.datetime.DateUtil;
 import com.huntkey.rx.commons.utils.rest.Result;
-import com.huntkey.rx.sceo.monitor.commom.DateConstant;
-import com.huntkey.rx.sceo.monitor.commom.ServiceCenterConstant;
-import com.huntkey.rx.sceo.monitor.commom.StatisticsConstant;
+import com.huntkey.rx.sceo.monitor.commom.constant.DateConstant;
+import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
+import com.huntkey.rx.sceo.monitor.commom.constant.StatisticsConstant;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.biz.StatisticsBiz;
 import com.huntkey.rx.sceo.monitor.provider.service.PeriodService;
@@ -427,13 +427,6 @@ public class StatisticsBizImpl implements StatisticsBiz {
         JSONObject period = JsonUtil.getJson(todayArray.get(0));
         return period.getString(StatisticsConstant.ID);
 
-    }
-
-    public static void main(String[] args) {
-        Calendar cl = Calendar.getInstance();
-        cl.set(Calendar.DAY_OF_MONTH, 1);
-        String firstDay = DateUtil.parseFormatDate(cl.getTime(), DateConstant.FORMATE_YYYY_MM_DD);
-        System.out.println(firstDay);
     }
 
 }

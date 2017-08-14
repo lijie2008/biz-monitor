@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.huntkey.rx.commons.utils.rest.Result;
 
+import java.util.List;
+
 /**
  * ServiceCenterClient
  * Function: 调用service center接口
@@ -62,5 +64,10 @@ public interface ServiceCenterClient {
      */
     @RequestMapping(value = "/servicecenter/count",method = RequestMethod.POST)
     Result countByConditions(@RequestBody String data);
+
+    @RequestMapping(value = "/servicecenter/business/monitors/trees/resources", method = RequestMethod.GET)
+    Result getNodeResources(@RequestParam(value = "name", required = false) String name,
+                            @RequestParam(value = "nodes") List<String> nodes,
+                            @RequestParam(value = "edmcId") String edmcId);
 
 }

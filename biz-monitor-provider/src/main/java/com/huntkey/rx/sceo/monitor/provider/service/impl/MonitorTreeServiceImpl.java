@@ -25,13 +25,13 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     @Value("${edm.version}")
     private String edmdVer;
     @Value("${edm.edmcNameEn.monitor}")
-    private String edmcNameEn;
+    private String monitorEdmcNameEn;
 
     @Override
     public Result getEntityByVersionAndEnglishName(String treeName, String beginTime, String endTime) {
 
 
-        Result monitorClassesResult = serviceCenterClient.getMonitorClasses(treeName, beginTime, endTime, edmdVer, edmcNameEn);
+        Result monitorClassesResult = serviceCenterClient.getMonitorClasses(treeName, beginTime, endTime, edmdVer, monitorEdmcNameEn);
         if (monitorClassesResult.getRetCode() != Result.RECODE_SUCCESS) {
             throw new ServiceException(monitorClassesResult.getErrMsg());
         }
@@ -116,6 +116,82 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                 throw new ServiceException("没有找到，或找到多个监管树！");
             }
 
+        }
+    }
+
+    @Override
+    public JSONArray getMonitorTrees(String treeName, String edmcNameEn, String beginTime, String endTime) {
+        JSONArray monitorTrees = new JSONArray();
+
+        JSONObject requestParams = new JSONObject();
+        JSONObject search = new JSONObject();
+
+        String characters[] = new String[]{"moni001", "moni002", "moni004", "moni005"};
+        search.put("columns", characters);
+
+        JSONArray conditions = new JSONArray();
+
+        ConditionParam nodeIdParam = new ConditionParam();
+        nodeIdParam.setAttr("moni006");
+        nodeIdParam.setOperator("=");
+        nodeIdParam.setValue("null");
+        conditions.add(nodeIdParam);
+
+        if (!StringUtil.isNullOrEmpty(treeName)) {
+            ConditionParam treeNameParam = new ConditionParam();
+            treeNameParam.setAttr("moni002");
+            treeNameParam.setOperator("like");
+            treeNameParam.setValue(treeName);
+            conditions.add(treeNameParam);
+        }
+
+        //ORM暂不支持or查询，先只根据失效时间过滤
+        if (!StringUtil.isNullOrEmpty(endTime)) {
+            ConditionParam treeTimeParam = new ConditionParam();
+            treeTimeParam.setAttr("moni005");
+            treeTimeParam.setOperator("<");
+            treeTimeParam.setValue(endTime);
+            conditions.add(treeTimeParam);
+        }
+
+        search.put("conditions", conditions);
+
+        requestParams.put("edmName", edmcNameEn);
+        requestParams.put("search", search);
+
+        Result treesResult = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
+
+        if (treesResult.getRetCode() == Result.RECODE_SUCCESS) {
+            if (treesResult.getData() != null) {
+                JSONObject treeData = JSONObject.parseObject(JSONObject.toJSONString(treesResult.getData()));
+                JSONArray treeArray = treeData.getJSONArray("dataset");
+
+                for (int i = 0; i < treeArray.size(); i++) {
+                    JSONObject temp = treeArray.getJSONObject(i);
+                    JSONObject tree = new JSONObject();
+                    tree.put("rootNodeId", temp.getString("id"));
+                    tree.put("rootNodeName", temp.getString("moni002"));
+                    tree.put("beginTime", temp.getString("moni004"));
+                    tree.put("endTime", temp.getString("moni005"));
+                    monitorTrees.add(tree);
+                }
+            }
+        } else {
+            throw new ServiceException(treesResult.getErrMsg());
+        }
+
+        return monitorTrees;
+    }
+
+    @Override
+    public JSONArray getNodeResources(String name, List<String> nodes, String edmcId) {
+        Result resourcesResult = serviceCenterClient.getNodeResources(name,nodes,edmcId);
+        if(resourcesResult.getRetCode()==Result.RECODE_SUCCESS){
+            JSONArray childrenArray = new JSONArray((List<Object>) resourcesResult.getData());
+
+            return childrenArray;
+        }else {
+            throw new ServiceException(resourcesResult.getErrMsg());
         }
     }
 }
