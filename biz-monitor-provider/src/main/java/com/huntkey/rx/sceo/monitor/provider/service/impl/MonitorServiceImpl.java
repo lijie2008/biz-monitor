@@ -71,7 +71,7 @@ public class MonitorServiceImpl implements MonitorService {
 		JSONArray resourceArrNew=new JSONArray();
 		for(String node:nodes){
 			if(!StringUtil.isNullOrEmpty(node)){
-				resourceArr=nodeResource(node, classId);
+				resourceArr=nodeResource(node, classId);//查询单个节点关联资源
 				JsonUtil.mergeJsonArray(resourceArr, resourceArrNew);
 			}
 		}
@@ -122,11 +122,14 @@ public class MonitorServiceImpl implements MonitorService {
 		// TODO Auto-generated method stub
 		String resourceTab="",resourceClassId="";//资源表 资源类ID
 		JSONArray resources=null;
+		JSONObject jsonCharacter=null;
 		//根据类ID查询出资源表
 		JSONObject resourceObj=DBUtils.getEdmcNameEn(classId, "moni012");
 		if(resourceObj!=null && !resourceObj.isEmpty()){
 			resourceTab=resourceObj.getString("edmcNameEn").toLowerCase();
 			resourceClassId=resourceObj.getString(ID);
+			//查询moderler特征表
+			jsonCharacter=DBUtils.getCharacterAndFormat(resourceClassId);
 		}else{
 			ApplicationException.throwCodeMesg(ErrorMessage._60012.getCode(), 
 					ErrorMessage._60012.getMsg());
@@ -139,6 +142,8 @@ public class MonitorServiceImpl implements MonitorService {
 			LoopTO loop=new LoopTO(resourceTab,ID,MTOR021,null,null);
 			//循环查询资源表
 			resources=DBUtils.loopQuery(loop, resourceArr);
+			//结果集中字段转换
+			resources=convert(jsonCharacter,resources);
 			//数据集做交集
 			JoinTO join=new JoinTO(MTOR021,ID,new String[]{"text"});
 			resourceArr=DataUtil.mergeJsonArray(resourceArr, resources, join);
@@ -147,6 +152,24 @@ public class MonitorServiceImpl implements MonitorService {
 					ErrorMessage._60003.getMsg());
 		}
 		return resourceArr;
+	}
+	private JSONArray convert(JSONObject characterObj,JSONArray resourcesObjs) {
+		// TODO Auto-generated method stub
+		JSONArray characterArray = characterObj.getJSONArray("character");
+		JSONArray resources = new JSONArray();
+        String format = characterObj.getString("format");
+        String[] resourceFields = new String[characterArray.size()];
+        characterArray.toArray(resourceFields);
+        for (int j = 0; j < resourcesObjs.size(); j++) {
+            JSONObject resourcesObj = resourcesObjs.getJSONObject(j);
+            String edmObjName = format.toLowerCase();
+            for (String fieldName : resourceFields){
+                edmObjName = edmObjName.replace(fieldName, resourcesObj.getString(fieldName));
+                resourcesObj.put("text",edmObjName);
+                resources.add(resourcesObj);
+            }
+        }
+        return resources;
 	}
 	@Override
 	public String saveNodeDetail(NodeTo nodeDetail) {
@@ -252,19 +275,6 @@ public class MonitorServiceImpl implements MonitorService {
 						changeNodePosition(node.getString(ID), 2, newNodeId);
 					}
 				break;
-				case 2://创建右节点
-					condition.addCondition(ID, EQUAL, node.getString(MTOR016), true);//当前节点的右节点
-					nodeRight=DBUtils.getObjectResult(MTOR005,null,condition);
-					//1.创建新的右节点
-					nodeDetail=setNodePosition(node.getString(MTOR013), NULL, 
-							node.getString(ID), nodeRight!=null?nodeRight.getString(ID):NULL,
-							node.getString(PID),1);
-					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
-					//2.要变更当前节点的右节点信息
-					changeNodePosition(node.getString(ID), 4, newNodeId);
-					//3.变更之前右节点的左节点信息
-					changeNodePosition(nodeRight.getString(ID), 3, newNodeId);
-				break;
 				case 1://创建左节点
 					condition.addCondition(ID, EQUAL, node.getString(MTOR015), true);//当前节点的左节点
 					nodeLeft=DBUtils.getObjectResult(MTOR005,null,condition);
@@ -285,6 +295,19 @@ public class MonitorServiceImpl implements MonitorService {
 					//4.变更之前左节点的右节点信息
 					changeNodePosition(nodeLeft.getString(ID), 3, newNodeId);
 				break;	
+				case 2://创建右节点
+					condition.addCondition(ID, EQUAL, node.getString(MTOR016), true);//当前节点的右节点
+					nodeRight=DBUtils.getObjectResult(MTOR005,null,condition);
+					//1.创建新的右节点
+					nodeDetail=setNodePosition(node.getString(MTOR013), NULL, 
+							node.getString(ID), nodeRight!=null?nodeRight.getString(ID):NULL,
+							node.getString(PID),1);
+					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
+					//2.要变更当前节点的右节点信息
+					changeNodePosition(node.getString(ID), 4, newNodeId);
+					//3.变更之前右节点的左节点信息
+					changeNodePosition(nodeRight.getString(ID), 3, newNodeId);
+				break;
 			}
 		}
 		return newNodeId;
