@@ -34,7 +34,7 @@ public interface EdmPropertyGroupBiz {
      * @param jsonObject
      * @return
      */
-    public Result getMonitorIds(JSONObject jsonObject);
+    public Result getMonitorInfo(JSONObject jsonObject);
 
 }
 

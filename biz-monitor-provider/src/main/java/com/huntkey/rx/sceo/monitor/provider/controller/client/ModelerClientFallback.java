@@ -54,6 +54,14 @@ public class ModelerClientFallback implements ModelerClient{
 		result.setErrMsg("ModelerClient getEntityByVersionAndEnglishName fallback");
 		return result;
     }
+    
+    @Override
+    public Result checkIsChileNode(String id,String sid) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("biz monitor provider client checkIsChileNode fallback");
+        return result;
+    }
 
 
 }

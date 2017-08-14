@@ -27,7 +27,7 @@ import com.huntkey.rx.sceo.monitor.client.service.EdmPropertyGroupClient;
 public class EdmPropertyGroupClientFallback implements EdmPropertyGroupClient{
 
     @Override
-    public Result getMonitorIds(JSONObject data) {
+    public Result getMonitorInfo(JSONObject data) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("biz monitor provider client getMonitorIds fallback");

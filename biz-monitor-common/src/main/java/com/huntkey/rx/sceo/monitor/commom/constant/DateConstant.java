@@ -7,7 +7,7 @@
  *
 */
 
-package com.huntkey.rx.sceo.monitor.commom;
+package com.huntkey.rx.sceo.monitor.commom.constant;
 /**
  * ClassName:DateConstant
  * Function: 日期操作相关常量

@@ -8,19 +8,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.huntkey.rx.commons.utils.rest.Result;
 
-@FeignClient(value = "MODELER-PROVIDER",url = "192.168.13.34:2002",fallback = ModelerClientFallback.class) //单机调试使用(注意不要提交此行)
+@FeignClient(value = "MODELER-PROVIDER", url = "192.168.13.34:2002", fallback = ModelerClientFallback.class) //单机调试使用(注意不要提交此行)
 //@FeignClient(value = "modeler-provider", fallback = ModelerClientFallback.class)
 public interface ModelerClient {
 
-	/**
-	 * 根据id查询EDM类
-	 * @author 方坤
-	 * @version
-	 * @see
-	 */
+    /**
+     * 根据id查询EDM类
+     * @author 方坤
+     * @version
+     * @see
+     */
     @RequestMapping(value = "/classes/{id}")
     Result queryEdmClassById(@PathVariable(value = "id") String id);
-
 
     /**
      * 查询属性
@@ -30,14 +29,13 @@ public interface ModelerClient {
     @RequestMapping(value = "/classes/{id}/properties")
     Result queryEdmClassProperties(@PathVariable(value = "id") String id);
 
-
     /**
      * 根据模型id + 类英文名称数组查询类树
      * @param modelerId
      * @param edmcNameEns
      * @return
      */
-    @RequestMapping(value="/classes/classTree", method= RequestMethod.GET)
+    @RequestMapping(value = "/classes/classTree", method = RequestMethod.GET)
     Result queryClassTree(@RequestParam(value = "modelerId") String modelerId,
                           @RequestParam(value = "edmcNameEns") String[] edmcNameEns);
 
@@ -46,9 +44,10 @@ public interface ModelerClient {
      * @param classId
      * @return
      */
-    @RequestMapping(value={"/classFormats/getCharacterAndFormat"}, method={RequestMethod.GET})
+    @RequestMapping(value = { "/classFormats/getCharacterAndFormat" }, method = {
+            RequestMethod.GET })
     Result getCharacterAndFormat(@RequestParam(value = "classId") String classId);
-    
+
     /**
      * 
      * getEdmcCode: 查询资源类信息
@@ -58,7 +57,8 @@ public interface ModelerClient {
      * @return
      */
     @RequestMapping(value = "/properties/values", method = RequestMethod.GET)
-    Result getEdmcNameEn(@RequestParam(value="classId") String classId, @RequestParam(value="edmpCode") String edmpCode);
+    Result getEdmcNameEn(@RequestParam(value = "classId") String classId,
+                         @RequestParam(value = "edmpCode") String edmpCode);
 
     /**
      * 根据modeler版本和类英文名查询类的所有实体子孙类
@@ -66,8 +66,18 @@ public interface ModelerClient {
      * @param edmcNameEn
      * @return
      */
-    @RequestMapping(value = "/classes/entity",method = RequestMethod.GET)
+    @RequestMapping(value = "/classes/entity", method = RequestMethod.GET)
     Result getEntityByVersionAndEnglishName(@RequestParam(value = "edmdVer") String edmdVer,
                                             @RequestParam(value = "edmcNameEn") String edmcNameEn);
-}
 
+    /**
+     * checkIsChileNode:根据父类id 子类id来确认 子类是否为父类的  子孙类
+     * @author caozhenx
+     * @param id 父类Id
+     * @param sid 子类id
+     * @return
+     */
+    @RequestMapping(value = "/classes/child/{id}/{sid}", method = RequestMethod.GET)
+    Result checkIsChileNode(@PathVariable(value = "id") String id,
+                            @PathVariable(value = "sid") String sid);
+}
