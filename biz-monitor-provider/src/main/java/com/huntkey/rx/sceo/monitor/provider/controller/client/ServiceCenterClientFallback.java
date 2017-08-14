@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 
 import com.huntkey.rx.commons.utils.rest.Result;
 
+import java.util.List;
+
 /**
  * ClassName:ServiceCenterClientFallback
  * Function: TODO ADD FUNCTION
@@ -52,7 +54,15 @@ public class ServiceCenterClientFallback implements ServiceCenterClient{
     public Result getMonitorClasses(String treeName, String beginTime, String endTime, String edmdVer, String edmcNameEn) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("监管服务无法连接共享服务中心getMonitorClasses服务！");
+        result.setErrMsg("监管服务无法连接共享服务中心 getMonitorClasses 服务！");
+        return result;
+    }
+
+    @Override
+    public Result getNodeResources(String name, List<String> nodes, String edmcNameEn) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("监管服务无法连接共享服务中心 getNodeResources 服务！");
         return result;
     }
 }
