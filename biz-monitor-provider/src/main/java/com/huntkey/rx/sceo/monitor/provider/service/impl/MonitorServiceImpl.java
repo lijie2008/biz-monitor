@@ -46,7 +46,7 @@ public class MonitorServiceImpl implements MonitorService {
 		condition.addCondition(PID, EQUAL, tempId, true);
 		if(!StringUtil.isNullOrEmpty(validDate)){
 			condition.addCondition(MTOR012, GT, ToolUtil.formatDateStr(validDate, YYYY_MM_DD), false);
-		}
+		}   
 		//查询节点集合表
 		JSONArray nodeArray=DBUtils.getArrayResult(MTOR005,null,condition);
 		if(JsonUtil.isNullOrEmpty(nodeArray)){
@@ -72,10 +72,9 @@ public class MonitorServiceImpl implements MonitorService {
 		for(String node:nodes){
 			if(!StringUtil.isNullOrEmpty(node)){
 				resourceArr=nodeResource(node, classId);//查询单个节点关联资源
-				JsonUtil.mergeJsonArray(resourceArr, resourceArrNew);
+				resourceArrNew=JsonUtil.mergeJsonArray(resourceArrNew,resourceArr);
 			}
 		}
-		
 		return resourceArrNew;
 	}
 	/**
@@ -94,16 +93,19 @@ public class MonitorServiceImpl implements MonitorService {
 		if(nodeJson!=null && !nodeJson.isEmpty()){
 			//查询员工表并且做左连
 			JSONObject staffObj=null;
-			condition.addCondition(ID, EQUAL, nodeJson.getString(MTOR009), true);//主管人
-			staffObj=DBUtils.getObjectResult(STAFF, new String[]{STAF002}, condition);
-			if(staffObj!=null){
-				nodeJson.put("majorStaff", staffObj.getString(STAF002));
+			if(nodeJson.containsKey(MTOR009) && !StringUtil.isNullOrEmpty(nodeJson.getString(MTOR009))){
+				condition.addCondition(ID, EQUAL, nodeJson.getString(MTOR009), true);//主管人
+				staffObj=DBUtils.getObjectResult(STAFF, new String[]{STAF002}, condition);
+				if(staffObj!=null){
+					nodeJson.put("majorStaff", staffObj.getString(STAF002));
+				}
 			}
-			
-			condition.addCondition(ID, EQUAL, nodeJson.getString(MTOR010), true);//协管人
-			staffObj=DBUtils.getObjectResult(STAFF, new String[]{STAF002}, condition);
-			if(staffObj!=null){
-				nodeJson.put("assistStaff", staffObj.getString(STAF002));
+			if(nodeJson.containsKey(MTOR010) && !StringUtil.isNullOrEmpty(nodeJson.getString(MTOR010))){
+				condition.addCondition(ID, EQUAL, nodeJson.getString(MTOR010), true);//协管人
+				staffObj=DBUtils.getObjectResult(STAFF, new String[]{STAF002}, condition);
+				if(staffObj!=null){
+					nodeJson.put("assistStaff", staffObj.getString(STAF002));
+				}
 			}
 			
 		}else{
@@ -139,13 +141,13 @@ public class MonitorServiceImpl implements MonitorService {
 		condition.addCondition(PID, EQUAL, nodeId, true);
 		JSONArray resourceArr=DBUtils.getArrayResult(MTOR019, null, condition);
 		if(!JsonUtil.isNullOrEmpty(resourceArr)){
-			LoopTO loop=new LoopTO(resourceTab,ID,MTOR021,null,null);
+			LoopTO loop=new LoopTO(resourceTab,ID,MTOR020,null,null);
 			//循环查询资源表
 			resources=DBUtils.loopQuery(loop, resourceArr);
 			//结果集中字段转换
 			resources=convert(jsonCharacter,resources);
 			//数据集做交集
-			JoinTO join=new JoinTO(MTOR021,ID,new String[]{"text"});
+			JoinTO join=new JoinTO(MTOR020,ID,new String[]{"text"});
 			resourceArr=DataUtil.mergeJsonArray(resourceArr, resources, join);
 		}else{
 			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(), 
@@ -155,6 +157,8 @@ public class MonitorServiceImpl implements MonitorService {
 	}
 	private JSONArray convert(JSONObject characterObj,JSONArray resourcesObjs) {
 		// TODO Auto-generated method stub
+		if(JsonUtil.isNullOrEmpty(resourcesObjs))
+			return null;
 		JSONArray characterArray = characterObj.getJSONArray("character");
 		JSONArray resources = new JSONArray();
         String format = characterObj.getString("format");
@@ -166,8 +170,8 @@ public class MonitorServiceImpl implements MonitorService {
             for (String fieldName : resourceFields){
                 edmObjName = edmObjName.replace(fieldName, resourcesObj.getString(fieldName));
                 resourcesObj.put("text",edmObjName);
-                resources.add(resourcesObj);
             }
+            resources.add(resourcesObj);
         }
         return resources;
 	}
@@ -199,7 +203,7 @@ public class MonitorServiceImpl implements MonitorService {
 		Condition condition=new Condition();
 		condition.addCondition(PID, EQUAL, nodeId, true);
 		condition.addCondition(MTOR020, EQUAL, resourceId, false);
-		JSONObject retObj=DBUtils.getObjectResult(MTOR019, new String[]{"id"}, condition);
+		JSONObject retObj=DBUtils.getObjectResult(MTOR019, null, condition);
 		if(retObj==null){
 			return result;
 		}else{
@@ -257,8 +261,6 @@ public class MonitorServiceImpl implements MonitorService {
 		JSONObject node= nodeDetail(nodeId);
 		NodeTo nodeDetail=null;
 		JSONObject nodeRight=null;
-		JSONObject nodeLeft=null;
-		JSONObject nodeParent=null;  
 		Condition condition=new Condition();
 		if(node!=null){
 			switch (nodeType){
@@ -270,43 +272,44 @@ public class MonitorServiceImpl implements MonitorService {
 							nodeRight!=null?nodeRight.getString(ID):NULL, NULL,node.getString(PID),1);
 					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
 					
+					//如果存在最右侧节点  则变更最右侧节点的右节点信息
+					if(nodeRight!=null){
+						changeNodePosition(nodeRight.getString(ID), 4, newNodeId);
+					}
+					
 					if(StringUtil.isEqual(NULL, node.getString(MTOR014))) {
 						//如果父节点以前没有子节点  变更父节点的子节点信息
 						changeNodePosition(node.getString(ID), 2, newNodeId);
 					}
 				break;
 				case 1://创建左节点
-					condition.addCondition(ID, EQUAL, node.getString(MTOR015), true);//当前节点的左节点
-					nodeLeft=DBUtils.getObjectResult(MTOR005,null,condition);
-					
 					//1.创建新的左节点
 					nodeDetail=setNodePosition(node.getString(MTOR013), NULL, 
-							node.getString(ID), nodeLeft!=null?nodeLeft.getString(ID):NULL
-							,node.getString(PID),1);
+							node.getString(MTOR015),node.getString(ID), 
+							node.getString(PID),1);
 					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
 					//2.如果当前节点之前没有左节点 则变更父节点的子节点信息 
-					if(nodeLeft==null){
-						condition.addCondition(ID, EQUAL, node.getString(MTOR013), true);//当前节点的左节点
-						nodeParent=queryNode(condition,null);
-						changeNodePosition(nodeParent.getString(ID), 2, newNodeId);
+					if(StringUtil.isEqual(NULL, node.getString(MTOR015))){
+						changeNodePosition(node.getString(MTOR013), 2, newNodeId);
+					}else{//4.如果有左节点 则变更之前左节点的有节点
+						changeNodePosition(node.getString(MTOR015), 4, newNodeId);
 					}
 					//3.要变更当前节点的左节点信息
 					changeNodePosition(node.getString(ID), 3, newNodeId);
-					//4.变更之前左节点的右节点信息
-					changeNodePosition(nodeLeft.getString(ID), 3, newNodeId);
+					
 				break;	
 				case 2://创建右节点
-					condition.addCondition(ID, EQUAL, node.getString(MTOR016), true);//当前节点的右节点
-					nodeRight=DBUtils.getObjectResult(MTOR005,null,condition);
 					//1.创建新的右节点
 					nodeDetail=setNodePosition(node.getString(MTOR013), NULL, 
-							node.getString(ID), nodeRight!=null?nodeRight.getString(ID):NULL,
+							node.getString(ID), node.getString(MTOR016),
 							node.getString(PID),1);
 					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
 					//2.要变更当前节点的右节点信息
 					changeNodePosition(node.getString(ID), 4, newNodeId);
 					//3.变更之前右节点的左节点信息
-					changeNodePosition(nodeRight.getString(ID), 3, newNodeId);
+					if(!StringUtil.isEqual(NULL, node.getString(MTOR016))){
+						changeNodePosition(node.getString(MTOR016), 3, newNodeId);
+					}
 				break;
 			}
 		}
@@ -325,22 +328,25 @@ public class MonitorServiceImpl implements MonitorService {
 		Condition condition=new Condition();
 		condition.addCondition(ID, EQUAL, nodeId, true);
 		JSONObject delNode=queryNode(condition,null);
-		JSONObject nodeParent=null;
-		JSONObject nodeLeft=null;
-		JSONObject nodeRight=null;
+		String nodeParent=null;
+		String nodeLeft=null;
+		String nodeRight=null;
 		if(delNode!=null){
 			//1.递归查询删除的节点的子节点(包含子节点的子节点)
-			JSONArray nodes=getChildNode(nodeId);
-			JSONObject nodesClassify=classifyNodes(nodes);
-			JSONArray addNodes=null;
-			JSONArray updateNodes=null;
-			if(nodesClassify!=null && nodesClassify.containsKey("addNodes")){//取出新增节点
-				addNodes=JsonUtil.getJsonArrayByAttr(nodesClassify, "addNodes");
-			}
-			if(nodesClassify!=null && nodesClassify.containsKey("updateNodes")){//取出新增节点
-				updateNodes=JsonUtil.getJsonArrayByAttr(nodesClassify, "updateNodes");
-			}
+			JSONArray nodes=getChildNode(nodeId);//结果集中只包含ID
 			
+			JSONArray addNodes=null;//新增节点
+			JSONArray updateNodes=null;//修改节点
+			if(!JsonUtil.isNullOrEmpty(nodes)){//存在子节点
+				
+				JSONObject nodesClassify=classifyNodes(nodes);
+				if(nodesClassify!=null && nodesClassify.containsKey("addNodes")){//取出新增节点
+					addNodes=JsonUtil.getJsonArrayByAttr(nodesClassify, "addNodes");
+				}
+				if(nodesClassify!=null && nodesClassify.containsKey("updateNodes")){//取出新增节点
+					updateNodes=JsonUtil.getJsonArrayByAttr(nodesClassify, "updateNodes");
+				}
+			}
 			//新增节点做删除
 			if(!JsonUtil.isNullOrEmpty(addNodes)){
 				if(type==1){
@@ -348,57 +354,53 @@ public class MonitorServiceImpl implements MonitorService {
 				}
 				DBUtils.delete(MTOR005, addNodes);
 			}else{//没有子节点只删除当前一个节点
-				JSONObject json=new JSONObject();
-				json.put(ID, delNode.getString(ID));
-				DBUtils.delete(MTOR005, json);
+				if(type==1){
+					JSONObject json=new JSONObject();
+					json.put(ID, delNode.getString(ID));
+					DBUtils.delete(MTOR005, json);
+				}
 			}
 			
 			//修改节点失效
 			if(!JsonUtil.isNullOrEmpty(updateNodes)){
 				if(type==0){
-					addNodes.add(delNode);
+					updateNodes.add(delNode);
 				}
 				Map<String, Object> map=new HashMap<String, Object>();
 				map.put(MTOR021, ChangeType.INVALID.getValue());
 				JsonUtil.addAttr(updateNodes, map);
-				DBUtils.add(MTOR005, addNodes);
-			}else{//没有子节点只删除当前一个节点
-				JSONObject json=new JSONObject();
-				json.put(ID, delNode.getString(ID));
-				json.put(MTOR021, ChangeType.INVALID.getValue());
-				DBUtils.delete(MTOR005, json);
+				DBUtils.update(MTOR005, addNodes);
+			}else{//没有子节点只失效当前一个节点
+				if(type==0){
+					JSONObject json=new JSONObject();
+					json.put(ID, delNode.getString(ID));
+					json.put(MTOR021, ChangeType.INVALID.getValue());
+					DBUtils.update(MTOR005, json);
+				}
 			}
 			
-			//2.查询删除节点之前的父节点 左、右节点信息
-			condition.addCondition(ID, EQUAL, delNode.getString(MTOR013),true);
-			nodeParent=queryNode(condition, null);
-			if(nodeParent==null){//如果父节点为空
-				ApplicationException.throwCodeMesg(ErrorMessage._60009.getCode(), 
-						ErrorMessage._60009.getMsg());
-			}
-			condition.addCondition(ID, EQUAL, delNode.getString(MTOR015),true);
-			nodeLeft=queryNode(condition, null);
-			
-			condition.addCondition(ID, EQUAL, delNode.getString(MTOR016),true);
-			nodeRight=queryNode(condition, null);
+			//2.得到删除节点之前的父节点 左、右节点信息
+			nodeParent=delNode.getString(MTOR013);
+			nodeLeft=delNode.getString(MTOR015);
+			nodeRight=delNode.getString(MTOR016);
 			//3.变更各节点信息
 			//a.如果删除的节点没有左右节点 
-			if(nodeLeft==null && nodeRight==null){
-				changeNodePosition(nodeParent.getString(ID), 2, "");//将父节点的子节点置空
+			if(StringUtil.isEqual(NULL,nodeLeft) && StringUtil.isEqual(NULL,nodeRight)){
+				changeNodePosition(nodeParent, 2, NULL);//将父节点的子节点置空
 			}
 			//b.如果删除的节点没有左节点右有节点   
-			else if(nodeLeft==null && nodeRight!=null){
-				changeNodePosition(nodeParent.getString(ID), 2, nodeRight.getString(ID));//更改父节点的子节点为右节点
-				changeNodePosition(nodeRight.getString(ID), 3, "");//右节点的左节点置空
+			else if(StringUtil.isEqual(NULL,nodeLeft) && !StringUtil.isEqual(NULL,nodeRight)){
+				changeNodePosition(nodeParent, 2, nodeRight);//更改父节点的子节点为右节点
+				changeNodePosition(nodeRight, 3, NULL);//右节点的左节点置空
 			}
 			//c.如果删除的节点有左节点没有右节点  
-			else if(nodeLeft!=null && nodeRight==null){
-				changeNodePosition(nodeLeft.getString(ID), 4, "");//将左节点的右节点置空
+			else if(!StringUtil.isEqual(NULL,nodeLeft) && StringUtil.isEqual(NULL,nodeRight)){
+				changeNodePosition(nodeLeft, 4, NULL);//将左节点的右节点置空
 			}
 			//d.如果存在左右节点
 			else{
-				changeNodePosition(nodeLeft.getString(ID), 4, nodeRight.getString(ID));//将左节点的右节点变更成右节点
-				changeNodePosition(nodeRight.getString(ID), 3, nodeLeft.getString(ID));//将右节点的左节点变更成左节点
+				changeNodePosition(nodeLeft, 4, nodeRight);//将左节点的右节点变更成右节点
+				changeNodePosition(nodeRight, 3, nodeLeft);//将右节点的左节点变更成左节点
 			}
 			
 		}
@@ -443,10 +445,13 @@ public class MonitorServiceImpl implements MonitorService {
 		}else{
 			//1.如果左节点为空  则将移动节点做为父节点的子节点
 			changeNodePosition(nodeParentId, 2, nodeId);
+			changeNodePosition(nodeParentId, 3, NULL);//变更移动节点的左节点为空
 		}
 		if(!StringUtil.isNullOrEmpty(nodeRightId)){//变更右节点
 			changeNodePosition(nodeId, 4, nodeRightId);//变更移动节点的右节点
 			changeNodePosition(nodeRightId, 3, nodeId);//变更右节点的左节点
+		}else{//如果不存在右节点 将右节点置空
+			changeNodePosition(nodeId, 4, NULL);
 		}
 		
 		return nodeId;
@@ -456,9 +461,9 @@ public class MonitorServiceImpl implements MonitorService {
 	private JSONArray getChildNode(String nodeId){
 		JSONArray allNodes=new JSONArray();
 		Condition condition=new Condition();
-		condition.addCondition(MTOR014, EQUAL, nodeId, true);
+		condition.addCondition(MTOR013, EQUAL, nodeId, true);
 		condition.addCondition(MTOR021, LT, ChangeType.INVALID.toString(), false);
-		JSONArray nodes=queryNodes(condition,new String[]{ID});
+		JSONArray nodes=queryNodes(condition);
 		while(!JsonUtil.isNullOrEmpty(nodes)){
 			for(Object obj:nodes){
 				JSONObject json=JsonUtil.getJson(obj);
@@ -490,8 +495,8 @@ public class MonitorServiceImpl implements MonitorService {
 	 * @param condition 查询条件
 	 * @return
 	 */
-	private JSONArray queryNodes(Condition condition,String[] columns){
-		JSONArray nodes=DBUtils.getArrayResult(MTOR005,columns,condition);
+	private JSONArray queryNodes(Condition condition){
+		JSONArray nodes=DBUtils.getArrayResult(MTOR005,null,condition);
 		if(nodes==null){
 			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),
 					ErrorMessage._60003.getMsg()); 

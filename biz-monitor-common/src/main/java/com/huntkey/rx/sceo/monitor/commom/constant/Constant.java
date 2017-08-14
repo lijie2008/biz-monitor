@@ -119,7 +119,7 @@ public interface Constant {
     
     String MTOR005="monitortreeorder.mtor005";//监管树临时单_节点集合表
     
-    String MTOR019="monitortreeorder.mtor019";//监管树临时单_资源集合表
+    String MTOR019="monitortreeorder.mtor005.mtor019";//监管树临时单_资源集合表
     
     String MTOR009="mtor009";//主管人
     

@@ -44,8 +44,8 @@ public class MonitorController {
 	 * @return
 	 */
 	@RequestMapping(value="/containResource")
-	public Result containResource(@RequestParam(value="nodes") @NotBlank(message="监管树临时单节点ID数组不能为空") 
-	@Size(min=1) String[] nodes,
+	public Result containResource(@RequestParam(value="nodes") @Size(min=1) 
+	String[] nodes,
 	@RequestParam(value="classId") @NotBlank(message="监管树类ID不能为空") String classId){
 		Result result=new Result();
 		result.setRetCode(Result.RECODE_SUCCESS);
@@ -95,7 +95,7 @@ public class MonitorController {
 	 * @param resourceId 临时单ID
 	 * @return
 	 */
-	@RequestMapping(value="/deleteNodeResource",method=RequestMethod.DELETE)
+	@RequestMapping(value="/deleteNodeResource")
 	public Result deleteNodeResource(@RequestParam(value="nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
 		@RequestParam(value="resourceId") @NotBlank(message="资源ID不能为空") String resourceId){
 		return service.deleteNodeResource(nodeId,resourceId);
