@@ -236,9 +236,9 @@ public class MonitorServiceImpl implements MonitorService {
 		// TODO Auto-generated method stub
 		Result result=new Result();
 		result.setRetCode(Result.RECODE_SUCCESS);
-		JSONObject param=new JSONObject();
 		JSONArray params=new JSONArray();
 		for(String resourceId:resourceIds){
+		    JSONObject param=new JSONObject();
 			if(!StringUtil.isNullOrEmpty(resourceId)){
 				param.put(MTOR020, resourceId);
 				param.put(PID, nodeId);
