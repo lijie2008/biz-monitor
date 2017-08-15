@@ -40,6 +40,11 @@ public interface StatisticsConstant {
     public String MONITOR_ID = "monitorId";
     
     /**
+     * MONITOR_ID:所属监管类英文名
+     */
+    public String EDMC_NAME_EN = "edmcNameEn";
+    
+    /**
      * PERIOD_ID:周期类id
      */
     public String PERIOD_ID = "periodId";
@@ -78,11 +83,6 @@ public interface StatisticsConstant {
      * STATISTICS:统计结果
      */
     public String STATISTICS = "statistics";
-    
-    /**
-     * EDM_NAME_STATISTICS:edm类名
-     */
-    public String EDM_NAME_MONITOR = "monitor";
     
     /**
      * CHILD_NODES:子节点信息

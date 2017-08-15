@@ -41,12 +41,13 @@ public interface StatisticsBiz {
      * 查询条件
      *     {
      *      "monitorId":"所属监管类id",
+     *      "edmcNameEn":"所属监管类英文名",
      *     "periodId":"周期类id",
+     *     "type":"查询类型",
      *     "attributeIds":[{"attrId":"attrid1","attrName":"属性1"},{"attrId":"attrid2","attrName":"属性2"}],
      *     "treeNode":{
      *             "nodeId":"节点id",
-     *     "nodeName":"节点名",
-     *             "childNodes":[{"nodeId":"chilenodeid1","nodeName":"子节点1名"},{"nodeId":"childnodeid2","nodeName":"子节点2名"}]
+     *     "nodeName":"节点名"
      *         }
      *     }
      *     

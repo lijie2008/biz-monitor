@@ -90,7 +90,8 @@ public class StatisticsBizImpl implements StatisticsBiz {
     /**
      * 查询条件
      *     {
-     *      "monitorId":"所属监管类id",
+     *     "monitorId":"所属监管类id",
+     *     "edmcNameEn":"所属监管类英文名",
      *     "periodId":"周期类id",
      *     "attributeIds":[{"attrId":"attrid1","attrName":"属性1"},{"attrId":"attrid2","attrName":"属性2"}],
      *     "type":"查询类型，0查询本节点，1查询子节点",
@@ -148,7 +149,14 @@ public class StatisticsBizImpl implements StatisticsBiz {
         String monitorId = json.getString(StatisticsConstant.MONITOR_ID);
         if (StringUtils.isBlank(monitorId)) {
             result.setRetCode(Result.RECODE_ERROR);
-            result.setErrMsg("所属监管类不可为空..");
+            result.setErrMsg("所属监管类id不可为空..");
+            return result;
+        }
+        
+        String edmcNameEn = json.getString(StatisticsConstant.EDMC_NAME_EN);
+        if (StringUtils.isBlank(monitorId)) {
+            result.setRetCode(Result.RECODE_ERROR);
+            result.setErrMsg("所属监管类英文名不可为空..");
             return result;
         }
 
@@ -184,7 +192,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
         //查询type为1时表示查询子节点数据  否则为查询本节点数据
         if (StatisticsConstant.QUERY_TYPE_1.equals(type)) {
             //根据节点id，查询其子节点
-            JSONArray chileNodes = getChileNodes(treeNodeId);//treeNode.getJSONArray(StatisticsConstant.CHILD_NODES);
+            JSONArray chileNodes = getChileNodes(treeNodeId,edmcNameEn);//treeNode.getJSONArray(StatisticsConstant.CHILD_NODES);
             if (chileNodes != null && !chileNodes.isEmpty()) {
                 for (Object o : chileNodes) {
                     JSONObject jsonObj = JsonUtil.getJson(o);
@@ -211,10 +219,10 @@ public class StatisticsBizImpl implements StatisticsBiz {
         return result;
     }
 
-    private JSONArray getChileNodes(String treeNodeId) {
+    private JSONArray getChileNodes(String treeNodeId,String edmcNameEn) {
 
-        if (StringUtils.isNotBlank(treeNodeId)) {
-            return monitorTreeService.getChileNodes(treeNodeId,StatisticsConstant.EDM_NAME_MONITOR);
+        if (StringUtils.isNotBlank(treeNodeId) && StringUtils.isNotBlank(edmcNameEn)) {
+            return monitorTreeService.getChileNodes(treeNodeId,edmcNameEn);
         }
 
         return null;
