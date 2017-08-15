@@ -122,7 +122,10 @@ public class MonitorController {
 	@RequestMapping(value="/addResource",method=RequestMethod.GET)
 	public Result addResource(@RequestParam(value="nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
 		@RequestParam(value="resourceIds") @NotBlank(message="资源ID不能为空") String[] resourceIds){
-		return service.addResource(nodeId,resourceIds);
+		Result result=new Result();
+		result.setRetCode(Result.RECODE_SUCCESS);
+		result.setData(service.addResource(nodeId,resourceIds));
+		return result;
 	}
 	
 	/**

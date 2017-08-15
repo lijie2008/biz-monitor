@@ -387,6 +387,8 @@ public class MonitorTreeOrderController {
      */
     private void addTargetNode(List<NodeDetailTo> nodes, String edmName, ChangeType type,
                                NodeDetailTo node,String orderId) {
+        if(JsonUtil.isEmpity(nodes))
+            return;
         // 新增节点信息
         List<TargetNodeTo> targetNodes = JSON.parseArray(JsonUtil.getJsonArrayString(nodes), TargetNodeTo.class);
         logger.info("节点详情筛选开始2。。。。。。。。。。。。。。。。。。。。。。。");

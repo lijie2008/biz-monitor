@@ -20,7 +20,7 @@ public interface MonitorService {
 	//变更公式
 	Result changeFormula(String nodeId,String formularId);
 	//新增资源
-	Result addResource(String nodeId,String[] resourceIds);
+	String addResource(String nodeId,String[] resourceIds);
 	Result saveTemp(String datas);
 	//新增节点
 	String addNode(String nodeId,int nodeType);
