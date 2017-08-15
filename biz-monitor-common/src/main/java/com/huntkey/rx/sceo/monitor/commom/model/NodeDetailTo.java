@@ -26,7 +26,7 @@ import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
  * @version  
  * @see 	 
  */
-public class NodeDetailTo extends NodeTo {
+public class NodeDetailTo extends NodeTo implements Cloneable{
     
     /**
      * 关联资源对象集合
@@ -89,6 +89,8 @@ public class NodeDetailTo extends NodeTo {
                 if(obj.containsKey(value)){
                     Object obj_value = obj.get(value);
                     copy_obj.put(key, obj_value);
+                }else{
+                    copy_obj.put(key,obj.get(key));
                 }
             }
             copy.add(copy_obj);
@@ -96,5 +98,11 @@ public class NodeDetailTo extends NodeTo {
         return copy;
     }
 
+    @Override
+    public NodeDetailTo clone() throws CloneNotSupportedException {
+        return (NodeDetailTo)super.clone();
+    }
+
+    
 }
 
