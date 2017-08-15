@@ -27,6 +27,12 @@ import java.util.List;
 @FeignClient(value = "serviceCenter-provider", fallback = ServiceCenterClientFallback.class)
 public interface ServiceCenterClient {
 
+    /**
+     * queryServiceCenter:根据条件查询servicecenter信息
+     * @author caozhenx
+     * @param data orm查询条件
+     * @return
+     */
     @RequestMapping(value = "/servicecenter/find", method = RequestMethod.POST)
     Result queryServiceCenter(@RequestBody String data);
 
