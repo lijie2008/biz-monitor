@@ -113,10 +113,10 @@ public class StatisticsBizImpl implements StatisticsBiz {
      *          {"attrId":"attrid1","attrName":"属性1","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"},
      *          {"attrId":"attrid2","attrName":"属性2","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"}
      *      ],
-     *             "childNodes":[
+     *     "childNodes":[
      *          {
      *          "nodeId":"节点id",
-     *              "nodeName":"节点名",
+     *          "nodeName":"节点名",
      *          "statistics":[
      *                  {"attrId":"attrid1","attrName":"属性1","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"},
      *                  {"attrId":"attrid2","attrName":"属性2","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"}
@@ -192,7 +192,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
         //查询type为1时表示查询子节点数据  否则为查询本节点数据
         if (StatisticsConstant.QUERY_TYPE_1.equals(type)) {
             //根据节点id，查询其子节点
-            JSONArray chileNodes = getChileNodes(treeNodeId,edmcNameEn);//treeNode.getJSONArray(StatisticsConstant.CHILD_NODES);
+            JSONArray chileNodes = getChileNodes(treeNodeId,edmcNameEn);
             if (chileNodes != null && !chileNodes.isEmpty()) {
                 for (Object o : chileNodes) {
                     JSONObject jsonObj = JsonUtil.getJson(o);
