@@ -83,5 +83,14 @@ public class HbaseClientFallback implements HbaseClient{
         return result;
     }
 
+	@Override
+	public Result getMonitorTreeNodes(String edmcNameEn, String searchDate, String rootNodeId) {
+		// TODO Auto-generated method stub
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("hbase client getMonitorTreeNodes fallback");
+        return result;
+	}
+
 }
 

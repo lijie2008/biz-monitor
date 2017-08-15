@@ -117,9 +117,17 @@ public interface Constant {
     
     String MONITORTREEORDER="monitortreeorder";//监管树临时单表
     
+    String MTOR001="mtor001";//单据编号
+    
+    String MTOR002="mtor002";//变更类型
+    
+    String MTOR003="mtor003";//变更监管树类
+    
+    String MTOR004="mtor004";//变更树对象根节点
+    
     String MTOR005="monitortreeorder.mtor005";//监管树临时单_节点集合表
     
-    String MTOR019="monitortreeorder.mtor019";//监管树临时单_资源集合表
+    String MTOR019="monitortreeorder.mtor005.mtor019";//监管树临时单_资源集合表
     
     String MTOR009="mtor009";//主管人
     
@@ -145,5 +153,6 @@ public interface Constant {
     
     String STAF002="staf002";//员工姓名字段
     
+    String INITNODENAME="未命名节点";//初始化节点名称
 }
 
