@@ -33,7 +33,7 @@ public interface ServiceCenterClient {
      * @param data orm查询条件
      * @return
      */
-    @RequestMapping(value = "/servicecenter/find", method = RequestMethod.GET)
+    @RequestMapping(value = "/servicecenter/find", method = RequestMethod.POST)
     Result queryServiceCenter(@RequestBody String data);
 
     /**
