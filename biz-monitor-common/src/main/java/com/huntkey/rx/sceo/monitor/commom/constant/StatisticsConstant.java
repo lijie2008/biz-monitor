@@ -46,10 +46,24 @@ public interface StatisticsConstant {
      */
     public String ATTRIBUTE_IDS = "attributeIds";
     
+    public String ATTRIBUTE_ID = "attrId";
+    
+    public String ATTRIBUTE_NAME = "attrName";
+    
     /**
      * TREE_NODE:查询节点信息
      */
     public String TREE_NODE = "treeNode";
+    
+    /**
+     * TREE_NODE_ID:节点id
+     */
+    public String TREE_NODE_ID = "nodeId";
+    
+    /**
+     * TREE_NODE_NAME:节点名
+     */
+    public String TREE_NODE_NAME = "nodeName";
     
     /**
      * STATISTICS:统计结果
