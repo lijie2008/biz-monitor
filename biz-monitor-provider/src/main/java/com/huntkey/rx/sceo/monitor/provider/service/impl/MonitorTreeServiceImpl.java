@@ -60,31 +60,18 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 
         if (StringUtil.isNullOrEmpty(rootNodeId)) {
             //根据时间查询根节点
-            ConditionParam beginDateParam = new ConditionParam();
-            beginDateParam.setAttr("moni004");
-            beginDateParam.setOperator("<=");
-            beginDateParam.setValue(searchDate);
+            ConditionParam beginDateParam = new ConditionParam("moni004","<=",searchDate);
             conditions.add(beginDateParam);
 
-            ConditionParam endDateParam = new ConditionParam();
-            endDateParam.setAttr("moni005");
-            endDateParam.setOperator(">");
-            endDateParam.setValue(searchDate);
+            ConditionParam endDateParam = new ConditionParam("moni005",">",searchDate);
             conditions.add(endDateParam);
 
-            ConditionParam parentNodeParam = new ConditionParam();
-            parentNodeParam.setAttr("moni006");
-            parentNodeParam.setOperator("=");
-            parentNodeParam.setValue("null");
+            ConditionParam parentNodeParam = new ConditionParam("moni006","=","null");
             conditions.add(parentNodeParam);
 
         } else {
             //根据ID查询跟节点
-            ConditionParam nodeIdParam = new ConditionParam();
-            nodeIdParam.setAttr("id");
-            nodeIdParam.setOperator("=");
-            nodeIdParam.setValue(rootNodeId);
-
+            ConditionParam nodeIdParam = new ConditionParam("id","=",rootNodeId);
             conditions.add(nodeIdParam);
         }
 
@@ -138,26 +125,17 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 
         JSONArray conditions = new JSONArray();
 
-        ConditionParam nodeIdParam = new ConditionParam();
-        nodeIdParam.setAttr("moni006");
-        nodeIdParam.setOperator("=");
-        nodeIdParam.setValue("null");
+        ConditionParam nodeIdParam = new ConditionParam("moni006","=","null");
         conditions.add(nodeIdParam);
 
         if (!StringUtil.isNullOrEmpty(treeName)) {
-            ConditionParam treeNameParam = new ConditionParam();
-            treeNameParam.setAttr("moni002");
-            treeNameParam.setOperator("like");
-            treeNameParam.setValue(treeName);
+            ConditionParam treeNameParam = new ConditionParam("moni002","like",treeName);
             conditions.add(treeNameParam);
         }
 
         //ORM暂不支持or查询，先只根据失效时间过滤
         if (!StringUtil.isNullOrEmpty(endTime)) {
-            ConditionParam treeTimeParam = new ConditionParam();
-            treeTimeParam.setAttr("moni005");
-            treeTimeParam.setOperator("<");
-            treeTimeParam.setValue(endTime);
+            ConditionParam treeTimeParam = new ConditionParam("moni005","<",endTime);
             conditions.add(treeTimeParam);
         }
 

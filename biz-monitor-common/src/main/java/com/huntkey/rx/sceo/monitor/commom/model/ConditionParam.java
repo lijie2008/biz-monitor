@@ -1,18 +1,26 @@
 package com.huntkey.rx.sceo.monitor.commom.model;
 
 /**
- * Created by linziy on 2017/7/28.
+ * 条件对象
+ * Created by kongquan on 2017/8/10.
  */
 public class ConditionParam {
-    //////////////////////////常量的定义//////////////////////////////////////
+
     public final static String ATTR = "attr";
     public final static String OPERATOR = "operator";
     public final static String VALUE = "value";
-    //////////////////////////////////////////////////////////////////////////
+
     private String attr;
     private String operator;
     private String value;
 
+    public ConditionParam(String attr, String operator, String value){
+    	this.attr = attr;
+    	this.operator = operator;
+    	this.value = value;
+    }
+    
+    
     public String getAttr() {
         return attr;
     }
@@ -39,10 +47,10 @@ public class ConditionParam {
 
     @Override
     public String toString() {
-        return "${" +
-                "'attr':'" + attr + '\'' +
-                ",'operator':'" + operator + '\'' +
-                ",'value':'" + value + '\'' +
+        return "{" +
+                "attr:'" + attr + '\'' +
+                ", operator:'" + operator + '\'' +
+                ", value:'" + value + '\'' +
                 '}';
     }
 }
