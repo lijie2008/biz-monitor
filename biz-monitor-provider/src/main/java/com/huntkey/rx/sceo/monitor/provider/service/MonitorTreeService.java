@@ -34,4 +34,13 @@ public interface MonitorTreeService {
     JSONArray getMonitorTrees(String treeName, String edmcNameEn, String beginTime, String endTime);
 
     JSONArray getNodeResources(String name, List<String> nodes, String edmcId);
+    
+    /**
+     * getChileNodes:根据节点id查询其子节点信息
+     * @author caozhenx
+     * @param nodeId
+     * @param edmcNameEn 
+     * @return
+     */
+    public JSONArray getChileNodes(String nodeId ,String edmcNameEn);
 }
