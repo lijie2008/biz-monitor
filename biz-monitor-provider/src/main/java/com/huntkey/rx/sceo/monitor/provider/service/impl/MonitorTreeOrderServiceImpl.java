@@ -182,12 +182,12 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         cnd.setAttr(Constant.PID);
         cnd.setOperator("=");
         cnd.setValue(orderId);
+        cnds.add(cnd);
         ConditionParam cnd2 = new ConditionParam();
         cnd2.setAttr("mtor013");
         cnd2.setOperator("=");
         // TODO NULL
         cnd2.setValue(Constant.NULL);
-        cnds.add(cnd);
         cnds.add(cnd2);
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR005A, null,cnds, null, null));
         
