@@ -26,6 +26,7 @@ import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
 import com.huntkey.rx.sceo.monitor.commom.constant.StatisticsConstant;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.biz.StatisticsBiz;
+import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
 import com.huntkey.rx.sceo.monitor.provider.service.PeriodService;
 import com.huntkey.rx.sceo.monitor.provider.service.StatisticsService;
 
@@ -47,6 +48,9 @@ public class StatisticsBizImpl implements StatisticsBiz {
 
     @Autowired
     StatisticsService statisticsService;
+
+    @Autowired
+    MonitorTreeService monitorTreeService;
 
     /**
      * 
@@ -86,15 +90,17 @@ public class StatisticsBizImpl implements StatisticsBiz {
     /**
      * 查询条件
      *     {
-     *      "monitorId":"所属监管类id",
+     *     "monitorId":"所属监管类id",
+     *     "edmcNameEn":"所属监管类英文名",
      *     "periodId":"周期类id",
      *     "attributeIds":[{"attrId":"attrid1","attrName":"属性1"},{"attrId":"attrid2","attrName":"属性2"}],
+     *     "type":"查询类型，0查询本节点，1查询子节点",
      *     "treeNode":{
      *             "nodeId":"节点id",
-     *     "nodeName":"节点名",
-     *             "childNodes":[{"nodeId":"chilenodeid1","nodeName":"子节点1名"},{"nodeId":"childnodeid2","nodeName":"子节点2名"}]
+     *             "nodeName":"节点名"
      *         }
      *     }
+     *     
      * 返回结果
      *       {
      *      "monitorId":"所属监管类id",
@@ -143,9 +149,17 @@ public class StatisticsBizImpl implements StatisticsBiz {
         String monitorId = json.getString(StatisticsConstant.MONITOR_ID);
         if (StringUtils.isBlank(monitorId)) {
             result.setRetCode(Result.RECODE_ERROR);
-            result.setErrMsg("所属监管类不可为空..");
+            result.setErrMsg("所属监管类id不可为空..");
             return result;
         }
+        
+        String edmcNameEn = json.getString(StatisticsConstant.EDMC_NAME_EN);
+        if (StringUtils.isBlank(monitorId)) {
+            result.setRetCode(Result.RECODE_ERROR);
+            result.setErrMsg("所属监管类英文名不可为空..");
+            return result;
+        }
+
         String periodId = json.getString(StatisticsConstant.PERIOD_ID);
         if (StringUtils.isBlank(periodId)) {
             result.setRetCode(Result.RECODE_ERROR);
@@ -159,6 +173,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
             result.setErrMsg("查询属性集不可为空..");
             return result;
         }
+
         JSONObject treeNode = json.getJSONObject(StatisticsConstant.TREE_NODE);
         if (treeNode == null) {
             result.setRetCode(Result.RECODE_ERROR);
@@ -172,18 +187,29 @@ public class StatisticsBizImpl implements StatisticsBiz {
             return result;
         }
 
-        JSONArray js = queryStatistics(monitorId, treeNodeId, periodId, attributeIds);
-        treeNode.put(StatisticsConstant.STATISTICS, js);
+        String type = json.getString(StatisticsConstant.QUERY_TYPE);
 
-        //k果有子节点  查询子节点统计数据
-        JSONArray chileNodes = treeNode.getJSONArray(StatisticsConstant.CHILD_NODES);
-        if (chileNodes != null && !chileNodes.isEmpty()) {
-            for (Object o : chileNodes) {
-                JSONObject jsonObj = JsonUtil.getJson(o);
-                String id = jsonObj.getString(StatisticsConstant.TREE_NODE_ID);
-                jsonObj.put(StatisticsConstant.STATISTICS,
-                        queryStatistics(monitorId, id, periodId, attributeIds));
+        //查询type为1时表示查询子节点数据  否则为查询本节点数据
+        if (StatisticsConstant.QUERY_TYPE_1.equals(type)) {
+            //根据节点id，查询其子节点
+            JSONArray chileNodes = getChileNodes(treeNodeId,edmcNameEn);//treeNode.getJSONArray(StatisticsConstant.CHILD_NODES);
+            if (chileNodes != null && !chileNodes.isEmpty()) {
+                for (Object o : chileNodes) {
+                    JSONObject jsonObj = JsonUtil.getJson(o);
+                    String id = jsonObj.getString(StatisticsConstant.ID);
+                    String name = jsonObj.getString("moni002");
+                    
+                    jsonObj.put(StatisticsConstant.TREE_NODE_ID, id);
+                    jsonObj.put(StatisticsConstant.TREE_NODE_NAME, name);
+                    jsonObj.put(StatisticsConstant.STATISTICS,
+                            queryStatistics(monitorId, id, periodId, attributeIds));
+                }
             }
+
+            treeNode.put(StatisticsConstant.CHILD_NODES, chileNodes);
+        } else {
+            JSONArray js = queryStatistics(monitorId, treeNodeId, periodId, attributeIds);
+            treeNode.put(StatisticsConstant.STATISTICS, js);
         }
 
         json.put(StatisticsConstant.TREE_NODE, treeNode);
@@ -191,6 +217,15 @@ public class StatisticsBizImpl implements StatisticsBiz {
         result.setData(json);
 
         return result;
+    }
+
+    private JSONArray getChileNodes(String treeNodeId,String edmcNameEn) {
+
+        if (StringUtils.isNotBlank(treeNodeId) && StringUtils.isNotBlank(edmcNameEn)) {
+            return monitorTreeService.getChileNodes(treeNodeId,edmcNameEn);
+        }
+
+        return null;
     }
 
     /**
@@ -267,7 +302,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
             JSONObject attrJson = JsonUtil.getJson(obj);
             String attrId = attrJson.getString(StatisticsConstant.ATTRIBUTE_ID);
             String attrName = attrJson.getString(StatisticsConstant.ATTRIBUTE_NAME);
-            
+
             JSONObject attrValJson = new JSONObject();
 
             attrValJson.put(StatisticsConstant.ATTRIBUTE_ID, attrId);
