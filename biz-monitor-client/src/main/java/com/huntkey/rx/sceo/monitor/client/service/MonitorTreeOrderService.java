@@ -73,7 +73,7 @@ public interface MonitorTreeOrderService {
      * @param orderId 临时单Id
      * @return
      */
-    @RequestMapping(value="/store", method = RequestMethod.GET)
+    @RequestMapping(value="/monitor/store", method = RequestMethod.GET)
     public Result store(@RequestParam(value="orderId",required=true) String orderId);
     
     /**
@@ -83,7 +83,7 @@ public interface MonitorTreeOrderService {
      * @param orderId 临时单ID
      * @return
      */
-    @RequestMapping(value="/revoked", method = RequestMethod.GET)
+    @RequestMapping(value="/monitor/revoked", method = RequestMethod.GET)
     public Result revoked(@RequestParam(value="orderId",required=true) String orderId);
     
 }

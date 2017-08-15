@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.commons.utils.string.StringUtil;
+import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.constant.PersistanceConstant;
 import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
@@ -75,19 +77,16 @@ public class MonitorTreeOrderController {
      * @return
      */
     @RequestMapping(value="/queryNotUsingResource", method = RequestMethod.GET)
-    public Result queryNotUsingResource(@RequestParam String orderId, @RequestParam String nodeId,
+    public Result queryNotUsingResource(@RequestParam(required=true) String orderId, @RequestParam(required=true) String nodeId,
                                         @RequestParam(defaultValue = "1",required=false) int currentPage, @RequestParam(defaultValue="20",required=false) int pageSize){
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        
-        if(JsonUtil.isEmpity(orderId) || JsonUtil.isEmpity(nodeId))
-            ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(),ErrorMessage._60004.getMsg());
 
         MonitorTreeOrderTo order = service.queryOrder(orderId);
         NodeTo node = service.queryNode(nodeId);
         if(JsonUtil.isEmpity(order) || JsonUtil.isEmpity(node))
-            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),ErrorMessage._60005.getMsg());
+            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"表单、节点" + ErrorMessage._60005.getMsg());
         
         String mtor003 = order.getMtor003();
         EdmClassTo edmClass = service.getEdmClass(mtor003, PersistanceConstant.EDMPCODE);
@@ -99,13 +98,18 @@ public class MonitorTreeOrderController {
         if(JsonUtil.isEmpity(resources))
             return result;
         
-        List<String> usedResourceIds = service.queryTreeNodeUsingResource(orderId, node.getMtor011(), node.getMtor012(),null);
+        List<ResourceTo> usedResources = service.queryTreeNodeUsingResource(orderId, node.getMtor011(), node.getMtor012(),null);
         
-        List<Object> datas = resources.parallelStream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
-                .collect(Collectors.toList());
-        
-        int totalSize = datas.size();
-        
+        List<Object> datas = null;
+        if(JsonUtil.isEmpity(usedResources))
+            datas = resources;
+        else{
+            Set<String> usedResourceIds = usedResources.parallelStream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
+            datas = resources.parallelStream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
+                    .collect(Collectors.toList());
+        }
+            
+        int totalSize = datas == null ? 0 : datas.size();
         JSONObject obj = new JSONObject();
         obj.put("totalSize", totalSize);
         obj.put("data", totalSize == 0 ? null : datas.subList((currentPage-1)*pageSize < 0 ? 0 : 
@@ -124,30 +128,24 @@ public class MonitorTreeOrderController {
      * @return
      */
     @RequestMapping(value="/checkNodeResource", method = RequestMethod.GET)
-    public Result checkNodeResource(@RequestParam String nodeId, @RequestParam String startDate, @RequestParam String endDate){
-       
+    public Result checkNodeResource(@RequestParam(required=true) String nodeId, @RequestParam(required=true) String startDate, @RequestParam(required=true) String endDate){
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        
-        if(JsonUtil.isEmpity(nodeId) || JsonUtil.isEmpity(startDate) || JsonUtil.isEmpity(endDate) )
-            ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(),ErrorMessage._60004.getMsg());
 
         NodeTo node = service.queryNode(nodeId);
         if(JsonUtil.isEmpity(node) || JsonUtil.isEmpity(node.getPid()))
-            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),ErrorMessage._60005.getMsg());
+            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"节点" + ErrorMessage._60005.getMsg());
     
         // 查询当前节点已经拥有的资源 - 集合1
        List<ResourceTo> nodeResources = service.queryResource(nodeId);
-       
        if(JsonUtil.isEmpity(nodeResources))
            return result;
         
-        // 查询已被节点使用的资源信息 - 集合2
-        List<String> usedResourceIds = service.queryTreeNodeUsingResource(node.getPid(), startDate, endDate, nodeId);
-        if(JsonUtil.isEmpity(usedResourceIds))
+        // 查询已被其它节点使用的资源信息 - 集合2
+        List<ResourceTo> usedResources = service.queryTreeNodeUsingResource(node.getPid(), startDate, endDate, nodeId);
+        if(JsonUtil.isEmpity(usedResources))
             return result;
-       
-        // 查询  集合1 和 集合2 的id是否有重合部分
+       Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
         if(nodeResources.parallelStream().anyMatch(re -> usedResourceIds.contains(re.getMtor020())))
             ApplicationException.throwCodeMesg(ErrorMessage._60006.getCode(),ErrorMessage._60006.getMsg());
         return result;
@@ -167,38 +165,40 @@ public class MonitorTreeOrderController {
         result.setRetCode(Result.RECODE_SUCCESS);
         if(JsonUtil.isEmpity(orderId))
             ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(),ErrorMessage._60004.getMsg());
-        // 查询未分配资源集合
+        
         MonitorTreeOrderTo order = service.queryOrder(orderId);
         if(JsonUtil.isEmpity(order))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),ErrorMessage._60005.getMsg());
+        
         String mtor003 = order.getMtor003();
         EdmClassTo edmClass = service.getEdmClass(mtor003, PersistanceConstant.EDMPCODE);
         if(JsonUtil.isEmpity(edmClass) || JsonUtil.isEmpity(edmClass.getEdmcNameEn()))
             ApplicationException.throwCodeMesg(ErrorMessage._60008.getCode(),ErrorMessage._60008.getMsg());
+        
         String resourceEdmName = edmClass.getEdmcNameEn();
         JSONArray resources = service.getAllResource(resourceEdmName);
         if(JsonUtil.isEmpity(resources))
             return result;
-        List<String> usedResourceIds = service.queryTreeNodeUsingResource(orderId, null, null,null);
-        List<Object> datas = resources.parallelStream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
+        
+        List<ResourceTo> usedResources = service.queryTreeNodeUsingResource(orderId, null, null,null);
+        if(JsonUtil.isEmpity(usedResources))
+            return result;
+       Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
+       List<Object> datas = resources.parallelStream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
                 .collect(Collectors.toList());
-        if(datas.size() == 0)
+        if(datas == null || datas.size() == 0)
             return result;
 
-        // 查询根节点 和 最后一个子节点
         NodeTo rootNode = service.queryRootNode(orderId);
         if(JsonUtil.isEmpity(rootNode))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"根节点"+ErrorMessage._60005.getMsg());
         NodeTo lastRootChildNode = service.queryRootChildrenNode(orderId, rootNode.getId());
-        
-        // 创建其他节点
         String nodeId = null;
-        if(JsonUtil.isEmpity(lastRootChildNode)){
+        if(JsonUtil.isEmpity(lastRootChildNode))
             nodeId = mService.addNode(rootNode.getId(),0);
-        }else{
+        else
             nodeId = mService.addNode(lastRootChildNode.getId(),2);
-        }
-        mService.addResource(nodeId, JsonUtil.getList(datas, NodeTo.class).parallelStream().map(NodeTo::getId).collect(Collectors.toList()).stream().toArray(String[]::new));
+        mService.addResource(nodeId, JsonUtil.getList(datas, NodeTo.class).parallelStream().map(NodeTo::getId).toArray(String[]::new));
         return result;
     }
     
@@ -214,8 +214,6 @@ public class MonitorTreeOrderController {
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        if(JsonUtil.isEmpity(orderId))
-            ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(),ErrorMessage._60004.getMsg());
         
         // 取出整个临时单信息
         MonitorTreeOrderTo order = service.queryOrder(orderId);
@@ -243,9 +241,8 @@ public class MonitorTreeOrderController {
             default:
                 ApplicationException.throwCodeMesg(ErrorMessage._60000.getCode(),"变更标记" + ErrorMessage._60000.getMsg());
         }
-        // 目标表新增节点和资源信息
         addTargetNode(nodes,edmName,type,rootNode,orderId);
-        
+//        service.deleteOrder(orderId);
         return result;
     }
     
@@ -372,6 +369,7 @@ public class MonitorTreeOrderController {
             s.setMoni007(orderId);
             s.setMoni008(orderId);
             s.setMoni009(orderId);
+            s.setId(null);
             if(!JsonUtil.isEmpity(s.getMoni015()))
                 s.getMoni015().stream().forEach(t->{
                     t.setId(null);
@@ -450,8 +448,8 @@ public class MonitorTreeOrderController {
      * @param str 原对象id信息
      */
     private String getId(List<NodeDetailTo> nodes, List<NodeDetailTo> targetAllNode, String str) {
-        if(JsonUtil.isEmpity(str))
-            return null;
+        if(JsonUtil.isEmpity(str) || !nodes.parallelStream().anyMatch(h->h.getId().equals(str)))
+            return Constant.NULL;
         String code = nodes.parallelStream().filter(h->h.getId().equals(str)).findFirst().get().getMtor006();
         return targetAllNode.parallelStream().filter(q->q.getMtor006().equals(code)).findFirst().get().getId();
     }

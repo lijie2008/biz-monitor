@@ -56,6 +56,18 @@ public class ResourceTo {
     public void setMtor020(String mtor020) {
         this.mtor020 = mtor020;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(((ResourceTo)obj).getId().equals(this.id))
+            return true;
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
     
 }
 
