@@ -63,11 +63,8 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     
     @Override
     public NodeTo queryNode(String nodeId) {
-        ConditionParam cnd = new ConditionParam();
-        cnd.setAttr(Constant.ID);
-        cnd.setOperator("=");
-        cnd.setValue(nodeId);
         List<ConditionParam> cnds = new ArrayList<ConditionParam>();
+        ConditionParam cnd = new ConditionParam(Constant.ID, "=", nodeId); 
         cnds.add(cnd);
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR005A,null, cnds, null, null));
         
@@ -86,11 +83,8 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
 
     @Override
     public List<ResourceTo> queryResource(String nodeId) {
-        ConditionParam cnd = new ConditionParam();
-        cnd.setAttr(Constant.PID);
-        cnd.setOperator("=");
-        cnd.setValue(nodeId);
         List<ConditionParam> cnds = new ArrayList<ConditionParam>();
+        ConditionParam cnd = new ConditionParam(Constant.PID, "=", nodeId); 
         cnds.add(cnd);
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR019B,null, cnds, null, null));
         
@@ -109,11 +103,8 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     
     @Override
     public MonitorTreeOrderTo queryOrder(String orderId){
-        ConditionParam cnd = new ConditionParam();
-        cnd.setAttr(Constant.ID);
-        cnd.setOperator("=");
-        cnd.setValue(orderId);
         List<ConditionParam> cnds = new ArrayList<ConditionParam>();
+        ConditionParam cnd = new ConditionParam(Constant.ID,"=",orderId);
         cnds.add(cnd);
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MONITORTREEORDER,null, cnds, null, null));
 
@@ -178,16 +169,9 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     @Override
     public NodeTo queryRootNode(String orderId) {
         List<ConditionParam> cnds = new ArrayList<ConditionParam>();
-        ConditionParam cnd = new ConditionParam();
-        cnd.setAttr(Constant.PID);
-        cnd.setOperator("=");
-        cnd.setValue(orderId);
-        ConditionParam cnd2 = new ConditionParam();
-        cnd2.setAttr("mtor013");
-        cnd2.setOperator("=");
-        // TODO NULL
-        cnd2.setValue(Constant.NULL);
+        ConditionParam cnd = new ConditionParam(Constant.PID,"=",orderId);
         cnds.add(cnd);
+        ConditionParam cnd2 = new ConditionParam("mtor013","=",Constant.NULL);
         cnds.add(cnd2);
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR005A, null,cnds, null, null));
         
@@ -207,21 +191,11 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     @Override
     public NodeTo queryRootChildrenNode(String orderId, String rootNodeId) {
         List<ConditionParam> cnds = new ArrayList<ConditionParam>();
-        ConditionParam cnd = new ConditionParam();
-        cnd.setAttr(Constant.PID);
-        cnd.setOperator("=");
-        cnd.setValue(orderId);
+        ConditionParam cnd = new ConditionParam(Constant.PID,"=",orderId);
         cnds.add(cnd);
-        ConditionParam cnd2 = new ConditionParam();
-        cnd2.setAttr("mtor013");
-        cnd2.setOperator("=");
-        cnd2.setValue(rootNodeId);
+        ConditionParam cnd2 = new ConditionParam("mtor013","=",rootNodeId);
         cnds.add(cnd2);
-        ConditionParam cnd3 = new ConditionParam();
-        cnd3.setAttr("mtor016");
-        cnd3.setOperator("=");
-        //TODO NULL
-        cnd3.setValue(Constant.NULL);
+        ConditionParam cnd3 = new ConditionParam("mtor016","=",Constant.NULL);
         cnds.add(cnd3);
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR005A, null,cnds, null, null));
         Result result = client.find(input.getJson().toString());
@@ -239,10 +213,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     public List<NodeTo> queryTreeNode(String orderId) {
         
         List<ConditionParam> cnds = new ArrayList<ConditionParam>();
-        ConditionParam cnd = new ConditionParam();
-        cnd.setAttr(PersistanceConstant.PID);
-        cnd.setOperator("=");
-        cnd.setValue(orderId);
+        ConditionParam cnd = new ConditionParam(PersistanceConstant.PID,"=",orderId);
         cnds.add(cnd);
         
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR005A, null,cnds, null, null));
@@ -374,19 +345,14 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
 
     @Override
     public List<NodeDetailTo> queryTargetNode(String edmName, String fieldName, String orderId) {
-        ConditionParam cnd = new ConditionParam();
-        cnd.setAttr(fieldName);
-        cnd.setOperator("=");
-        cnd.setValue(orderId);
         List<ConditionParam> cnds = new ArrayList<ConditionParam>();
+        ConditionParam cnd = new ConditionParam(fieldName,"=",orderId);
         cnds.add(cnd);
         Result result = client.find(new FullInputArgument(queryParam(edmName, null,cnds, null, null)).getJson().toString());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
-        System.out.println("result ::::::::::::::::::::: " + JSON.toJSON(result));
         if(!JsonUtil.isEmpity(result.getData())){
             JSONArray dataset = JsonUtil.getJson(result.getData()).getJSONArray(PersistanceConstant.DATASET);
-            System.out.println("edmName:" + edmName + ", dataset11111111111111111111111111111111111111111111111111 : " + JsonUtil.isEmpity(dataset));
             if(!JsonUtil.isEmpity(dataset))
                 return JSON.parseArray(NodeDetailTo.parseArrayMapper(dataset).toJSONString(), NodeDetailTo.class);
         }
