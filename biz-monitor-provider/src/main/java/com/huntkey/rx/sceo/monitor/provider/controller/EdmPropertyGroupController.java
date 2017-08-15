@@ -20,8 +20,7 @@ import com.huntkey.rx.sceo.monitor.provider.biz.EdmPropertyGroupBiz;
 
 /**
  * ClassName:EdmPropertyGroupController
- * Function: TODO ADD FUNCTION
- * Reason:	 TODO ADD REASON
+ * Function: edm属性关联分组表查询
  * Date:     2017年8月10日 上午8:48:05
  * @author   caozhenx
  * @version  
@@ -39,9 +38,9 @@ public class EdmPropertyGroupController {
      * @author caozhenx
      * @return
      */
-    @RequestMapping("/getMonitorId")
+    @RequestMapping("/monitor/info")
     public Result getMonitorIds(@RequestBody JSONObject jsonObject){
-        Result result = edmPropertyGroupBiz.getMonitorIds(jsonObject);
+        Result result = edmPropertyGroupBiz.getMonitorInfo(jsonObject);
         return result;
     }
 

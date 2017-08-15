@@ -28,4 +28,7 @@ public interface MonitorService {
 	String deleteNode(String nodeId,int type);
 	//移动节点
 	String moveNode(String nodeId,String nodeParentId,String nodeLeftId,String nodeRightId);
+	
+	String addClassTree(int type,String beginDate,String endDate,
+			String classId,String treeId,String edmEn);
 }

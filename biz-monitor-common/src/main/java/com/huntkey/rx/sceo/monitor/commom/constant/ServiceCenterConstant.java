@@ -7,7 +7,7 @@
  *
 */
 
-package com.huntkey.rx.sceo.monitor.commom;
+package com.huntkey.rx.sceo.monitor.commom.constant;
 /**
  * ClassName:ServiceCenterConstant
  * Function: 对service center进行数据操作的相关常量

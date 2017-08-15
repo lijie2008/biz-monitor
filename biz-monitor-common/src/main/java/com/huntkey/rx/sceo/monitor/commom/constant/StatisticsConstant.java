@@ -7,7 +7,7 @@
  *
 */
 
-package com.huntkey.rx.sceo.monitor.commom;
+package com.huntkey.rx.sceo.monitor.commom.constant;
 /**
  * ClassName:StatisticsConstant
  * Function: 统计数据查询相关常

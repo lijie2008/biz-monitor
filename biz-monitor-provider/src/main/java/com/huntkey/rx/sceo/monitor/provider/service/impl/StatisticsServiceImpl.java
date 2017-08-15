@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
-import com.huntkey.rx.sceo.monitor.commom.ServiceCenterConstant;
+import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.StatisticsService;
@@ -116,7 +116,7 @@ public class StatisticsServiceImpl implements StatisticsService {
             JSONObject condition4 = new JSONObject();
             condition4.put(ServiceCenterConstant.ATTR, STAT003);
             condition4.put(ServiceCenterConstant.OPERATOR, ServiceCenterConstant.SYMBOL_EQUAL);
-            condition4.put(ServiceCenterConstant.VALUE, attributeId);
+            condition4.put(ServiceCenterConstant.VALUE, attributeId.toLowerCase());
             conditions.add(condition4);
         }
 
