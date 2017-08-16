@@ -71,7 +71,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
 
         if (json == null || json.isEmpty()) {
             Integer year = Calendar.getInstance().get(Calendar.YEAR);
-            jsonObj = periodService.queryPeriod(null, year.toString(), "m", null, null);
+            jsonObj = periodService.queryPeriod(null, year.toString(), "M", null, null);
         } else {
             String id = json.getString(StatisticsConstant.ID);
             String year = json.getString(StatisticsConstant.YEAR);
@@ -113,10 +113,10 @@ public class StatisticsBizImpl implements StatisticsBiz {
      *          {"attrId":"attrid1","attrName":"属性1","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"},
      *          {"attrId":"attrid2","attrName":"属性2","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"}
      *      ],
-     *             "childNodes":[
+     *     "childNodes":[
      *          {
      *          "nodeId":"节点id",
-     *              "nodeName":"节点名",
+     *          "nodeName":"节点名",
      *          "statistics":[
      *                  {"attrId":"attrid1","attrName":"属性1","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"},
      *                  {"attrId":"attrid2","attrName":"属性2","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"}
@@ -152,7 +152,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
             result.setErrMsg("所属监管类id不可为空..");
             return result;
         }
-        
+
         String edmcNameEn = json.getString(StatisticsConstant.EDMC_NAME_EN);
         if (StringUtils.isBlank(monitorId)) {
             result.setRetCode(Result.RECODE_ERROR);
@@ -192,13 +192,13 @@ public class StatisticsBizImpl implements StatisticsBiz {
         //查询type为1时表示查询子节点数据  否则为查询本节点数据
         if (StatisticsConstant.QUERY_TYPE_1.equals(type)) {
             //根据节点id，查询其子节点
-            JSONArray chileNodes = getChileNodes(treeNodeId,edmcNameEn);//treeNode.getJSONArray(StatisticsConstant.CHILD_NODES);
+            JSONArray chileNodes = getChileNodes(treeNodeId, edmcNameEn);
             if (chileNodes != null && !chileNodes.isEmpty()) {
                 for (Object o : chileNodes) {
                     JSONObject jsonObj = JsonUtil.getJson(o);
                     String id = jsonObj.getString(StatisticsConstant.ID);
                     String name = jsonObj.getString("moni002");
-                    
+
                     jsonObj.put(StatisticsConstant.TREE_NODE_ID, id);
                     jsonObj.put(StatisticsConstant.TREE_NODE_NAME, name);
                     jsonObj.put(StatisticsConstant.STATISTICS,
@@ -219,10 +219,10 @@ public class StatisticsBizImpl implements StatisticsBiz {
         return result;
     }
 
-    private JSONArray getChileNodes(String treeNodeId,String edmcNameEn) {
+    private JSONArray getChileNodes(String treeNodeId, String edmcNameEn) {
 
         if (StringUtils.isNotBlank(treeNodeId) && StringUtils.isNotBlank(edmcNameEn)) {
-            return monitorTreeService.getChileNodes(treeNodeId,edmcNameEn);
+            return monitorTreeService.getChileNodes(treeNodeId, edmcNameEn);
         }
 
         return null;
@@ -322,7 +322,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
             } else {
                 Double monthLinkRelativeRatio = monthValue.doubleValue()
                         / lastMonthValue.doubleValue();
-                attrValJson.put("monthLinkRelativeRatio", monthLinkRelativeRatio);
+                attrValJson.put("monthLinkRelativeRatio", monthLinkRelativeRatio * 100);
             }
 
             //同比值
@@ -331,7 +331,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
             } else {
                 Double monthLearOnYear = monthValue.doubleValue()
                         / lastYearCurrentMonthValue.doubleValue();
-                attrValJson.put("monthLearOnYear", monthLearOnYear);
+                attrValJson.put("monthLearOnYear", monthLearOnYear * 100);
             }
 
             //财月累计值
@@ -347,7 +347,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
             } else {
                 Double queryMonthLinkRelativeRatio = queryMonthValue.doubleValue()
                         / lastYearQueryMonthValue.doubleValue();
-                attrValJson.put("queryMonthLinkRelativeRatio", queryMonthLinkRelativeRatio);
+                attrValJson.put("queryMonthLinkRelativeRatio", queryMonthLinkRelativeRatio * 100);
             }
 
             json.add(attrValJson);
@@ -364,7 +364,8 @@ public class StatisticsBizImpl implements StatisticsBiz {
                 for (Object o : dataSet) {
                     JSONObject json = JsonUtil.getJson(o);
                     Integer value = json.getInteger("stat012");
-                    if (attrId.equals(value)) {
+                    String dataAttrId = json.getString("stat003");
+                    if (attrId.equals(dataAttrId)) {
                         return value;
                     }
                 }
@@ -388,7 +389,8 @@ public class StatisticsBizImpl implements StatisticsBiz {
                 for (Object o : dataSet) {
                     JSONObject json = JsonUtil.getJson(o);
                     Integer value = json.getInteger("stat011");
-                    if (attrId.equals(value)) {
+                    String dataAttrId = json.getString("stat003");
+                    if (attrId.equals(dataAttrId)) {
                         return value;
                     }
                 }

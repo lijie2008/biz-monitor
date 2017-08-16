@@ -45,7 +45,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     /**属性id*/
     private String STAT003 = "stat003";
     /**周期类id*/
-    private String STAT006 = "stat006";
+    private String STAT013 = "stat013";
 
     @Autowired
     ServiceCenterClient serviceCenterClient;
@@ -105,7 +105,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         //查询条件3 周期点id
         if (StringUtils.isNotBlank(periodId)) {
             JSONObject condition3 = new JSONObject();
-            condition3.put(ServiceCenterConstant.ATTR, STAT006);
+            condition3.put(ServiceCenterConstant.ATTR, STAT013);
             condition3.put(ServiceCenterConstant.OPERATOR, ServiceCenterConstant.SYMBOL_EQUAL);
             condition3.put(ServiceCenterConstant.VALUE, periodId);
             conditions.add(condition3);
@@ -115,7 +115,7 @@ public class StatisticsServiceImpl implements StatisticsService {
             JSONObject condition4 = new JSONObject();
             condition4.put(ServiceCenterConstant.ATTR, STAT003);
             condition4.put(ServiceCenterConstant.OPERATOR, ServiceCenterConstant.SYMBOL_EQUAL);
-            condition4.put(ServiceCenterConstant.VALUE, attributeId.toLowerCase());
+            condition4.put(ServiceCenterConstant.VALUE, attributeId);
             conditions.add(condition4);
         }
 
