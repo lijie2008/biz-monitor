@@ -42,4 +42,20 @@ public class MonitorTreeClientFallback implements MonitorTreeClient {
         result.setErrMsg("MonitorTreeClient getNodeResources fallback");
         return result;
     }
+
+    @Override
+    public Result getConProperties(String edmcNameEn, boolean enable) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("MonitorTreeClient getConProperties fallback");
+        return result;
+    }
+
+    @Override
+    public Result getNewMonitorTreeStartDate(String edmcNameEn) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("MonitorTreeClient getNewMonitorTreeStartDate fallback");
+        return result;
+    }
 }

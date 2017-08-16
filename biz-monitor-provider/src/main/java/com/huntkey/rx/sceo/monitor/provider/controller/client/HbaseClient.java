@@ -57,5 +57,8 @@ public interface HbaseClient {
     Result getMonitorTreeNodes(@RequestParam(value = "edmcNameEn") String edmcNameEn,
             @RequestParam(value = "searchDate") String searchDate,
             @RequestParam(value = "rootNodeId") String rootNodeId);
+    
+    @RequestMapping(value= "/servicecenter/load", method = RequestMethod.POST)
+    Result load(@RequestBody String datas);
 }
 

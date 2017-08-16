@@ -3,10 +3,7 @@ package com.huntkey.rx.sceo.monitor.provider.controller;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -76,6 +73,13 @@ public class MonitorTreeController {
         return result;
     }
 
+    /**
+     * 查询监管树节点关联的资源清单
+     * @param name
+     * @param nodes
+     * @param edmcId
+     * @return
+     */
     @GetMapping("/trees/resources")
     public Result getNodeResources(@RequestParam(required = false) String name,
                                    @RequestParam List<String> nodes,
@@ -83,6 +87,28 @@ public class MonitorTreeController {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(monitorTreeService.getNodeResources(name,nodes,edmcId));
+        return result;
+    }
+
+    /**
+     * 查询指定类的卷积属性清单
+     * @param edmcNameEn
+     * @return
+     */
+    @GetMapping("/conproperties")
+    public Result getConProperties(@RequestParam(value = "edmcNameEn") String edmcNameEn,
+                                   @RequestParam(value = "enable",defaultValue = "true") boolean enable){
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(monitorTreeService.getConProperties(edmcNameEn,enable));
+        return result;
+    }
+
+    @GetMapping("/{edmcNameEn}/newDate")
+    public Result getNewMonitorTreeStartDate(@PathVariable(value = "edmcNameEn") String edmcNameEn){
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(monitorTreeService.getNewMonitorTreeStartDate(edmcNameEn));
         return result;
     }
 }

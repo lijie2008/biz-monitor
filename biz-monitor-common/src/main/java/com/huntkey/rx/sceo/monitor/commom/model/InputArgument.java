@@ -1,5 +1,7 @@
 package com.huntkey.rx.sceo.monitor.commom.model;
 
+import java.util.List;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.string.StringUtil;
@@ -23,6 +25,12 @@ public class InputArgument {
 
     // 9. 需要排序的字段
     private JSONArray orders;
+    
+    // 10. 类型
+    private String type;
+    
+    // 10. id
+    private List ids;
 
     public JSONArray getData() {
         return params;
@@ -75,6 +83,22 @@ public class InputArgument {
 		this.orders = orders;
 	}
 
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public List getIds() {
+		return ids;
+	}
+
+	public void setIds(List ids) {
+		this.ids = ids;
+	}
+
 	public Object[] getColumns() {
         return columns;
     }
@@ -103,6 +127,12 @@ public class InputArgument {
         }
         if(columns!=null && columns.length>0){
         	search.put("columns", columns);
+        }
+        if(ids!=null && ids.size()>0){
+        	search.put("ids", ids);
+        }
+        if(!StringUtil.isNullOrEmpty(type)){
+        	search.put("type", type);
         }
         if(pagenation!=null){
         	search.put("pagenation", pagenation);

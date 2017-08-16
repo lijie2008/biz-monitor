@@ -92,5 +92,14 @@ public class HbaseClientFallback implements HbaseClient{
         return result;
 	}
 
+	@Override
+	public Result load(String datas) {
+		// TODO Auto-generated method stub
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("hbase client load fallback");
+        return result;
+	}
+
 }
 

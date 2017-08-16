@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.huntkey.rx.commons.utils.rest.Result;
 
-@FeignClient(value = "MODELER-PROVIDER", url = "192.168.13.34:2002", fallback = ModelerClientFallback.class) //单机调试使用(注意不要提交此行)
-//@FeignClient(value = "modeler-provider", fallback = ModelerClientFallback.class)
+//@FeignClient(value = "MODELER-PROVIDER", url = "192.168.13.34:2002", fallback = ModelerClientFallback.class) //单机调试使用(注意不要提交此行)
+@FeignClient(value = "modeler-provider", fallback = ModelerClientFallback.class)
 public interface ModelerClient {
 
     /**
@@ -80,4 +80,24 @@ public interface ModelerClient {
     @RequestMapping(value = "/classes/child/{id}/{sid}", method = RequestMethod.GET)
     Result checkIsChileNode(@PathVariable(value = "id") String id,
                             @PathVariable(value = "sid") String sid);
+
+    /**
+     * 根据类英文名查询类的卷积属性
+     * @param edmdVer
+     * @param edmcNameEn
+     * @return
+     */
+    @RequestMapping(value = "/properties/getConProperties", method = RequestMethod.GET)
+    Result getConProperties(@RequestParam(value = "edmdVer") String edmdVer,
+                            @RequestParam(value = "edmcNameEn") String edmcNameEn);
+
+    /**
+     * 将指定id的所有属性的is_visible字段更改为指定数值
+     * @param ids
+     * @param b （0或1）
+     */
+    @RequestMapping(value = "/properties/changeVisible", method = RequestMethod.POST)
+    Result changePropertiesVisible(@RequestParam(value = "ids") String[] ids,
+                                          @RequestParam(value = "b") byte b);
+
 }
