@@ -574,7 +574,7 @@ public class MonitorServiceImpl implements MonitorService {
 		String endDate=addMonitorTreeTo.getEndDate(); 
 		String classId=addMonitorTreeTo.getClassId();
 		String rootId=addMonitorTreeTo.getRootId();
-		String edmcNameEn=addMonitorTreeTo.getEdmcNameEn();
+		String edmcNameEn=addMonitorTreeTo.getEdmcNameEn().toLowerCase();
 		//1.生成监管类临时单
 		JSONObject jsonTemp=new JSONObject();
 		jsonTemp.put(MTOR001,orderNumberService.generateOrderNumber("LS"));
@@ -709,7 +709,9 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor007(INITNODENAME);
 		node.setMtor011(StringUtil.isNullOrEmpty(beginDate)?
 				ToolUtil.getNowDateStr(YYYY_MM_DD):beginDate);
-		node.setMtor012(endDate);
+		if(!StringUtil.isNullOrEmpty(endDate)){
+			node.setMtor012(endDate);
+		}
 		node.setMtor013(NULL);
 		node.setMtor014(NULL);
 		node.setMtor015(NULL);
