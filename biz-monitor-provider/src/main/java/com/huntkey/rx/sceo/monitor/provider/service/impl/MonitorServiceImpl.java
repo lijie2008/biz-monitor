@@ -37,8 +37,6 @@ public class MonitorServiceImpl implements MonitorService {
 	@Autowired
 	OrderNumberService orderNumberService;
 	
-	private static int K = 3;
-	
 	/***
 	 * 查询监管树临时结构
 	 * @param tempId 监管树临时单id
@@ -279,8 +277,6 @@ public class MonitorServiceImpl implements MonitorService {
 					nodeRight=DBUtils.getObjectResult(MTOR005,null,condition);
 					nodeDetail=setNodePosition(node.getString(ID), NULL, 
 							nodeRight!=null?nodeRight.getString(ID):NULL, NULL,node.getString(PID),1);
-					// todo
-					nodeDetail.setMtor006("JD000000000000000000000" + K);
 					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
 					
 					//如果存在最右侧节点  则变更最右侧节点的右节点信息
