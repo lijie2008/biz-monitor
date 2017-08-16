@@ -11,8 +11,3 @@ logging:
     root: info
 mybatis:
   mapperLocations: classpath:mapper/*.xml
-edm: 
-  edmMonitorId: 6f8a46a066e211e7b2e4005056bc4879
-  version: v1.0
-  edmcNameEn:
-    monitor: monitor
