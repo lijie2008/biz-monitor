@@ -71,7 +71,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
 
         if (json == null || json.isEmpty()) {
             Integer year = Calendar.getInstance().get(Calendar.YEAR);
-            jsonObj = periodService.queryPeriod(null, year.toString(), "m", null, null);
+            jsonObj = periodService.queryPeriod(null, year.toString(), "M", null, null);
         } else {
             String id = json.getString(StatisticsConstant.ID);
             String year = json.getString(StatisticsConstant.YEAR);
@@ -364,7 +364,8 @@ public class StatisticsBizImpl implements StatisticsBiz {
                 for (Object o : dataSet) {
                     JSONObject json = JsonUtil.getJson(o);
                     Integer value = json.getInteger("stat012");
-                    if (attrId.equals(value)) {
+                    String dataAttrId = json.getString("stat003");
+                    if (attrId.equals(dataAttrId)) {
                         return value;
                     }
                 }
@@ -388,7 +389,8 @@ public class StatisticsBizImpl implements StatisticsBiz {
                 for (Object o : dataSet) {
                     JSONObject json = JsonUtil.getJson(o);
                     Integer value = json.getInteger("stat011");
-                    if (attrId.equals(value)) {
+                    String dataAttrId = json.getString("stat003");
+                    if (attrId.equals(dataAttrId)) {
                         return value;
                     }
                 }
