@@ -111,7 +111,9 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                 }
 
             } else {
-//                throw new ServiceException("没有找到，或找到多个监管树！");
+                if(rootArray.size()>1){
+                    throw new ServiceException("数据异常，统一时间找到多个监管树！");
+                }
                 return null;
             }
 
