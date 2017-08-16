@@ -9,6 +9,8 @@
 
 package com.huntkey.rx.sceo.monitor.commom.model;
 
+import java.io.Serializable;
+
 /**
  * ClassName:ResourceTo 节点关联资源信息
  * Date:     2017年8月5日 下午5:25:59
@@ -16,8 +18,10 @@ package com.huntkey.rx.sceo.monitor.commom.model;
  * @version  
  * @see 	 
  */
-public class ResourceTo {
+public class ResourceTo implements Serializable{
     
+    private static final long serialVersionUID = 1L;
+
     /**
      * 关联资源id
      */

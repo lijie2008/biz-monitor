@@ -9,6 +9,7 @@
 
 package com.huntkey.rx.sceo.monitor.commom.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -26,7 +27,9 @@ import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
  * @version  
  * @see 	 
  */
-public class NodeDetailTo extends NodeTo implements Cloneable{
+public class NodeDetailTo extends NodeTo implements Cloneable,Serializable{
+    
+    private static final long serialVersionUID = 1L;
     
     /**
      * 关联资源对象集合

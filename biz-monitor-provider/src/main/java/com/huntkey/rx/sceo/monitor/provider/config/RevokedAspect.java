@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
@@ -50,7 +51,7 @@ import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
 @Component
 public class RevokedAspect {
     
-    private static Map<String,Object> originalMap = new ConcurrentHashMap<String, Object>();
+    private static final Map<String,Object> originalMap = new ConcurrentHashMap<String, Object>();
     
     @Autowired 
     private RedisService redisService;
@@ -66,7 +67,6 @@ public class RevokedAspect {
         switch(revoked.type()){
             case INITIALIZE: 
                 return;
-                
             case NODE: 
                 String orderId = getNode(key).getPid();
                 originalMap.put(key, service.getAllNodesAndResource(orderId));
@@ -80,23 +80,30 @@ public class RevokedAspect {
     // 服务异常
     @AfterThrowing(value="@annotation(revoked)", throwing="e")
     public void serviceException(JoinPoint point, Revoked revoked,Exception e){
+        
         String key = getKey(point,revoked.type());
-        originalMap.remove(key);
+        
+        if(!JsonUtil.isEmpity(key))
+            originalMap.remove(key);
     }
     
     // 服务正常完成后
     @AfterReturning(value="@annotation(revoked)",argNames="revoked,result",returning = "result")
     public void serviceEnd(JoinPoint point, Revoked revoked,Result result){
+        
         String key = getKey(point,revoked.type());
+        Object value = null;
+        
         if(result.getRetCode() != Result.RECODE_SUCCESS){
-            originalMap.remove(key);
+            value = JsonUtil.isEmpity(key) ? null: originalMap.remove(key);
             return;
         }
-        Object obj = originalMap.get(key);
-        if(revoked.type() != OperateType.INITIALIZE && JsonUtil.isEmpity(obj))
-            return;
+        
+        value = (revoked.type() == OperateType.INITIALIZE || JsonUtil.isEmpity(key))? null : originalMap.get(key);
+        
         String orderId = null;
         switch(revoked.type()){
+            
             case INITIALIZE:
                 orderId = JsonUtil.getJson(result.getData()).getString(Constant.ID);
                 if(orderId == null)
@@ -107,19 +114,21 @@ public class RevokedAspect {
                 return;
                 
             case NODE:
-                JSONArray arry = JSON.parseArray(JSONArray.toJSONString(obj));
+                JSONArray arry = JSON.parseArray(JSONArray.toJSONString(value));
                 orderId = JsonUtil.isEmpity(arry) ? null : arry.getJSONObject(0).getString(Constant.PID);
                 break;
                 
             case DETAIL:
-                orderId = JsonUtil.getJson(obj).getString(Constant.PID);
+                orderId = JsonUtil.getJson(value).getString(Constant.PID);
                 break;
         }
         
         if(orderId == null || redisService.isEmpity(orderId)) // 未初始化堆栈进行的操作 不做撤销储备
             return;
-        redisService.lPush(orderId, new RevokedTo(obj, revoked.type()));
-        originalMap.remove(key);
+        redisService.lPush(orderId, new RevokedTo(value, revoked.type()));
+        
+        if(!JsonUtil.isEmpity(key))
+            originalMap.remove(key);
     }
     
     /**
@@ -136,18 +145,16 @@ public class RevokedAspect {
         Annotation[][] types = method.getParameterAnnotations();
         
         for(int i = 0; i< types.length; i++){
-            
             for(int j = 0; j< types[i].length;j++){
-                
                 if(Revoked.class.isInstance(types[i][j])){
                     Revoked revoked = (Revoked)types[i][j];
                     String key = revoked.key();
-                    if(JsonUtil.isEmpity(key))
-                        ApplicationException.throwCodeMesg(ErrorMessage._60001.getCode(), ErrorMessage._60001.getMsg());
                     Object arg = point.getArgs()[i];
                     if(arg instanceof java.lang.String){
                         return (String)arg;
                     }else{
+                        if(JsonUtil.isEmpity(key))
+                            ApplicationException.throwCodeMesg(ErrorMessage._60001.getCode(), ErrorMessage._60001.getMsg());
                         return (String)JsonUtil.getJson(arg).get(key);
                     }
                 }
@@ -169,6 +176,10 @@ public class RevokedAspect {
         NodeDetailTo detail = JSON.parseObject(JSON.toJSONString(node),NodeDetailTo.class);
         detail.setMtor019(resources);
         return detail;
+    }
+    
+    public static void main(String[] args) {
+        originalMap.get("111");
     }
 }
 

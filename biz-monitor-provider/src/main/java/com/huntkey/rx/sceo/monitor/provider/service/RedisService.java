@@ -18,4 +18,8 @@ public interface RedisService {
     Object lPop(String key);
     
     void delete(String key);
+    
+    void set(String key, long index, Object value);
+    
+    Object index(String key,long index);
 }

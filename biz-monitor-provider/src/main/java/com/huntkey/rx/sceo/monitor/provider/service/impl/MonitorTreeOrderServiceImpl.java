@@ -15,14 +15,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.constant.PersistanceConstant;
@@ -58,8 +57,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     
     @Autowired
     private ModelerClient edmClient;
-    
-    private static final Logger logger = LoggerFactory.getLogger(MonitorTreeOrderServiceImpl.class);
     
     @Override
     public NodeTo queryNode(String nodeId) {
@@ -302,11 +299,12 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     @Override
     public void updateNodeAndResource(String edmName, NodeDetailTo to) {
         List<ResourceTo> resources = queryResource(to.getId());
-        List<String> resourceIds = resources.parallelStream().map(ResourceTo::getId).collect(Collectors.toList());
-        batchDeleteResource(PersistanceConstant.MTOR_MTOR019B, resourceIds);
-        resources = to.getMtor019();
+        if(!JsonUtil.isEmpity(resources)){
+            List<String> resourceIds = resources.parallelStream().map(ResourceTo::getId).collect(Collectors.toList());
+            batchDeleteResource(PersistanceConstant.MTOR_MTOR019B, resourceIds);
+            resources = to.getMtor019();
+        }
         to.setMtor019(null);
-        
         // 更新节点
         updateNode(edmName,to);
         // 新增资源信息
@@ -326,7 +324,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             obj.put(PersistanceConstant.ID, id);
             arry.add(obj);
         });
-        Result result = client.delete(new FullInputArgument( mergeParam(edmName, arry)).toString());
+        Result result = client.delete(new FullInputArgument( mergeParam(edmName, arry)).getJson().toString());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
     }
@@ -335,12 +333,15 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     public void updateNode(String edmName, NodeDetailTo to) {
         
         JSONArray array = new JSONArray();
-        array.add(to);
-        // 修改节点信息
-        Result result = client.update(new FullInputArgument( mergeParam(edmName, array)).toString());
+        JSONObject obj = JSON.parseObject(JSON.toJSONString(to,SerializerFeature.WriteMapNullValue,SerializerFeature.WriteNullStringAsEmpty));
+        if("".equals(obj.get("mtor011")))
+            obj.remove("mtor011");
+        if("".equals(obj.get("mtor012")))
+            obj.remove("mtor012");
+        array.add(obj);
+        Result result = client.update(new FullInputArgument( mergeParam(edmName, array)).getJson().toString());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
-        
     }
 
     @Override
@@ -361,14 +362,11 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
 
     @Override
     public List<NodeDetailTo> getAllNodesAndResource(String orderId) {
-        logger.info("查询节点详细 开始1 。。。。。。。。。");
         List<NodeTo> treeNodes = queryTreeNode(orderId);
-        logger.info("查询节点详细  结束1 。。。。。。。。。");
         if(JsonUtil.isEmpity(treeNodes))
             return null;
         
         // 资源信息
-        logger.info("查询节点详细筛选开始 2 1 。。。。。。。。。");
         List<ResourceTo> allResource = queryTreeNodeUsingResource(orderId, null, null, null);
         Map<String, List<ResourceTo>> groupResource = allResource.parallelStream().collect(Collectors.groupingBy(ResourceTo::getPid));
         
@@ -378,7 +376,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             nodeDetail.setMtor019(groupResource.get(nodeDetail.getId()));
             nodes.add(nodeDetail);
         });
-        logger.info("查询节点详细筛选结束 2 1 。。。。。。。。。");
         return nodes;
     }
 
@@ -388,10 +385,9 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         JSONObject obj = new JSONObject();
         obj.put(PersistanceConstant.ID, orderId);
         arry.add(obj);
-        Result result = client.delete(new FullInputArgument( mergeParam(PersistanceConstant.MONITORTREEORDER, arry)).toString());
+        Result result = client.delete(new FullInputArgument( mergeParam(PersistanceConstant.MONITORTREEORDER, arry)).getJson().toString());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
     }
-    
 }
 
