@@ -47,7 +47,6 @@ public class MonitorTreeOrderController {
                                         @RequestParam(value="currentPage", defaultValue = "1",required=false) int currentPage, @RequestParam(value="pageSize", defaultValue="20",required=false) int pageSize){
         return service.queryNotUsingResource(orderId,nodeId,currentPage,pageSize);
     }
-    
     /**
      * 
      * checkNodeResource: 节点时间区间修改检查

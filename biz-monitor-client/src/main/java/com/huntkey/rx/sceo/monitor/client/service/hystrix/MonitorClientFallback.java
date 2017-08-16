@@ -2,6 +2,7 @@ package com.huntkey.rx.sceo.monitor.client.service.hystrix;
 
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.client.service.MonitorClient;
+import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import org.springframework.stereotype.Component;
 
@@ -107,6 +108,15 @@ public class MonitorClientFallback implements MonitorClient {
 		Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("MonitorClient moveNode fallback");
+        return result;
+	}
+
+	@Override
+	public Result addMonitorTree(AddMonitorTreeTo addMonitorTreeTo) {
+		// TODO Auto-generated method stub
+		Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("MonitorClient addMonitorTree fallback");
         return result;
 	}
 

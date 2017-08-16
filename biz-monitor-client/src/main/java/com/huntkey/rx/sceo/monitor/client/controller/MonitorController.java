@@ -2,6 +2,7 @@ package com.huntkey.rx.sceo.monitor.client.controller;
 
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.client.service.MonitorClient;
+import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 
 import org.hibernate.validator.constraints.NotBlank;
@@ -166,6 +167,23 @@ public class MonitorController {
 		result.setRetCode(Result.RECODE_SUCCESS);
 		result.setData(monitorClient.moveNode(nodeId,nodeParentId,nodeLeftId,nodeRightId));
 		return result;
-	}		
+	}
+	/**
+	 * 
+	 * @param type 1表示新增 2提示界面复制
+	 * @param beginDate
+	 * @param endDate
+	 * @param classId
+	 * @param treeId
+	 * @param edmcNameEn
+	 * @return
+	 */
+	@RequestMapping(value="/addMonitorTree",method=RequestMethod.POST)
+	public Result addMonitorTree(@RequestBody() @Valid AddMonitorTreeTo addMonitorTreeTo){
+		Result result=new Result();
+		result.setRetCode(Result.RECODE_SUCCESS);
+		result.setData(monitorClient.addMonitorTree(addMonitorTreeTo));
+		return result;
+	}
 
 }

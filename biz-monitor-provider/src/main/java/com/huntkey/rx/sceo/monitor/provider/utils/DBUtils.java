@@ -79,6 +79,28 @@ public class DBUtils {
         }
 	}
 	/****
+	 * 查询
+	 * @param param 查询参数
+	 * @return JSONObject
+	 */
+	public  JSONArray load(String edmName,String[] columns, String type,List ids) {
+		//设置查询参数
+		InputArgument inputArgument=new InputArgument();
+		inputArgument.setEdmName(edmName);
+		inputArgument.setColumns(columns);
+		inputArgument.setType(type);
+		inputArgument.setIds(ids);
+        Result result = hbase.load(inputArgument.toString());
+        //进行查询
+        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
+            String msg = result != null ? result.getErrMsg():null;
+            logger.info(msg);
+            ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), 
+            		ErrorMessage._60002.getMsg());
+        }
+        return JsonUtil.getJsonArrayByAttr(result.getData(), DATASET);
+	}
+	/****
 	 * 新增修改
 	 * @param edmName 表名
 	 * @param params 提交数据
@@ -226,7 +248,7 @@ public class DBUtils {
  		//取得数据集id集合
  		if(list!=null && list.size()>0){ 			
 	 		for(String listValue :list){
-	 			condition.addCondition(sourceKey, "=", listValue, false);
+	 			condition.addCondition(sourceKey, "=", listValue, loopJson.getCondition()==null);
 	 			jsonArrSub=getArrayResult(tableName, column,condition);
 	 			jsonArrNew=JsonUtil.mergeJsonArray(jsonArrNew,jsonArrSub);
 	 		}

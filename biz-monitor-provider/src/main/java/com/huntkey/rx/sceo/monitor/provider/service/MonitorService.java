@@ -3,6 +3,7 @@ package com.huntkey.rx.sceo.monitor.provider.service;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 public interface MonitorService {
 	//监管树临时单预览查询
@@ -29,6 +30,5 @@ public interface MonitorService {
 	//移动节点
 	String moveNode(String nodeId,String nodeParentId,String nodeLeftId,String nodeRightId);
 	
-	String addClassTree(int type,String beginDate,String endDate,
-			String classId,String treeId,String edmEn);
+	String addMonitorTree(AddMonitorTreeTo addMonitorTreeTo);
 }

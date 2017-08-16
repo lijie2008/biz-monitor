@@ -1,5 +1,7 @@
 package com.huntkey.rx.sceo.monitor.provider.service.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +18,15 @@ import java.util.Map;
 import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
+import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.Condition;
 import com.huntkey.rx.sceo.monitor.commom.model.InputArgument;
 import com.huntkey.rx.sceo.monitor.commom.model.JoinTO;
 import com.huntkey.rx.sceo.monitor.commom.model.LoopTO;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailTo;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeFieldMapTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
+import com.huntkey.rx.sceo.monitor.commom.model.ResourceFiledMapTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.DataUtil;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.commom.utils.ToolUtil;
@@ -36,6 +42,7 @@ public class MonitorServiceImpl implements MonitorService {
 	HbaseClient hbase;
 	@Autowired
 	OrderNumberService orderNumberService;
+	private static final Logger logger = LoggerFactory.getLogger(MonitorServiceImpl.class);
 	/***
 	 * 查询监管树临时结构
 	 * @param tempId 监管树临时单id
@@ -560,116 +567,157 @@ public class MonitorServiceImpl implements MonitorService {
 	}
 
 	@Override
-	public String addClassTree(int type, String beginDate, String endDate, 
-			String classId,String rootId,String edmcNameEn) {
+	public String addMonitorTree(AddMonitorTreeTo addMonitorTreeTo) {
 		// TODO Auto-generated method stub
+		int type=addMonitorTreeTo.getType(); 
+		String beginDate=addMonitorTreeTo.getBeginDate(); 
+		String endDate=addMonitorTreeTo.getEndDate(); 
+		String classId=addMonitorTreeTo.getClassId();
+		String rootId=addMonitorTreeTo.getRootId();
+		String edmcNameEn=addMonitorTreeTo.getEdmcNameEn();
 		//1.生成监管类临时单
 		JSONObject jsonTemp=new JSONObject();
 		jsonTemp.put(MTOR001,orderNumberService.generateOrderNumber("LS"));
 		jsonTemp.put(MTOR002, ChangeType.ADD.getValue());
 		jsonTemp.put(MTOR003, classId);
+		jsonTemp.put(MTOR004, "");
 		String tempId=DBUtils.add(MONITORTREEORDER, jsonTemp);
 		
 		switch(type){
-			case 0://直接跳转到新增界面
-				//生效日期设置成当前日期
-				addRootNode(tempId,beginDate,endDate);
-				break;
 			case 1://提示界面新增
 				addRootNode(tempId,beginDate,endDate);
 				break;
 			case 2://提示界面复制
-				copyTree(classId,edmcNameEn,ToolUtil.getNowDateStr(YYYY_MM_DD),rootId,tempId);
+				copyTree(edmcNameEn,ToolUtil.getNowDateStr(YYYY_MM_DD),rootId,tempId);
 				break;	
 		}
-		return null;
+		return tempId;
 	}
-	private void copyTree(String classId,String edmcNameEn,String nowDate,String rootId,String tempId) {
+	private void copyTree(String edmcNameEn,String nowDate,String rootId,String tempId) {
 		// TODO Auto-generated method stub
 		JSONArray resourceArr=new JSONArray();
 		JSONArray treeFormal=new JSONArray();//正式树
 		JSONArray treeTemp=new JSONArray();//临时树
+		JSONArray treeArr=new JSONArray();//所有节点
 		//1.查询出根节点信息
 		Condition condition=new Condition();
 		condition.addCondition(ID, EQUAL, rootId,true);
-		JSONObject root=queryNode(condition);
+		JSONObject root=DBUtils.getObjectResult(edmcNameEn, null, condition);
 		if(root!=null){
-			treeFormal.add(root);
-			resourceArr=JsonUtil.mergeJsonArray(resourceArr, 
-					queryResource(new String[]{rootId}));//查询根节点资源
-			root.remove(ID);
-			root=JsonUtil.getJson(JsonUtil.getObject(
-					JsonUtil.getJsonString(root), NodeTo.class));//转换成临时单字段
+			treeFormal.add(root.clone());
 		}else{
 			ApplicationException.throwCodeMesg(ErrorMessage._60014.getCode(), 
 					ErrorMessage._60014.getMsg());
 		}
-		
 		//2.根据根节点ID 查询正式树表的所有节点
-		JSONArray treeArr=null;
 		Result res= hbase.getMonitorTreeNodes(edmcNameEn,nowDate , rootId);
-		if(res.getRetCode()==Result.RECODE_SUCCESS){
-			treeArr=(JSONArray) res.getData();
-			if(!JsonUtil.isNullOrEmpty(treeArr)){
-				treeFormal=JsonUtil.mergeJsonArray(treeArr, treeFormal);
-				resourceArr=JsonUtil.mergeJsonArray(resourceArr,
-						queryResource(getIdStr(treeArr)));//查询节点所有资源
-				treeArr=JsonUtil.removeAttr(treeArr, ID);//去除ID后进行新增
-				//添加PID项
-				Map<String, Object> map=new HashMap<String, Object>();
-				map.put(PID, tempId);
-				treeArr=JsonUtil.addAttr(treeArr, map);
-				treeArr=JsonUtil.listToJsonArray(
-						JsonUtil.getList(treeArr, NodeTo.class));//转换成临时单的字段
-				DBUtils.add(MTOR005, treeArr);//新增节点信息
+		if(res.getRetCode()==Result.RECODE_SUCCESS ){
+			if(!JsonUtil.isEmpity(res.getData())){
+				treeArr=JsonUtil.listToJsonArray((List)res.getData());
+				treeFormal=JsonUtil.mergeJsonArray(treeFormal,treeArr);
+				if(!JsonUtil.isNullOrEmpty(treeArr)){
+					treeArr=JsonUtil.removeAttr(treeArr, ID);//去除ID后进行新增
+					//添加PID项
+					Map<String, Object> map=new HashMap<String, Object>();
+					map.put(PID, tempId);
+					map.put(MTOR021, 1);
+					treeArr=JsonUtil.addAttr(treeArr, map);
+					List list=JsonUtil.getList(treeArr, NodeFieldMapTo.class);
+					treeArr=JsonUtil.listToJsonArray(list);//转换成临时单的字段
+					DBUtils.add(MTOR005, treeArr);//新增节点信息
+				}
 			}
 		}
+		//4.查询资源
+		LoopTO loop=new LoopTO(edmcNameEn+".moni015", PID, ID, null, null);
+		resourceArr=DBUtils.loopQuery(loop, treeFormal);
 		
-		
-		//3.新增根节点
+		//4.新增根节点
+		root.remove(ID);
 		root.put(PID, tempId);
+		root.put(MTOR021,1);
+		root=JsonUtil.getJson(JsonUtil.getObject(
+				JsonUtil.getJsonString(root), NodeFieldMapTo.class));
 		String rootNewId=DBUtils.add(MTOR005, root);
-		if(!StringUtil.isNullOrEmpty(rootNewId)){
-			//更新临时单根节点信息
-			JSONObject updateJson=new JSONObject();
-			updateJson.put(ID, tempId);
-			updateJson.put(MTOR004, rootNewId);
-			DBUtils.update(MTOR005, updateJson);
-		}
-		
-		//4.查询出所有新增的节点
+		//3.查询出所有新增的节点
 		condition.addCondition(PID, EQUAL, tempId, true);
 		treeTemp=DBUtils.getArrayResult(MTOR005, null, condition);
-		//新增资源信息
 		
+		//5.正式树和临时树的匹对修改节点的上下左右节点
+		JSONObject retobj=updateNodePosition(treeFormal,treeTemp,resourceArr);
+		if(retobj!=null){
+			treeTemp=JsonUtil.getJsonArrayByAttr(retobj,"treeTemp");
+			if(!JsonUtil.isNullOrEmpty(treeTemp)){
+				treeTemp=JsonUtil.listToJsonArray(JsonUtil.getList(treeTemp, NodeTo.class));
+				DBUtils.update(MTOR005, treeTemp);
+			}
+			
+			resourceArr=JsonUtil.getJsonArrayByAttr(retobj,"resource");
+			if(!JsonUtil.isNullOrEmpty(resourceArr)){
+				//去除ID后新增
+				resourceArr=JsonUtil.removeAttr(resourceArr, ID);
+				resourceArr=JsonUtil.listToJsonArray(
+						JsonUtil.getList(resourceArr, ResourceFiledMapTo.class));
+				DBUtils.add(MTOR019, resourceArr);
+			}
+		}
 	}
-	private void addRootNode(String pid,String beginDate,String endDate) {
+	private JSONObject updateNodePosition(JSONArray treeFormal,JSONArray treeTemp,JSONArray resourceArr) {
+		// TODO Auto-generated method stub
+		String tempStr="";
+		String resourceStr="";
+		if(!JsonUtil.isNullOrEmpty(treeFormal) && !JsonUtil.isNullOrEmpty(treeTemp)){
+			tempStr=JsonUtil.getJsonArrayString(treeTemp);//获取jsonArray字符串
+			resourceStr=JsonUtil.getJsonArrayString(resourceArr);//获取jsonArray字符串
+			JSONObject jsonFormal=null;
+			JSONObject jsonTemp=null;
+			for(Object objFormal:treeFormal){
+				jsonFormal=JsonUtil.getJson(objFormal);
+				if(jsonFormal!=null){
+					for(int i=0;i<treeTemp.size();i++){
+						jsonTemp=treeTemp.getJSONObject(i);
+						if(jsonTemp!=null){
+							if(StringUtil.isEqual(jsonFormal.getString("moni001"),
+								jsonTemp.getString("mtor006"))){//如果编号相等
+								String oldChar=jsonFormal.getString(ID);
+								String newChar=jsonTemp.getString(ID);
+								if(!StringUtil.isNullOrEmpty(tempStr)){
+									
+									tempStr=tempStr.replace(oldChar,newChar);//将旧ID替换成新的节点ID
+								}
+								if(!StringUtil.isNullOrEmpty(resourceStr)){
+									
+									resourceStr=resourceStr.replace(oldChar,
+											newChar);//将旧ID替换成新的节点ID
+								}
+								treeTemp.remove(jsonTemp);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		JSONObject retObj=new JSONObject();
+		retObj.put("treeTemp", JsonUtil.getJsonArray(tempStr));
+		retObj.put("resource", JsonUtil.getJsonArray(resourceStr));
+		return retObj;
+	}
+	private String addRootNode(String pid,String beginDate,String endDate) {
 		// TODO Auto-generated method stub
 		NodeTo node=new NodeTo();
 		node.setMtor007(INITNODENAME);
-		node.setMtor011(beginDate);
+		node.setMtor011(StringUtil.isNullOrEmpty(beginDate)?
+				ToolUtil.getNowDateStr(YYYY_MM_DD):beginDate);
 		node.setMtor012(endDate);
 		node.setMtor013(NULL);
 		node.setMtor014(NULL);
 		node.setMtor015(NULL);
 		node.setMtor016(NULL);
+		node.setMtor021(1);
 		node.setPid(pid);
-	}
-	private String[] getIdStr(JSONArray arr) {
-		// TODO Auto-generated method stub
-		List<String> list=new ArrayList<String>();
-		for(Object obj:arr){
-			JSONObject json=JsonUtil.getJson(obj);
-			if(json!=null){
-				list.add(json.getString(ID));
-			}
-		}
-		return (String[]) list.toArray();
+		return DBUtils.add(MTOR005, JsonUtil.getJson(node));
 	}
 	
-	private JSONArray queryResource(String[] ids){
-		Condition condition=new Condition();
-		return null;
-	}
 	
 }
