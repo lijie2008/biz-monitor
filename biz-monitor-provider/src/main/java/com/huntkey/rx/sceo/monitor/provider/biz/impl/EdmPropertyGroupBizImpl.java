@@ -84,14 +84,20 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
             if (groupList != null && !groupList.isEmpty()) {
                 JSONArray jsonArray = new JSONArray();
                 for (Map<String, Object> m : groupList) {
-                    Object o = m.get("edpg_edmc_id");
-                    if (o != null) {
-                        String edpgEdmcId = (String) o;
+                    Object edpgEdmcIdObj = m.get("edpg_edmc_id");
+                    Object edpgEdmpIdObj = m.get("edpg_edmp_id");
+                    
+                    if (edpgEdmcIdObj != null && edpgEdmpIdObj != null) {
+                        //类id
+                        String edpgEdmcId = (String) edpgEdmcIdObj;
+                        //属性id
+                        String edpgEdmpId = (String) edpgEdmpIdObj;
+                        //根据类id判断是否为监管类的子孙节点
                         Result r = modelerClient.checkIsChileNode(edmMonitorId, edpgEdmcId);
                         if (r.getRetCode() == Result.RECODE_SUCCESS) {
                             Boolean bool = (Boolean) r.getData();
-                            //v结果为true时 排除查询条件自身
-                            if (bool && !edpgEdmcId.equals(jsonObject.get("edpg_edmc_id"))) {
+                            //结果为true时 排除查询条件自身
+                            if (bool && !edpgEdmcId.equals(jsonObject.get("edpg_edmc_id"))) {  //jsonObject.get("edpg_edmc_id")) 方法传入的类id
                                 Result re = modelerClient.queryEdmClassById(edpgEdmcId);
                                 if (re.getRetCode() == Result.RECODE_SUCCESS
                                         && re.getData() != null) {
@@ -99,6 +105,8 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
                                     
                                     JSONObject js = JsonUtil.getJson(re.getData());
                                     jsonObj.put("edmcNameEn", js.getString("edmcNameEn"));
+                                    
+                                    jsonObj.put("edpgEdmpId", edpgEdmpId);
                                     
                                     String edmcShortName = js.getString("edmcShortName") ;
                                     String tableName = getTableName(relate_feild,edmcShortName);

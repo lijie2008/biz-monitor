@@ -19,10 +19,13 @@ package com.huntkey.rx.sceo.monitor.commom.constant;
 public interface StatisticsConstant {
     /**字段id*/
     public String ID = "id";
+    
     /**字段 year 财年*/
     public String YEAR = "year";
+    
     /**字段type  类型*/
     public String TYPE = "type";
+    
     /**字段beginTime  开始时间*/
     public String BEGIN_TIME = "beginTime";
     
@@ -37,6 +40,11 @@ public interface StatisticsConstant {
     public String MONITOR_ID = "monitorId";
     
     /**
+     * MONITOR_ID:所属监管类英文名
+     */
+    public String EDMC_NAME_EN = "edmcNameEn";
+    
+    /**
      * PERIOD_ID:周期类id
      */
     public String PERIOD_ID = "periodId";
@@ -47,9 +55,29 @@ public interface StatisticsConstant {
     public String ATTRIBUTE_IDS = "attributeIds";
     
     /**
+     * ATTRIBUTE_ID:属性id
+     */
+    public String ATTRIBUTE_ID = "attrId";
+    
+    /**
+     * ATTRIBUTE_NAME:属性名
+     */
+    public String ATTRIBUTE_NAME = "attrName";
+    
+    /**
      * TREE_NODE:查询节点信息
      */
     public String TREE_NODE = "treeNode";
+    
+    /**
+     * TREE_NODE_ID:节点id
+     */
+    public String TREE_NODE_ID = "nodeId";
+    
+    /**
+     * TREE_NODE_NAME:节点名
+     */
+    public String TREE_NODE_NAME = "nodeName";
     
     /**
      * STATISTICS:统计结果
@@ -62,14 +90,24 @@ public interface StatisticsConstant {
     public String CHILD_NODES = "childNodes";
     
     /**
+     * QUERY_TYPE:查询类型 0查询本节点  1查询子节点  不传默认查询本节点数据
+     */
+    public String QUERY_TYPE = "type";
+    
+    /**
+     * QUERY_TYPE_0:查询类型  表示查询本节点数据
+     */
+    public String QUERY_TYPE_0 = "0";
+    
+    /**
+     * QUERY_TYPE_1:查询类型  表示查询子节点数据
+     */
+    public String QUERY_TYPE_1 = "1";
+    
+    /**
      * EDM_NAME:周期类 edm 名称
      */
     public String EDM_NAME = "period";
-    
-    /**
-     * PEID_id:周期类id
-     */
-    public String PEID_id = "id";
     
     /**
      * PEID001:周期类字段 财年

@@ -38,19 +38,52 @@ public interface StatisticsBiz {
     Result queryPeriod(JSONObject data);
 
     /**
-     * queryStatistics:查询传入监管树对够用节点的统计数据
-     * {
-     *      monitorId:所属监管类id,
-     *      periodId:周期类id,
-     *      attributeIds:[属性1，属性2]
-     *      treeNode:{
-     *              id:节点id,
-     *              childNodes:[{id:id1},{id:id2}]
+     * 查询条件
+     *     {
+     *      "monitorId":"所属监管类id",
+     *      "edmcNameEn":"所属监管类英文名",
+     *     "periodId":"周期类id",
+     *     "type":"查询类型",
+     *     "attributeIds":[{"attrId":"attrid1","attrName":"属性1"},{"attrId":"attrid2","attrName":"属性2"}],
+     *     "treeNode":{
+     *             "nodeId":"节点id",
+     *     "nodeName":"节点名"
+     *         }
+     *     }
+     *     
+     * 返回结果
+     *       {
+     *      "monitorId":"所属监管类id",
+     *     "periodId":"周期类id",
+     *     attributeIds:[{"attrId":"attrid1","attrName":"属性1"},{"attrId":"attrid2","attrName":"属性2"}],
+     *     "treeNode":{
+     *             "nodeId":"节点id",
+     *     "nodeName":"节点名",
+     *     "statistics":[
+     *          {"attrId":"attrid1","attrName":"属性1","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"},
+     *          {"attrId":"attrid2","attrName":"属性2","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"}
+     *      ],
+     *             "childNodes":[
+     *          {
+     *          "nodeId":"节点id",
+     *              "nodeName":"节点名",
+     *          "statistics":[
+     *                  {"attrId":"attrid1","attrName":"属性1","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"},
+     *                  {"attrId":"attrid2","attrName":"属性2","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"}
+     *              ]
+     *          },
+     *          
+     *          {
+     *          "nodeId":"节点id",
+     *          "nodeName":"节点名",
+     *          "statistics":[
+     *                  {"attrId":"attrid1","attrName":"属性1","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"},
+     *                  {"attrId":"attrid2","attrName":"属性2","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"}
+     *              ]
      *          }
-     *      }
-     * @author caozhenx
-     * @param data
-     * @return
+     *      ]
+     *         }
+     *     }
      */
     Result queryStatistics(JSONObject data);
 

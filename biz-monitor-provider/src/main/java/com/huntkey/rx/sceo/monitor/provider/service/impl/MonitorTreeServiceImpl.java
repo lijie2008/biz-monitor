@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.commons.utils.string.StringUtil;
+import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
@@ -11,6 +12,9 @@ import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
 import com.huntkey.rx.sceo.serviceCenter.common.model.ConditionParam;
 import com.huntkey.rx.sceo.serviceCenter.common.model.PagenationParam;
 import com.huntkey.rx.sceo.serviceCenter.common.model.SortParam;
+import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
+
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,6 +33,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     ModelerClient modelerClient;
     @Value("${edm.version}")
     private String edmdVer;
+    
     @Value("${edm.edmcNameEn.monitor}")
     private String monitorEdmcNameEn;
 
@@ -43,6 +48,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         return monitorClassesResult;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public JSONArray getMonitorTreeNodes(String edmcNameEn, String searchDate, String rootNodeId) {
 
@@ -167,6 +173,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         return monitorTrees;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public JSONArray getNodeResources(String name, List<String> nodes, String edmcId) {
         Result resourcesResult = serviceCenterClient.getNodeResources(name,nodes,edmcId);
@@ -267,5 +274,50 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             }
         }
         return resultData;
+    }
+    
+    /**
+     * getChileNodes:根据节点id查询其子节点信息
+     * @author caozhenx
+     * @param nodeId
+     * @return
+     */
+    public JSONArray getChileNodes(String nodeId ,String edmcNameEn){
+        
+        if(StringUtils.isNotBlank(nodeId)){
+          //查询条件
+            JSONObject json = new JSONObject();
+            JSONObject search = new JSONObject();
+            JSONArray conditions = new JSONArray();
+
+            //父节点id
+            if (StringUtils.isNotBlank(nodeId)) {
+                JSONObject condition1 = new JSONObject();
+                condition1.put(ServiceCenterConstant.ATTR, "moni006");
+                condition1.put(ServiceCenterConstant.OPERATOR, ServiceCenterConstant.SYMBOL_EQUAL);
+                condition1.put(ServiceCenterConstant.VALUE, nodeId);
+                conditions.add(condition1);
+            }
+
+            search.put(ServiceCenterConstant.CONDITIONS, conditions);
+
+            //edm类名称
+            json.put(ServiceCenterConstant.EDM_NAME, edmcNameEn);
+            json.put(ServiceCenterConstant.SEARCH, search);
+            
+            Result result = serviceCenterClient.queryServiceCenter(json.toJSONString());
+            
+            if(result != null && result.getRetCode()==Result.RECODE_SUCCESS){
+                JSONObject jsonObj =  JsonUtil.getJson(result.getData());
+                JSONArray jsonArray = jsonObj.getJSONArray(ServiceCenterConstant.DATA_SET);
+
+                return jsonArray;
+            }else {
+                throw new ServiceException(result.getErrMsg());
+            }
+            
+        }
+        
+        return null;
     }
 }

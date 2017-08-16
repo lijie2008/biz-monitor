@@ -65,7 +65,7 @@ public interface MonitorTreeOrderService {
      * @param excNodeId - 此id的资源不统计
      * @return
      */
-    List<String> queryTreeNodeUsingResource(String orderId, String startDate, String endDate,String excNodeId);
+    List<ResourceTo> queryTreeNodeUsingResource(String orderId, String startDate, String endDate,String excNodeId);
     
     /**
      * 
@@ -104,18 +104,6 @@ public interface MonitorTreeOrderService {
      * @return
      */
     NodeTo queryRootChildrenNode(String orderId,String rootNodeId);
-    
-    /**
-     * 
-     * queryTreeNodeResource: 查询当前临时单里已使用的资源信息
-     * @author lijie
-     * @param orderId
-     * @param startDate
-     * @param endDate - 可为空 空代表最大的失效日期
-     * @param excNodeId - 此id的资源不统计
-     * @return
-     */
-    List<ResourceTo> queryTreeNodeResource(String orderId, String startDate, String endDate,String excNodeId);
     
     /**
      * 
@@ -220,6 +208,14 @@ public interface MonitorTreeOrderService {
      * @return
      */
     List<NodeDetailTo> getAllNodesAndResource(String orderId);
+    
+    /**
+     * 
+     * deleteOrder: 删除临时单信息
+     * @author lijie
+     * @param orderId 临时单
+     */
+    void deleteOrder(String orderId);
     
 }
 

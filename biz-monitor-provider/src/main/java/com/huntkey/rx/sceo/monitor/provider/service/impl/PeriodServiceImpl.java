@@ -20,6 +20,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
 import com.huntkey.rx.sceo.monitor.commom.constant.StatisticsConstant;
+import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.PeriodService;
@@ -86,10 +87,8 @@ public class PeriodServiceImpl implements PeriodService {
 
             return jsonObj;
         }else{
-            LOG.error("查询周期类信息错误.errMsg:{}",result.getErrMsg());
+            throw new ServiceException(result.getErrMsg());
         }
-
-        return null;
     }
 
     private String getQueryString(String id, String year, String type, String beginTime,
@@ -104,7 +103,7 @@ public class PeriodServiceImpl implements PeriodService {
         //查询条件1
         if (StringUtils.isNotBlank(id)) {
             JSONObject condition0 = new JSONObject();
-            condition0.put(ServiceCenterConstant.ATTR, StatisticsConstant.PEID_id);
+            condition0.put(ServiceCenterConstant.ATTR, StatisticsConstant.ID);
             condition0.put(ServiceCenterConstant.OPERATOR, ServiceCenterConstant.SYMBOL_EQUAL);
             condition0.put(ServiceCenterConstant.VALUE, id);
         }

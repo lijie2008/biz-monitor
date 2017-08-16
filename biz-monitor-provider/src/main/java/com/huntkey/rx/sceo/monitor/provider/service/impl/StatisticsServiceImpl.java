@@ -19,6 +19,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
+import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.StatisticsService;
@@ -44,7 +45,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     /**属性id*/
     private String STAT003 = "stat003";
     /**周期类id*/
-    private String STAT006 = "stat006";
+    private String STAT013 = "stat013";
 
     @Autowired
     ServiceCenterClient serviceCenterClient;
@@ -73,10 +74,8 @@ public class StatisticsServiceImpl implements StatisticsService {
             LOG.info("查询统计类信息结束,结果:{},用时:{}",JsonUtil.getJsonString(obj),System.currentTimeMillis()-time);
             return obj;
         } else {
-            LOG.error("查询统计类信息错误.errMsg:{}", result.getErrMsg());
+            throw new ServiceException(result.getErrMsg());
         }
-        
-        return null;
     }
 
     private String getQueryString(String monitorClass, String monitorId, String periodId,
@@ -106,7 +105,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         //查询条件3 周期点id
         if (StringUtils.isNotBlank(periodId)) {
             JSONObject condition3 = new JSONObject();
-            condition3.put(ServiceCenterConstant.ATTR, STAT006);
+            condition3.put(ServiceCenterConstant.ATTR, STAT013);
             condition3.put(ServiceCenterConstant.OPERATOR, ServiceCenterConstant.SYMBOL_EQUAL);
             condition3.put(ServiceCenterConstant.VALUE, periodId);
             conditions.add(condition3);
