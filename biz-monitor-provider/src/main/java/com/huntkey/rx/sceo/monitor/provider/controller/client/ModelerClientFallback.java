@@ -63,6 +63,20 @@ public class ModelerClientFallback implements ModelerClient{
         return result;
     }
 
+	@Override
+	public Result getConProperties(String edmdVer, String edmcNameEn) {
+		Result result = new Result();
+		result.setRetCode(Result.RECODE_ERROR);
+		result.setErrMsg("ModelerClient getConProperties fallback");
+		return result;
+	}
 
+	@Override
+	public Result changePropertiesVisible(String[] ids, byte b) {
+		Result result = new Result();
+		result.setRetCode(Result.RECODE_ERROR);
+		result.setErrMsg("ModelerClient changePropertiesVisible fallback");
+		return result;
+	}
 }
 

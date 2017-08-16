@@ -2,6 +2,7 @@ package com.huntkey.rx.sceo.monitor.provider.service;
 
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
 
 import java.util.List;
@@ -34,4 +35,8 @@ public interface MonitorTreeService {
     JSONArray getMonitorTrees(String treeName, String edmcNameEn, String beginTime, String endTime);
 
     JSONArray getNodeResources(String name, List<String> nodes, String edmcId);
+
+    JSONArray getConProperties(String edmcNameEn, boolean enable);
+
+    JSONObject getNewMonitorTreeStartDate(String edmcNameEn);
 }

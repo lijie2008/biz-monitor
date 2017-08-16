@@ -3,9 +3,7 @@ package com.huntkey.rx.sceo.monitor.client.service;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.client.service.hystrix.MonitorTreeClientFallback;
 import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -37,4 +35,11 @@ public interface MonitorTreeClient {
     Result getNodeResources(@RequestParam(value = "name", required = false) String name,
                             @RequestParam(value = "nodes") List<String> nodes,
                             @RequestParam(value = "edmcId") String edmcId);
+
+    @RequestMapping("/monitors/conproperties")
+    Result getConProperties(@RequestParam(value = "edmcNameEn") String edmcNameEn,
+                            @RequestParam(value = "enable",defaultValue = "true") boolean enable);
+
+    @RequestMapping("/monitors/{edmcNameEn}/newDate")
+    Result getNewMonitorTreeStartDate(@PathVariable(value = "edmcNameEn") String edmcNameEn);
 }

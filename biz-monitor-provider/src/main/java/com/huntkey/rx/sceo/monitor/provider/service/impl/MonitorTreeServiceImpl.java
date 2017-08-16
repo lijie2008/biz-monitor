@@ -5,9 +5,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
-import com.huntkey.rx.sceo.monitor.commom.model.ConditionParam;
+import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
+import com.huntkey.rx.sceo.serviceCenter.common.model.ConditionParam;
+import com.huntkey.rx.sceo.serviceCenter.common.model.PagenationParam;
+import com.huntkey.rx.sceo.serviceCenter.common.model.SortParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 
     @Autowired
     ServiceCenterClient serviceCenterClient;
+    @Autowired
+    ModelerClient modelerClient;
     @Value("${edm.version}")
     private String edmdVer;
     @Value("${edm.edmcNameEn.monitor}")
@@ -53,31 +58,18 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 
         if (StringUtil.isNullOrEmpty(rootNodeId)) {
             //根据时间查询根节点
-            ConditionParam beginDateParam = new ConditionParam();
-            beginDateParam.setAttr("moni004");
-            beginDateParam.setOperator("<=");
-            beginDateParam.setValue(searchDate);
+            ConditionParam beginDateParam = new ConditionParam("moni004","<=",searchDate);
             conditions.add(beginDateParam);
 
-            ConditionParam endDateParam = new ConditionParam();
-            endDateParam.setAttr("moni005");
-            endDateParam.setOperator(">");
-            endDateParam.setValue(searchDate);
+            ConditionParam endDateParam = new ConditionParam("moni005",">",searchDate);
             conditions.add(endDateParam);
 
-            ConditionParam parentNodeParam = new ConditionParam();
-            parentNodeParam.setAttr("moni006");
-            parentNodeParam.setOperator("=");
-            parentNodeParam.setValue("null");
+            ConditionParam parentNodeParam = new ConditionParam("moni006","=","null");
             conditions.add(parentNodeParam);
 
         } else {
             //根据ID查询跟节点
-            ConditionParam nodeIdParam = new ConditionParam();
-            nodeIdParam.setAttr("id");
-            nodeIdParam.setOperator("=");
-            nodeIdParam.setValue(rootNodeId);
-
+            ConditionParam nodeIdParam = new ConditionParam("id","=",rootNodeId);
             conditions.add(nodeIdParam);
         }
 
@@ -113,7 +105,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                 }
 
             } else {
-                throw new ServiceException("没有找到，或找到多个监管树！");
+//                throw new ServiceException("没有找到，或找到多个监管树！");
+                return null;
             }
 
         }
@@ -131,26 +124,17 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 
         JSONArray conditions = new JSONArray();
 
-        ConditionParam nodeIdParam = new ConditionParam();
-        nodeIdParam.setAttr("moni006");
-        nodeIdParam.setOperator("=");
-        nodeIdParam.setValue("null");
+        ConditionParam nodeIdParam = new ConditionParam("moni006","=","null");
         conditions.add(nodeIdParam);
 
         if (!StringUtil.isNullOrEmpty(treeName)) {
-            ConditionParam treeNameParam = new ConditionParam();
-            treeNameParam.setAttr("moni002");
-            treeNameParam.setOperator("like");
-            treeNameParam.setValue(treeName);
+            ConditionParam treeNameParam = new ConditionParam("moni002","like",treeName);
             conditions.add(treeNameParam);
         }
 
         //ORM暂不支持or查询，先只根据失效时间过滤
         if (!StringUtil.isNullOrEmpty(endTime)) {
-            ConditionParam treeTimeParam = new ConditionParam();
-            treeTimeParam.setAttr("moni005");
-            treeTimeParam.setOperator("<");
-            treeTimeParam.setValue(endTime);
+            ConditionParam treeTimeParam = new ConditionParam("moni005","<=",endTime);
             conditions.add(treeTimeParam);
         }
 
@@ -193,5 +177,95 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         }else {
             throw new ServiceException(resourcesResult.getErrMsg());
         }
+    }
+
+    @Override
+    public JSONArray getConProperties(String edmcNameEn, boolean enable) {
+        Result resourcesResult = modelerClient.getConProperties(edmdVer,edmcNameEn);
+        if(resourcesResult.getRetCode()==Result.RECODE_SUCCESS){
+            JSONArray allConPropertes = new JSONArray((List<Object>) resourcesResult.getData());
+            allConPropertes.removeIf(o -> {
+                JSONObject object = (JSONObject)JSONObject.toJSON(o);
+                return object.getBoolean("isVisible")!=enable;
+            });
+            return allConPropertes;
+        }else {
+            throw new ServiceException(resourcesResult.getErrMsg());
+        }
+    }
+
+    @Override
+    public JSONObject getNewMonitorTreeStartDate(String edmcNameEn) {
+
+        JSONObject resultData = new JSONObject();
+
+        JSONObject requestParams = new JSONObject();
+        JSONObject search = new JSONObject();
+
+        JSONArray conditions = new JSONArray();
+
+        ConditionParam nodeIdParam = new ConditionParam("moni006","=","null");
+        conditions.add(nodeIdParam);
+
+        //统计所有根节点
+        search.put("conditions", conditions);
+
+        requestParams.put("edmName", edmcNameEn);
+        requestParams.put("search", search);
+
+        Result counttreeResult = serviceCenterClient.countByConditions(requestParams.toJSONString());
+        if(counttreeResult.getRetCode()==Result.RECODE_SUCCESS){
+            JSONObject object = (JSONObject)JSONObject.toJSON(counttreeResult.getData());
+            int count = object.getIntValue("count");
+            if(count<=0){
+                resultData.put("type",2);
+            }else {
+                //统计没有失效时间的根节点
+                ConditionParam treeTimeParam = new ConditionParam("moni005","=","null");
+                conditions.add(treeTimeParam);
+
+                search.put("conditions", conditions);
+                requestParams.put("search", search);
+
+                Result countResult = serviceCenterClient.countByConditions(requestParams.toJSONString());
+                if(countResult.getRetCode()==Result.RECODE_SUCCESS){
+                    JSONObject maxObject = (JSONObject)JSONObject.toJSON(countResult.getData());
+                    int maxCount = maxObject.getIntValue("count");
+                    if(maxCount>0){
+                        resultData.put("type",3);
+                    }else {
+                        //查询最大失效时间
+                        conditions.clear();
+                        conditions.add(nodeIdParam);
+                        search.put("conditions", conditions);
+
+                        SortParam sortParam = new SortParam("moni005","desc");
+                        JSONArray sorts = new JSONArray();
+                        sorts.add(sortParam);
+
+                        PagenationParam page = new PagenationParam();
+                        page.setRows(1);
+                        page.setStartpage(1);
+
+
+                        String characters[] = new String[]{"moni005"};
+                        search.put("columns", characters);
+
+                        search.put("orderby",sorts);
+                        requestParams.put("search", search);
+                        Result treeResult = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
+                        if(treeResult.getRetCode()==Result.RECODE_SUCCESS){
+                            JSONObject data = (JSONObject)JSONObject.toJSON(treeResult.getData());
+                            JSONArray rootArray = data.getJSONArray("dataset");
+                            if(rootArray.size()>0){
+                                resultData.put("type",1);
+                                resultData.put("date",rootArray.getJSONObject(0).getString("moni005"));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return resultData;
     }
 }

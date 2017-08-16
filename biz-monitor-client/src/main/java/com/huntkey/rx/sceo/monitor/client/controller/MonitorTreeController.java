@@ -2,11 +2,9 @@ package com.huntkey.rx.sceo.monitor.client.controller;
 
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.client.service.MonitorTreeClient;
+import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -50,6 +48,19 @@ public class MonitorTreeController {
                                    @RequestParam List<String> nodes,
                                    @RequestParam String edmcId) {
         Result result = treeClient.getNodeResources(name, nodes, edmcId);
+        return result;
+    }
+
+    @GetMapping("/conproperties")
+    public Result getConProperties(@RequestParam(value = "edmcNameEn") @NotBlank String edmcNameEn,
+                                   @RequestParam(value = "enable",defaultValue = "true") boolean enable){
+        Result result = treeClient.getConProperties(edmcNameEn,enable);
+        return result;
+    }
+
+    @GetMapping("/{edmcNameEn}/newDate")
+    public Result getNewMonitorTreeStartDate(@PathVariable(value = "edmcNameEn") String edmcNameEn){
+        Result result = treeClient.getNewMonitorTreeStartDate(edmcNameEn);
         return result;
     }
 
