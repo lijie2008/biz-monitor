@@ -332,6 +332,27 @@ public class JsonUtil {
         return false;
     }
     /**
+     * validDate:比较当前时间是否在 生效时间 和 失效时间之间
+     *  临时使用
+     *  date ∈ [ beforeDate, afterDate)
+     * @author lijie
+     * @param beforeDate
+     * @param afterDate
+     * @return
+     */
+    public static Boolean compareDate(String beforeDate, String afterDate){
+        try{
+            Date b_date = Date.valueOf(beforeDate);
+            Date a_date = Date.valueOf(afterDate);
+            if(b_date.before(a_date)){
+                return true;
+            }
+        }catch(Exception e){
+            
+        }
+        return false;
+    }
+    /**
      * 校验jsonarray是否为null 或者 大小为0
      * @param jsonArr
      * @return
