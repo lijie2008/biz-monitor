@@ -112,6 +112,11 @@ public interface MonitorClient {
 			@RequestParam(value="nodeLeftId") String nodeLeftId,
 			@RequestParam(value="nodeRightId") String nodeRightId
 			);
+	
 	@RequestMapping(value="/monitors/addMonitorTree",method=RequestMethod.POST)
 	Result addMonitorTree(AddMonitorTreeTo addMonitorTreeTo);
+	
+	//监管树维护
+	@RequestMapping(value="/monitors/treeMaintaince",method=RequestMethod.POST)
+	Result treeMaintaince(String classId,String rootId,String edmcNameEn);
 }

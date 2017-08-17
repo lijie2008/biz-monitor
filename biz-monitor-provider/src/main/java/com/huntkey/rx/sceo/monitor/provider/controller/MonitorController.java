@@ -188,5 +188,21 @@ public class MonitorController {
 		result.setData(service.addMonitorTree(addMonitorTreeTo));
 		return result;
 	}	
+	/**
+	 * 监管树的维护
+	 * @param classId 监管类ID
+	 * @param rootId 根节点 
+	 * @param edmcNameEn edm类型英文名  即监管树实体类表名
+	 * @return
+	 */
+	@RequestMapping(value="/treeMaintaince",method=RequestMethod.POST)
+	public Result treeMaintaince(@RequestParam(value="classId") @NotBlank(message="监管类ID不能为空")String classId,
+		@RequestParam(value="rootId") @NotBlank(message="监管树根节点ID不能为空") String rootId,
+		@RequestParam(value="edmcNameEn") @NotBlank(message="EDM类英文名称不能为空") String edmcNameEn){
+		Result result=new Result();
+		result.setRetCode(Result.RECODE_SUCCESS);
+		result.setData(service.treeMaintaince(classId,rootId,edmcNameEn));
+		return result;
+	}
 	
 }
