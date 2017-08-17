@@ -79,7 +79,7 @@ public class MonitorServiceImpl implements MonitorService {
 					if(StringUtil.isNullOrEmpty(json.getString(MTOR012))){
 						nodeArrayNew.add(json);
 					}
-					else if(JsonUtil.compareDate(json.getString(MTOR012), validDate)){
+					else if(JsonUtil.compareDate(validDate,json.getString(MTOR012))){
 						nodeArrayNew.add(json);
 					}
 				}
