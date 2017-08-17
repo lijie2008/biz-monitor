@@ -58,8 +58,10 @@ public class MonitorServiceImpl implements MonitorService {
 		Condition condition=new Condition();
 		//组装查询条件
 		condition.addCondition(PID, EQUAL, tempId, true);
+		condition.addCondition(MTOR021, LT, ChangeType.INVALID.toString(), false);
 		//查询节点集合表
 		JSONArray nodeArray=DBUtils.getArrayResult(MTOR005,null,condition);
+		
 		validDate=StringUtil.isNullOrEmpty(validDate)?ToolUtil.getNowDateStr(YYYY_MM_DD):validDate;
 		//过滤出未失效节点
 		nodeArray=getValidNode(nodeArray,validDate);
@@ -290,10 +292,12 @@ public class MonitorServiceImpl implements MonitorService {
 		// TODO Auto-generated method stub
 		//根据nodeId查询当前节点信息
 		String newNodeId="";
-		JSONObject node= nodeDetail(nodeId);
+		Condition condition=new Condition();
+		condition.addCondition(ID, EQUAL, nodeId, true);
+		//查询节点详情
+		JSONObject node=queryNode(condition);
 		NodeTo nodeDetail=null;
 		JSONObject nodeRight=null;
-		Condition condition=new Condition();
 		if(node!=null){
 			switch (nodeType){
 				case 0://创建子节点
