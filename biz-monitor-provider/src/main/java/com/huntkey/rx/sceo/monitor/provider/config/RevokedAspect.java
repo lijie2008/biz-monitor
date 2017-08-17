@@ -26,7 +26,6 @@ import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
@@ -110,7 +109,7 @@ public class RevokedAspect {
                     return;
                 if(!redisService.isEmpity(orderId))
                    redisService.delete(orderId);
-                redisService.lPush(orderId, new RevokedTo(service.getAllNodesAndResource(orderId), revoked.type()));
+                redisService.lPush(orderId, new RevokedTo(null, revoked.type()));
                 return;
                 
             case NODE:

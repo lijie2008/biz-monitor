@@ -71,4 +71,6 @@ public class PersistanceConstant {
     
     public static String PARAMS = "params";
     
+    public static String DATA = "data";
+    
 }

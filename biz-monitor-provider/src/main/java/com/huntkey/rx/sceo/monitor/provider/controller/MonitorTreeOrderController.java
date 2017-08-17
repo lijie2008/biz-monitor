@@ -32,6 +32,7 @@ import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
+import com.huntkey.rx.sceo.monitor.commom.model.CharacterAndFormatTo;
 import com.huntkey.rx.sceo.monitor.commom.model.EdmClassTo;
 import com.huntkey.rx.sceo.monitor.commom.model.MonitorTreeOrderTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailTo;
@@ -106,12 +107,26 @@ public class MonitorTreeOrderController {
             datas = resources.parallelStream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
                     .collect(Collectors.toList());
         }
-            
+        
         int totalSize = datas == null ? 0 : datas.size();
+        List<Object> data = totalSize == 0 ? null : datas.subList((currentPage-1)*pageSize < 0 ? 0 : 
+            (currentPage-1)*pageSize > totalSize?totalSize:(currentPage-1)*pageSize, (currentPage*pageSize)>totalSize?totalSize:currentPage*pageSize);
+        JSONArray re = new JSONArray();
+        if(!JsonUtil.isEmpity(data)){
+            CharacterAndFormatTo format = service.getCharacterAndFormat(edmClass.getId());
+            if(format == null)
+                ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"特征值" + ErrorMessage._60005.getMsg());
+            data.parallelStream().forEach(s->{
+                JSONObject obj = new JSONObject();
+                obj.put(PersistanceConstant.ID, ((JSONObject)s).get(PersistanceConstant.ID));
+                obj.put("text", format.format(obj));
+                re.add(obj);
+            });   
+        }
         JSONObject obj = new JSONObject();
         obj.put("totalSize", totalSize);
-        obj.put("data", totalSize == 0 ? null : datas.subList((currentPage-1)*pageSize < 0 ? 0 : 
-            (currentPage-1)*pageSize > totalSize?totalSize:(currentPage-1)*pageSize, (currentPage*pageSize)>totalSize?totalSize:currentPage*pageSize));
+        obj.put("currentPage", currentPage);
+        obj.put("data", re);
         result.setData(obj);
         return result;
     }
@@ -294,12 +309,17 @@ public class MonitorTreeOrderController {
         if(JsonUtil.isEmpity(allNodes))
             return;
         Long size = redisService.size(orderId);
-        for(int i = 1 ; i < size; i++){
+        for(Long i = size - 1 ; i >  0; i--){
             RevokedTo to = (RevokedTo)redisService.index(orderId, i);
             if(to.getType() != OperateType.DETAIL)
-                continue;
+                break;
             NodeDetailTo node = (NodeDetailTo)to.getObj();
-            node.setId(allNodes.parallelStream().filter(s->s.getMtor006().equals(node.getMtor006())).findFirst().get().getId());
+            NodeDetailTo target = allNodes.parallelStream().filter(s->s.getMtor006().equals(node.getMtor006())).findFirst().get();
+            node.setId(target.getId());
+            node.setMtor013(target.getMtor013());
+            node.setMtor014(target.getMtor014());
+            node.setMtor015(target.getMtor015());
+            node.setMtor016(target.getMtor016());
             to.setObj(node);
             redisService.set(orderId, i, to);
         }
@@ -358,6 +378,10 @@ public class MonitorTreeOrderController {
             obj.put("mtor015", getId(nodes,allNodes,no.getMtor015()));
             obj.put("mtor016", getId(nodes,allNodes,no.getMtor016()));
             ar.add(obj);
+            s.setMtor013(obj.getString("mtor013"));
+            s.setMtor014(obj.getString("mtor014"));
+            s.setMtor015(obj.getString("mtor015"));
+            s.setMtor016(obj.getString("mtor016"));
         });
         service.batchUpdate(PersistanceConstant.MTOR_MTOR005A, ar);
         return allNodes;

@@ -17,16 +17,17 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.constant.PersistanceConstant;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
+import com.huntkey.rx.sceo.monitor.commom.model.CharacterAndFormatTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ConditionParam;
 import com.huntkey.rx.sceo.monitor.commom.model.EdmClassTo;
 import com.huntkey.rx.sceo.monitor.commom.model.FullInputArgument;
@@ -333,10 +334,10 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     public void updateNode(String edmName, NodeDetailTo to) {
         
         JSONArray array = new JSONArray();
-        JSONObject obj = JSON.parseObject(JSON.toJSONString(to,SerializerFeature.WriteMapNullValue,SerializerFeature.WriteNullStringAsEmpty));
-        if("".equals(obj.get("mtor011")))
+        JSONObject obj = JSON.parseObject(JSON.toJSONString(to));
+        if(JsonUtil.isEmpity(obj.get("mtor011")))
             obj.remove("mtor011");
-        if("".equals(obj.get("mtor012")))
+        if(JsonUtil.isEmpity(obj.get("mtor012")))
             obj.remove("mtor012");
         array.add(obj);
         Result result = client.update(new FullInputArgument( mergeParam(edmName, array)).getJson().toString());
@@ -388,6 +389,20 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         Result result = client.delete(new FullInputArgument( mergeParam(PersistanceConstant.MONITORTREEORDER, arry)).getJson().toString());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
+    }
+
+    @Override
+    public CharacterAndFormatTo getCharacterAndFormat(String classId) {
+        
+        Result result = edmClient.getCharacterAndFormat(classId);
+        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
+            ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), ErrorMessage._60007.getMsg());
+        
+        if(!JsonUtil.isEmpity(result.getData())){
+            JSONObject value = JsonUtil.getJson(result.getData());
+            return JsonUtil.getObject(value.toJSONString(), CharacterAndFormatTo.class);
+        }
+        return null;
     }
 }
 

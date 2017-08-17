@@ -11,7 +11,10 @@ package com.huntkey.rx.sceo.monitor.provider.service;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.alibaba.fastjson.JSONArray;
+import com.huntkey.rx.sceo.monitor.commom.model.CharacterAndFormatTo;
 import com.huntkey.rx.sceo.monitor.commom.model.EdmClassTo;
 import com.huntkey.rx.sceo.monitor.commom.model.MonitorTreeOrderTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailTo;
@@ -217,5 +220,11 @@ public interface MonitorTreeOrderService {
      */
     void deleteOrder(String orderId);
     
+    /**
+     * 根据类id 查询特征值字段集合和格式化样式
+     * @param classId
+     * @return
+     */
+    CharacterAndFormatTo getCharacterAndFormat(@RequestParam(value = "classId") String classId);
 }
 
