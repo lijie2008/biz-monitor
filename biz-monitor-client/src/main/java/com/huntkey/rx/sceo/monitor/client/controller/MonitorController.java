@@ -35,10 +35,7 @@ public class MonitorController {
 	@RequestMapping(value="/tempTree")
 	public Result tempTree(@RequestParam(value="tempId") @NotBlank(message="监管树临时单ID不能为空") String tempId,
 			@RequestParam(value="validDate",required=false) String validDate){
-		Result result=new Result();
-		result.setRetCode(Result.RECODE_SUCCESS);
-		result.setData(monitorClient.tempTree(tempId,validDate));
-		return result;
+		return monitorClient.tempTree(tempId,validDate);
 	}
 	/**
 	 * 监管树临时单预览 是否需要包含资源
@@ -49,10 +46,7 @@ public class MonitorController {
 	public Result containResource(@RequestParam(value="nodes") @Size(min=1) 
 	String[] nodes,
 	@RequestParam(value="classId") @NotBlank(message="监管树类ID不能为空") String classId){
-		Result result=new Result();
-		result.setRetCode(Result.RECODE_SUCCESS);
-		result.setData(monitorClient.containResource(nodes,classId));
-		return result;
+		return monitorClient.containResource(nodes,classId);
 	}
 	/**
 	 * 查询节点详情
@@ -61,10 +55,7 @@ public class MonitorController {
 	 */
 	@RequestMapping(value="/nodeDetail")
 	public Result nodeDetail(@RequestParam(value="nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId){
-		Result result=new Result();
-		result.setRetCode(Result.RECODE_SUCCESS);
-		result.setData(monitorClient.nodeDetail(nodeId));
-		return result;
+		return monitorClient.nodeDetail(nodeId);
 	}
 	/**
 	 * 查询节点关联资源
@@ -74,10 +65,7 @@ public class MonitorController {
 	@RequestMapping(value="/nodeResource")
 	public Result nodeResource(@RequestParam(value="nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
 			@RequestParam(value="classId") @NotBlank(message="监管树类ID不能为空") String classId){
-		Result result=new Result();
-		result.setRetCode(Result.RECODE_SUCCESS);
-		result.setData(monitorClient.nodeResource(nodeId,classId));
-		return result;
+		return monitorClient.nodeResource(nodeId,classId);
 	}
 	/**
 	 * 保存节点详情
@@ -86,10 +74,7 @@ public class MonitorController {
 	 */
 	@RequestMapping(value="/saveNodeDetail",method=RequestMethod.POST)
 	public Result saveNodeDetail(@RequestBody() @Valid NodeTo nodeDetail){
-		Result result=new Result();
-		result.setRetCode(Result.RECODE_SUCCESS);
-		result.setData(monitorClient.saveNodeDetail(nodeDetail));
-		return result;
+		return monitorClient.saveNodeDetail(nodeDetail);
 	}
 	/**
 	 * 删除节点资源
@@ -137,10 +122,7 @@ public class MonitorController {
 	public Result addNode(@RequestParam(value="nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
 		@RequestParam(value="nodeType") @Range(min=0,max=2,message="0：创建子节点 1：创建上节点 2：创建下节点") 
 		int nodeType){
-		Result result=new Result();
-		result.setRetCode(Result.RECODE_SUCCESS);
-		result.setData(monitorClient.addNode(nodeId,nodeType));
-		return result;
+		return monitorClient.addNode(nodeId,nodeType);
 	}
 	/**
 	 * 删除节点
@@ -151,10 +133,7 @@ public class MonitorController {
 	@RequestMapping(value="/deleteNode",method=RequestMethod.GET)
 	public Result deleteNode(@RequestParam(value="nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
 			@RequestParam(value="type") @Range(min=0,max=1,message="0：节点失效 1：节点删除") int type){
-		Result result=new Result();
-		result.setRetCode(Result.RECODE_SUCCESS);
-		result.setData(monitorClient.deleteNode(nodeId,type));
-		return result;
+		return monitorClient.deleteNode(nodeId,type);
 	}
 	
 	@RequestMapping(value="/moveNode",method=RequestMethod.GET)
@@ -163,10 +142,7 @@ public class MonitorController {
 			@RequestParam(value="nodeLeftId") String nodeLeftId,
 			@RequestParam(value="nodeRightId") String nodeRightId
 			){
-		Result result=new Result();
-		result.setRetCode(Result.RECODE_SUCCESS);
-		result.setData(monitorClient.moveNode(nodeId,nodeParentId,nodeLeftId,nodeRightId));
-		return result;
+		return monitorClient.moveNode(nodeId,nodeParentId,nodeLeftId,nodeRightId);
 	}
 	/**
 	 * 
@@ -180,10 +156,21 @@ public class MonitorController {
 	 */
 	@RequestMapping(value="/addMonitorTree",method=RequestMethod.POST)
 	public Result addMonitorTree(@RequestBody() @Valid AddMonitorTreeTo addMonitorTreeTo){
-		Result result=new Result();
-		result.setRetCode(Result.RECODE_SUCCESS);
-		result.setData(monitorClient.addMonitorTree(addMonitorTreeTo));
-		return result;
+		return monitorClient.addMonitorTree(addMonitorTreeTo);
+	}
+	
+	/**
+	 * 监管树的维护
+	 * @param classId 监管类ID
+	 * @param rootId 根节点 
+	 * @param edmcNameEn edm类型英文名  即监管树实体类表名
+	 * @return
+	 */
+	@RequestMapping(value="/treeMaintaince",method=RequestMethod.GET)
+	public Result treeMaintaince(@RequestParam(value="classId") @NotBlank(message="监管类ID不能为空")String classId,
+		@RequestParam(value="rootId") @NotBlank(message="监管树根节点ID不能为空") String rootId,
+		@RequestParam(value="edmcNameEn") @NotBlank(message="EDM类英文名称不能为空") String edmcNameEn){
+		return monitorClient.treeMaintaince(classId,rootId,edmcNameEn);
 	}
 
 }

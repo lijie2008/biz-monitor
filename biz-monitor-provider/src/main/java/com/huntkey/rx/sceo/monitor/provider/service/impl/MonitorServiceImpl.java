@@ -79,7 +79,7 @@ public class MonitorServiceImpl implements MonitorService {
 					if(StringUtil.isNullOrEmpty(json.getString(MTOR012))){
 						nodeArrayNew.add(json);
 					}
-					else if(JsonUtil.compareDate(json.getString(MTOR012), validDate)){
+					else if(JsonUtil.compareDate(validDate,json.getString(MTOR012))){
 						nodeArrayNew.add(json);
 					}
 				}
@@ -477,7 +477,7 @@ public class MonitorServiceImpl implements MonitorService {
 		}else{
 			//1.如果左节点为空  则将移动节点做为父节点的子节点
 			changeNodePosition(nodeParentId, 2, nodeId);
-			changeNodePosition(nodeParentId, 3, NULL);//变更移动节点的左节点为空
+			changeNodePosition(nodeId, 3, NULL);//变更移动节点的左节点为空
 		}
 		if(!StringUtil.isNullOrEmpty(nodeRightId)){//变更右节点
 			changeNodePosition(nodeId, 4, nodeRightId);//变更移动节点的右节点
@@ -549,12 +549,14 @@ public class MonitorServiceImpl implements MonitorService {
 	private NodeTo setNodePosition(String parentNode,String childNode,
 			String leftNode,String rightNode,String treeId,int updateType){
 		NodeTo node=new NodeTo();
+		node.setMtor007("未命名节点");
 		node.setMtor013(parentNode);
 		node.setMtor014(childNode);
 		node.setMtor015(leftNode);
 		node.setMtor016(rightNode);
 		node.setMtor021(updateType);
 		node.setPid(treeId);
+		node.setMtor006(orderNumberService.generateOrderNumber("NODE"));
 		return node;
 	}
 	
@@ -584,7 +586,13 @@ public class MonitorServiceImpl implements MonitorService {
 		json.put(ID,nodeId);
 		DBUtils.update(MTOR005, json);
 	}
-
+	
+	/**
+	 * 监管树的操作
+	 * type 1新增 2复制新增 3树维护
+	 * @param monitorTreeTo
+	 * @return
+	 */
 	@Override
 	public String addMonitorTree(AddMonitorTreeTo addMonitorTreeTo) {
 		// TODO Auto-generated method stub
@@ -594,26 +602,44 @@ public class MonitorServiceImpl implements MonitorService {
 		String classId=addMonitorTreeTo.getClassId();
 		String rootId=addMonitorTreeTo.getRootId();
 		String edmcNameEn=addMonitorTreeTo.getEdmcNameEn().toLowerCase();
-		//1.生成监管类临时单
-		JSONObject jsonTemp=new JSONObject();
-		jsonTemp.put(MTOR001,orderNumberService.generateOrderNumber("LS"));
-		jsonTemp.put(MTOR002, ChangeType.ADD.getValue());
-		jsonTemp.put(MTOR003, classId);
-		jsonTemp.put(MTOR004, "");
-		String tempId=DBUtils.add(MONITORTREEORDER, jsonTemp);
-		
+		String tempId=createTemp(classId,ChangeType.ADD.getValue(),"");
 		switch(type){
 			case 1://提示界面新增
 				addRootNode(tempId,beginDate,endDate);
 				break;
 			case 2://提示界面复制
-				copyTree(edmcNameEn,ToolUtil.getNowDateStr(YYYY_MM_DD),rootId,tempId);
+				copyTree(edmcNameEn,rootId,tempId,ChangeType.ADD.getValue());
 				break;	
 		}
 		return tempId;
 	}
-	private void copyTree(String edmcNameEn,String nowDate,String rootId,String tempId) {
+	/**
+	 * 生成临时单
+	 * @param classId 监管类ID
+	 * @param changeType 树的变更类型
+	 * @param rootId 根节点ID
+	 * @return 临时单ID
+	 */
+	private String createTemp(String classId,int changeType,String rootId){
+		//1.生成监管类临时单
+		JSONObject jsonTemp=new JSONObject();
+		jsonTemp.put(MTOR001,orderNumberService.generateOrderNumber("LS"));
+		jsonTemp.put(MTOR002, changeType);
+		jsonTemp.put(MTOR003, classId);
+		jsonTemp.put(MTOR004, rootId);
+		return DBUtils.add(MONITORTREEORDER, jsonTemp);
+	}
+	
+	/**
+	 * 复制监管树
+	 * @param edmcNameEn edm类英文名  即监管树实体对象表
+	 * @param rootId 根节点ID
+	 * @param tempId 临时单ID
+	 * @param changeType 变更类型
+	 */
+	private void copyTree(String edmcNameEn,String rootId,String tempId,int changeType) {
 		// TODO Auto-generated method stub
+		String nowDate=ToolUtil.getNowDateStr(YYYY_MM_DD);
 		JSONArray resourceArr=new JSONArray();
 		JSONArray treeFormal=new JSONArray();//正式树
 		JSONArray treeTemp=new JSONArray();//临时树
@@ -639,7 +665,7 @@ public class MonitorServiceImpl implements MonitorService {
 					//添加PID项
 					Map<String, Object> map=new HashMap<String, Object>();
 					map.put(PID, tempId);
-					map.put(MTOR021, 1);
+					map.put(MTOR021, changeType);
 					treeArr=JsonUtil.addAttr(treeArr, map);
 					List list=JsonUtil.getList(treeArr, NodeFieldMapTo.class);
 					treeArr=JsonUtil.listToJsonArray(list);//转换成临时单的字段
@@ -654,7 +680,7 @@ public class MonitorServiceImpl implements MonitorService {
 		//4.新增根节点
 		root.remove(ID);
 		root.put(PID, tempId);
-		root.put(MTOR021,1);
+		root.put(MTOR021,changeType);
 		root=JsonUtil.getJson(JsonUtil.getObject(
 				JsonUtil.getJsonString(root), NodeFieldMapTo.class));
 		String rootNewId=DBUtils.add(MTOR005, root);
@@ -681,6 +707,13 @@ public class MonitorServiceImpl implements MonitorService {
 			}
 		}
 	}
+	/**
+	 * 正式表中节点 变更到临时单中会生成新的节点ID 此方法为节点关系维护
+	 * @param treeFormal 正式树集合
+	 * @param treeTemp 临时树集合
+	 * @param resourceArr 资源集合
+	 * @return 新的临时树和资源集合
+	 */
 	private JSONObject updateNodePosition(JSONArray treeFormal,JSONArray treeTemp,JSONArray resourceArr) {
 		// TODO Auto-generated method stub
 		String tempStr="";
@@ -722,6 +755,13 @@ public class MonitorServiceImpl implements MonitorService {
 		retObj.put("resource", JsonUtil.getJsonArray(resourceStr));
 		return retObj;
 	}
+	/**
+	 * 新增根节点
+	 * @param pid 临时单ID
+	 * @param beginDate 生效日期
+	 * @param endDate 失效日期
+	 * @return
+	 */
 	private String addRootNode(String pid,String beginDate,String endDate) {
 		// TODO Auto-generated method stub
 		NodeTo node=new NodeTo();
@@ -737,5 +777,24 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setPid(pid);
 		return DBUtils.add(MTOR005, JsonUtil.getJson(node));
 	}
+	@Override
+	public String treeMaintaince(String classId, String rootId, String edmcNameEn) {
+		// TODO Auto-generated method stub
+		//先根据根节点查询是否存在临时树
+		Condition condition=new Condition();
+		condition.addCondition(MTOR004, EQUAL, rootId, true);
+		JSONObject ret=DBUtils.getObjectResult(MONITORTREEORDER, null, condition);
+		if(ret!=null){
+			if(!StringUtil.isNullOrEmpty(ret.getString(ID))){
+				return ret.getString(ID);//临时单ID
+			}
+		}
+		//如果没有临时单
+		String tempId=createTemp(classId,ChangeType.UPDATE.getValue(),rootId);
+		copyTree(edmcNameEn.toLowerCase(),rootId,tempId,ChangeType.UPDATE.getValue());
+		
+		return tempId;
+	}
+	
 	
 }

@@ -176,9 +176,5 @@ public class RevokedAspect {
         detail.setMtor019(resources);
         return detail;
     }
-    
-    public static void main(String[] args) {
-        originalMap.get("111");
-    }
 }
 

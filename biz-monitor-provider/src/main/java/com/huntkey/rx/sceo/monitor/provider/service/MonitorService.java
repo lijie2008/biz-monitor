@@ -29,6 +29,8 @@ public interface MonitorService {
 	String deleteNode(String nodeId,int type);
 	//移动节点
 	String moveNode(String nodeId,String nodeParentId,String nodeLeftId,String nodeRightId);
-	
+	//新增监管树
 	String addMonitorTree(AddMonitorTreeTo addMonitorTreeTo);
+	//监管树维护
+	String treeMaintaince(String classId,String rootId,String edmcNameEn);
 }

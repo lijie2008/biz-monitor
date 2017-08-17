@@ -120,5 +120,13 @@ public class MonitorClientFallback implements MonitorClient {
         return result;
 	}
 
+	@Override
+	public Result treeMaintaince(String classId, String rootId, String edmcNameEn) {
+		// TODO Auto-generated method stub
+		Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("MonitorClient treeMaintaince fallback");
+        return result;
+	}
    
 }

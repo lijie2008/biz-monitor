@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.huntkey.rx.commons.utils.rest.Result;
 
-//@FeignClient(value = "MODELER-PROVIDER", url = "http://192.168.13.34:2002", fallback = ModelerClientFallback.class) //单机调试使用(注意不要提交此行)
-@FeignClient(value = "modeler-provider", fallback = ModelerClientFallback.class)
+@FeignClient(value = "MODELER-PROVIDER", url = "http://192.168.13.34:2002", fallback = ModelerClientFallback.class) //单机调试使用(注意不要提交此行)
+//@FeignClient(value = "modeler-provider", fallback = ModelerClientFallback.class)
 public interface ModelerClient {
 
     /**
@@ -99,5 +99,14 @@ public interface ModelerClient {
     @RequestMapping(value = "/properties/changeVisible", method = RequestMethod.POST)
     Result changePropertiesVisible(@RequestParam(value = "ids") String[] ids,
                                           @RequestParam(value = "b") byte b);
+    
+    /**
+     * getPropertyFormula:根据卷积属性id查询公式
+     * @author caozhenx
+     * @param id
+     * @return
+     */
+    @RequestMapping(value = "/convolutes/formula/{id}", method = RequestMethod.GET)
+    Result getPropertyFormula(@PathVariable(value = "id") String id);    
 
 }

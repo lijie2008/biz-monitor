@@ -106,12 +106,19 @@ public interface MonitorClient {
 	Result deleteNode(@RequestParam(value="nodeId")  String nodeId,
 			@RequestParam(value="type")  int type);
 	
-	@RequestMapping(value="/moveNode",method=RequestMethod.GET)
+	@RequestMapping(value="/monitors/moveNode",method=RequestMethod.GET)
 	Result moveNode(@RequestParam(value="nodeId") String nodeId,
 			@RequestParam(value="nodeParentId") String nodeParentId,
 			@RequestParam(value="nodeLeftId") String nodeLeftId,
 			@RequestParam(value="nodeRightId") String nodeRightId
 			);
+	
 	@RequestMapping(value="/monitors/addMonitorTree",method=RequestMethod.POST)
-	Result addMonitorTree(AddMonitorTreeTo addMonitorTreeTo);
+	Result addMonitorTree(@RequestBody AddMonitorTreeTo addMonitorTreeTo);
+	
+	//监管树维护
+	@RequestMapping(value="/monitors/treeMaintaince")
+	Result treeMaintaince(@RequestParam(value="classId") String classId,
+			@RequestParam(value="rootId") String rootId,
+			@RequestParam(value="edmcNameEn") String edmcNameEn);
 }
