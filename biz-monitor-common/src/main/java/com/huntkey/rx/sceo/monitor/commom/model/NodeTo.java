@@ -9,6 +9,8 @@
 
 package com.huntkey.rx.sceo.monitor.commom.model;
 
+import java.io.Serializable;
+
 /**
  * ClassName:NodeTo 节点对象
  * Date:     2017年8月5日 下午5:21:10
@@ -16,8 +18,10 @@ package com.huntkey.rx.sceo.monitor.commom.model;
  * @version  
  * @see 	 
  */
-public class NodeTo {
+public class NodeTo implements Serializable{
     
+    private static final long serialVersionUID = 1L;
+
     /**
      * 节点id
      */

@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -65,8 +63,6 @@ public class MonitorTreeOrderController {
     
     @Autowired
     private RedisService redisService;
-    
-    private static final Logger logger = LoggerFactory.getLogger(MonitorTreeOrderController.class);
     
     /**
      * 
@@ -231,18 +227,11 @@ public class MonitorTreeOrderController {
 
         ChangeType type = ChangeType.valueOf(order.getMtor002());
         NodeDetailTo rootNode = null;
-        switch(type){
-            case ADD:
-                break;
-            case UPDATE:
-                rootNode = updateTargetRootNode(nodes, order, edmName);
-               break;
-            default:
-                ApplicationException.throwCodeMesg(ErrorMessage._60000.getCode(),"变更标记" + ErrorMessage._60000.getMsg());
-        }
-        logger.info("新增节点开始。。。。。。。。。。。。。。。。。。。。。。。");
+        
+        if(type == ChangeType.UPDATE)
+            rootNode = updateTargetRootNode(nodes, order, edmName);
+        
         addTargetNode(nodes,edmName,type,rootNode,orderId);
-        logger.info("新增节点结束。。。。。。。。。。。。。。。。。。。。。。。");
         service.deleteOrder(orderId);
         return result;
     }
@@ -260,25 +249,33 @@ public class MonitorTreeOrderController {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         
-        if(JsonUtil.isEmpity(orderId))
-            ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(),ErrorMessage._60004.getMsg());
         if(redisService.size(orderId) == 0)
             ApplicationException.throwCodeMesg(ErrorMessage._60011.getCode(), ErrorMessage._60011.getMsg());
+        
         if(redisService.size(orderId) == 1){
             result.setData(new RevokedTo(null, OperateType.INITIALIZE));
             return result;
         }
         
         RevokedTo re = (RevokedTo)redisService.lPop(orderId);
+        
         switch(re.getType()){
+            
             case NODE:
-                createNewTree(re.getObj(),orderId);
+                
+                List<NodeDetailTo> allNodes = createNewTree(re.getObj(),orderId);
+                updateRedis(orderId,allNodes);
+                
                 break;
+                
             case DETAIL:
-                NodeDetailTo to = JSON.parseObject(JSON.toJSONString(re), NodeDetailTo.class);
+                
+                NodeDetailTo to = JSON.parseObject(JSON.toJSONString(re.getObj()), NodeDetailTo.class);
                 service.updateNodeAndResource(PersistanceConstant.MTOR_MTOR005A,to);
                 re.setObj(to.getId());
+                
                 break;
+                
              default:
                  ApplicationException.throwCodeMesg(ErrorMessage._60000.getCode(), ErrorMessage._60000.getMsg());
         }
@@ -288,21 +285,44 @@ public class MonitorTreeOrderController {
     
     /**
      * 
+     * updateRedis: 修改redis中节点操作类型的数据
+     * @author lijie
+     * @param orderId 临时单号
+     * @param allNodes 所有的节点
+     */
+    private void updateRedis(String orderId, List<NodeDetailTo> allNodes) {
+        if(JsonUtil.isEmpity(allNodes))
+            return;
+        Long size = redisService.size(orderId);
+        for(int i = 1 ; i < size; i++){
+            RevokedTo to = (RevokedTo)redisService.index(orderId, i);
+            if(to.getType() != OperateType.DETAIL)
+                continue;
+            NodeDetailTo node = (NodeDetailTo)to.getObj();
+            node.setId(allNodes.parallelStream().filter(s->s.getMtor006().equals(node.getMtor006())).findFirst().get().getId());
+            to.setObj(node);
+            redisService.set(orderId, i, to);
+        }
+    }
+
+    /**
+     * 
      * createNewTree:(描述这个方法的作用)
      * @author lijie
      * @param data 所有节点 和 数据源数据
      * @param orderId 临时单号
      */
     @SuppressWarnings("unchecked")
-    private void createNewTree(Object data,String orderId) {
+    private List<NodeDetailTo> createNewTree(Object data,String orderId) {
         // 清除原数据
-        List<NodeDetailTo> nodes = (List<NodeDetailTo>) data;
-        if(JsonUtil.isEmpity(nodes))
+        List<NodeTo> n_nodes = service.queryTreeNode(orderId);
+        if(JsonUtil.isEmpity(n_nodes))
             ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(), ErrorMessage._60003.getMsg());
-        List<String> nodeIds = nodes.stream().map(NodeDetailTo::getId).collect(Collectors.toList());
+        List<String> nodeIds = n_nodes.stream().map(NodeTo::getId).collect(Collectors.toList());
         service.batchDeleteResource(PersistanceConstant.MTOR_MTOR005A, nodeIds);
         
         // 新增redis中保存的数据
+        List<NodeDetailTo> nodes = (List<NodeDetailTo>) data;
         List<NodeDetailTo> nodes_c = new ArrayList<NodeDetailTo>();
         nodes.parallelStream().forEach(s->{
             try {
@@ -340,6 +360,7 @@ public class MonitorTreeOrderController {
             ar.add(obj);
         });
         service.batchUpdate(PersistanceConstant.MTOR_MTOR005A, ar);
+        return allNodes;
     }
     
     /**

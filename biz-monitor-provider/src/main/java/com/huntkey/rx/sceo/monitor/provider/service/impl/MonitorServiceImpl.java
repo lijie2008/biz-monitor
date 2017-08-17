@@ -43,6 +43,7 @@ public class MonitorServiceImpl implements MonitorService {
 	@Autowired
 	OrderNumberService orderNumberService;
 	private static final Logger logger = LoggerFactory.getLogger(MonitorServiceImpl.class);
+	
 	/***
 	 * 查询监管树临时结构
 	 * @param tempId 监管树临时单id
@@ -57,16 +58,34 @@ public class MonitorServiceImpl implements MonitorService {
 		Condition condition=new Condition();
 		//组装查询条件
 		condition.addCondition(PID, EQUAL, tempId, true);
-		if(!StringUtil.isNullOrEmpty(validDate)){
-			condition.addCondition(MTOR012, GT, ToolUtil.formatDateStr(validDate, YYYY_MM_DD), false);
-		}   
 		//查询节点集合表
 		JSONArray nodeArray=DBUtils.getArrayResult(MTOR005,null,condition);
+		validDate=StringUtil.isNullOrEmpty(validDate)?ToolUtil.getNowDateStr(YYYY_MM_DD):validDate;
+		//过滤出未失效节点
+		nodeArray=getValidNode(nodeArray,validDate);
 		if(JsonUtil.isNullOrEmpty(nodeArray)){
 			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),
 					ErrorMessage._60003.getMsg()); 
 		}
 		return nodeArray;
+	}
+	private JSONArray getValidNode(JSONArray nodeArray, String validDate) {
+		// TODO Auto-generated method stub
+		JSONArray nodeArrayNew=new JSONArray();
+		if(!JsonUtil.isNullOrEmpty(nodeArray)){
+			for(Object obj:nodeArray){
+				JSONObject json=JsonUtil.getJson(obj);
+				if(json!=null){
+					if(StringUtil.isNullOrEmpty(json.getString(MTOR012))){
+						nodeArrayNew.add(json);
+					}
+					else if(JsonUtil.compareDate(json.getString(MTOR012), validDate)){
+						nodeArrayNew.add(json);
+					}
+				}
+			}
+		}
+		return nodeArrayNew;
 	}
 	/**
 	 * 监管树临时单预览 是否需要包含资源
@@ -709,9 +728,7 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor007(INITNODENAME);
 		node.setMtor011(StringUtil.isNullOrEmpty(beginDate)?
 				ToolUtil.getNowDateStr(YYYY_MM_DD):beginDate);
-		if(!StringUtil.isNullOrEmpty(endDate)){
-			node.setMtor012(endDate);
-		}
+		node.setMtor012(StringUtil.isNullOrEmpty(endDate)?null:endDate);
 		node.setMtor013(NULL);
 		node.setMtor014(NULL);
 		node.setMtor015(NULL);
@@ -720,6 +737,5 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setPid(pid);
 		return DBUtils.add(MTOR005, JsonUtil.getJson(node));
 	}
-	
 	
 }

@@ -43,5 +43,17 @@ public class RedisServiceImpl implements RedisService{
     public void delete(String key) {
         redis.delete(key);
     }
+    
+    @Override
+    public void set(String key, long index, Object value){
+        redis.opsForList().set(key, index, value);
+    }
+    
+    @Override
+    public Object index(String key,long index){
+        return redis.opsForList().index(key, index);
+    }
+    
+    
 
 }
