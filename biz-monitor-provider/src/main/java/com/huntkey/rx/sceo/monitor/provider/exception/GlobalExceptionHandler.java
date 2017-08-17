@@ -31,7 +31,6 @@ import java.util.Set;
  * Created by xuyf on 2017/5/22 0022.
  */
 @RestControllerAdvice
-@Component
 public class GlobalExceptionHandler {
 
     private static Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);

@@ -31,7 +31,6 @@ import com.huntkey.rx.sceo.monitor.commom.utils.ValidatorResultUtil;
  * Created by xuyf on 2017/5/19 0019.
  */
 @RestControllerAdvice
-@Component
 public class GlobalExceptionHandler {
 
     private static Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);

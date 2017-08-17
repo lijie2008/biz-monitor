@@ -192,14 +192,19 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     public JSONArray getConProperties(String edmcNameEn, boolean enable) {
         Result resourcesResult = modelerClient.getConProperties(edmdVer,edmcNameEn);
         if(resourcesResult.getRetCode()==Result.RECODE_SUCCESS){
-            JSONArray allConPropertes = new JSONArray((List<Object>) resourcesResult.getData());
-            allConPropertes.removeIf(o -> {
-                JSONObject object = (JSONObject)JSONObject.toJSON(o);
-                return object.getBoolean("isVisible")!=enable;
-            });
-            return allConPropertes;
+            if(resourcesResult.getData()!=null){
+                JSONArray allConPropertes = new JSONArray((List<Object>) resourcesResult.getData());
+                allConPropertes.removeIf(o -> {
+                    JSONObject object = (JSONObject)JSONObject.toJSON(o);
+                    return object.getBoolean("isVisible")!=enable;
+                });
+                return allConPropertes;
+            }else {
+                return null;
+            }
+
         }else {
-            throw new ServiceException(resourcesResult.getErrMsg());
+            throw new ServiceException("调用"+resourcesResult.getErrMsg());
         }
     }
 
@@ -230,7 +235,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                 resultData.put("type",2);
             }else {
                 //统计没有失效时间的根节点
-                ConditionParam treeTimeParam = new ConditionParam("moni005","=","null");
+                ConditionParam treeTimeParam = new ConditionParam("moni005","is","null");
                 conditions.add(treeTimeParam);
 
                 search.put("conditions", conditions);

@@ -4,6 +4,7 @@ import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.client.service.MonitorTreeClient;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,14 +14,15 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/v1/monitors")
+@Validated
 public class MonitorTreeController {
 
     @Autowired
     MonitorTreeClient treeClient;
 
     @GetMapping("/trees/nodes")
-    public Result getMonitorTreeNodes(@RequestParam String edmcNameEn,
-                                      @RequestParam String searchDate,
+    public Result getMonitorTreeNodes(@RequestParam @NotBlank(message = "类英文名不能为空") String edmcNameEn,
+                                      @RequestParam @NotBlank(message = "查询日期不能为空") String searchDate,
                                       @RequestParam(required = false, defaultValue = "") String rootNodeId) {
         Result result = treeClient.getMonitorTreeNodes(edmcNameEn, searchDate, rootNodeId);
         return result;
@@ -36,7 +38,7 @@ public class MonitorTreeController {
 
     @GetMapping("/trees")
     public Result getMonitorTrees(@RequestParam(required = false) String treeName,
-                                  @RequestParam String edmcNameEn,
+                                  @RequestParam @NotBlank(message = "类英文名不能为空") String edmcNameEn,
                                   @RequestParam(required = false) String beginTime,
                                   @RequestParam(required = false) String endTime) {
         Result result = treeClient.getMonitorTrees(treeName, edmcNameEn, beginTime, endTime);
@@ -45,21 +47,21 @@ public class MonitorTreeController {
 
     @GetMapping("/trees/resources")
     public Result getNodeResources(@RequestParam(required = false) String name,
-                                   @RequestParam List<String> nodes,
-                                   @RequestParam String edmcId) {
+                                   @RequestParam @NotBlank(message = "树节点集合不能为空") List<String> nodes,
+                                   @RequestParam @NotBlank(message = "监管类ID不能为空") String edmcId) {
         Result result = treeClient.getNodeResources(name, nodes, edmcId);
         return result;
     }
 
     @GetMapping("/conproperties")
-    public Result getConProperties(@RequestParam(value = "edmcNameEn") @NotBlank String edmcNameEn,
+    public Result getConProperties(@RequestParam(value = "edmcNameEn") @NotBlank(message = "类英文名不能为空") String edmcNameEn,
                                    @RequestParam(value = "enable",defaultValue = "true") boolean enable){
         Result result = treeClient.getConProperties(edmcNameEn,enable);
         return result;
     }
 
     @GetMapping("/{edmcNameEn}/newDate")
-    public Result getNewMonitorTreeStartDate(@PathVariable(value = "edmcNameEn") String edmcNameEn){
+    public Result getNewMonitorTreeStartDate(@PathVariable(value = "edmcNameEn") @NotBlank(message = "类英文名不能为空") String edmcNameEn){
         Result result = treeClient.getNewMonitorTreeStartDate(edmcNameEn);
         return result;
     }
