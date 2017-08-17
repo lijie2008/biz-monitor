@@ -549,12 +549,14 @@ public class MonitorServiceImpl implements MonitorService {
 	private NodeTo setNodePosition(String parentNode,String childNode,
 			String leftNode,String rightNode,String treeId,int updateType){
 		NodeTo node=new NodeTo();
+		node.setMtor007("未命名节点");
 		node.setMtor013(parentNode);
 		node.setMtor014(childNode);
 		node.setMtor015(leftNode);
 		node.setMtor016(rightNode);
 		node.setMtor021(updateType);
 		node.setPid(treeId);
+		node.setMtor006(orderNumberService.generateOrderNumber("NODE"));
 		return node;
 	}
 	
