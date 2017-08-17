@@ -106,7 +106,7 @@ public interface MonitorClient {
 	Result deleteNode(@RequestParam(value="nodeId")  String nodeId,
 			@RequestParam(value="type")  int type);
 	
-	@RequestMapping(value="/moveNode",method=RequestMethod.GET)
+	@RequestMapping(value="/monitors/moveNode",method=RequestMethod.GET)
 	Result moveNode(@RequestParam(value="nodeId") String nodeId,
 			@RequestParam(value="nodeParentId") String nodeParentId,
 			@RequestParam(value="nodeLeftId") String nodeLeftId,

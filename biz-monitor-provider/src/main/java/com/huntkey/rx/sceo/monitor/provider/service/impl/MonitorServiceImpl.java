@@ -477,7 +477,7 @@ public class MonitorServiceImpl implements MonitorService {
 		}else{
 			//1.如果左节点为空  则将移动节点做为父节点的子节点
 			changeNodePosition(nodeParentId, 2, nodeId);
-			changeNodePosition(nodeParentId, 3, NULL);//变更移动节点的左节点为空
+			changeNodePosition(nodeId, 3, NULL);//变更移动节点的左节点为空
 		}
 		if(!StringUtil.isNullOrEmpty(nodeRightId)){//变更右节点
 			changeNodePosition(nodeId, 4, nodeRightId);//变更移动节点的右节点
@@ -549,12 +549,14 @@ public class MonitorServiceImpl implements MonitorService {
 	private NodeTo setNodePosition(String parentNode,String childNode,
 			String leftNode,String rightNode,String treeId,int updateType){
 		NodeTo node=new NodeTo();
+		node.setMtor007("未命名节点");
 		node.setMtor013(parentNode);
 		node.setMtor014(childNode);
 		node.setMtor015(leftNode);
 		node.setMtor016(rightNode);
 		node.setMtor021(updateType);
 		node.setPid(treeId);
+		node.setMtor006(orderNumberService.generateOrderNumber("NODE"));
 		return node;
 	}
 	
