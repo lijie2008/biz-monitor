@@ -195,7 +195,7 @@ public class MonitorController {
 	 * @param edmcNameEn edm类型英文名  即监管树实体类表名
 	 * @return
 	 */
-	@RequestMapping(value="/treeMaintaince",method=RequestMethod.POST)
+	@RequestMapping(value="/treeMaintaince")
 	public Result treeMaintaince(@RequestParam(value="classId") @NotBlank(message="监管类ID不能为空")String classId,
 		@RequestParam(value="rootId") @NotBlank(message="监管树根节点ID不能为空") String rootId,
 		@RequestParam(value="edmcNameEn") @NotBlank(message="EDM类英文名称不能为空") String edmcNameEn){

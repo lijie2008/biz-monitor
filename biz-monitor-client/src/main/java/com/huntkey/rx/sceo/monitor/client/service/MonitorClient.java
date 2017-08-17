@@ -114,9 +114,11 @@ public interface MonitorClient {
 			);
 	
 	@RequestMapping(value="/monitors/addMonitorTree",method=RequestMethod.POST)
-	Result addMonitorTree(AddMonitorTreeTo addMonitorTreeTo);
+	Result addMonitorTree(@RequestBody AddMonitorTreeTo addMonitorTreeTo);
 	
 	//监管树维护
-	@RequestMapping(value="/monitors/treeMaintaince",method=RequestMethod.POST)
-	Result treeMaintaince(String classId,String rootId,String edmcNameEn);
+	@RequestMapping(value="/monitors/treeMaintaince")
+	Result treeMaintaince(@RequestParam(value="classId") String classId,
+			@RequestParam(value="rootId") String rootId,
+			@RequestParam(value="edmcNameEn") String edmcNameEn);
 }
