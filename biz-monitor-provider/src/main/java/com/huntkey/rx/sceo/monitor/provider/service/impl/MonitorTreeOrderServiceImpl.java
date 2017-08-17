@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -66,7 +65,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         cnds.add(cnd);
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR005A,null, cnds, null, null));
         
-        Result result = client.find(input.getJson().toString());
+        Result result = client.find(input.getJson());
         
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
@@ -86,7 +85,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         cnds.add(cnd);
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR019B,null, cnds, null, null));
         
-        Result result = client.find(input.getJson().toString());
+        Result result = client.find(input.getJson());
         
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
@@ -106,7 +105,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         cnds.add(cnd);
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MONITORTREEORDER,null, cnds, null, null));
 
-        Result result = client.find(input.getJson().toString());
+        Result result = client.find(input.getJson());
         
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
@@ -155,7 +154,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         FullInputArgument input = new FullInputArgument(queryParam(edmName, null, null, null, null));
         
-        Result result = client.find(input.getJson().toString());
+        Result result = client.find(input.getJson());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         
@@ -173,7 +172,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         cnds.add(cnd2);
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR005A, null,cnds, null, null));
         
-        Result result = client.find(input.getJson().toString());
+        Result result = client.find(input.getJson());
         
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
@@ -196,7 +195,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         ConditionParam cnd3 = new ConditionParam("mtor016","=",Constant.NULL);
         cnds.add(cnd3);
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR005A, null,cnds, null, null));
-        Result result = client.find(input.getJson().toString());
+        Result result = client.find(input.getJson());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         if(!JsonUtil.isEmpity(result.getData())){
@@ -215,7 +214,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         cnds.add(cnd);
         
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR005A, null,cnds, null, null));
-        Result result = client.find(input.getJson().toString());
+        Result result = client.find(input.getJson());
         
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
@@ -264,7 +263,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     @Override
     public void batchUpdate(String edmName, JSONArray nodes) {
         
-        Result result = client.update(new FullInputArgument(mergeParam(edmName, nodes)).getJson().toString());
+        Result result = client.update(new FullInputArgument(mergeParam(edmName, nodes)).getJson());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
     }
@@ -292,7 +291,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     @Override
     public void batchAdd(String edmName, JSONArray nodes) {
         
-        Result result = client.add(new FullInputArgument(mergeParam(edmName, nodes)).getJson().toString());
+        Result result = client.add(new FullInputArgument(mergeParam(edmName, nodes)).getJson());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
     }
@@ -325,7 +324,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             obj.put(PersistanceConstant.ID, id);
             arry.add(obj);
         });
-        Result result = client.delete(new FullInputArgument( mergeParam(edmName, arry)).getJson().toString());
+        Result result = client.delete(new FullInputArgument( mergeParam(edmName, arry)).getJson());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
     }
@@ -340,7 +339,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         if(JsonUtil.isEmpity(obj.get("mtor012")))
             obj.remove("mtor012");
         array.add(obj);
-        Result result = client.update(new FullInputArgument( mergeParam(edmName, array)).getJson().toString());
+        Result result = client.update(new FullInputArgument( mergeParam(edmName, array)).getJson());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
     }
@@ -350,7 +349,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         List<ConditionParam> cnds = new ArrayList<ConditionParam>();
         ConditionParam cnd = new ConditionParam(fieldName,"=",orderId);
         cnds.add(cnd);
-        Result result = client.find(new FullInputArgument(queryParam(edmName, null,cnds, null, null)).getJson().toString());
+        Result result = client.find(new FullInputArgument(queryParam(edmName, null,cnds, null, null)).getJson());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         if(!JsonUtil.isEmpity(result.getData())){
@@ -386,7 +385,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         JSONObject obj = new JSONObject();
         obj.put(PersistanceConstant.ID, orderId);
         arry.add(obj);
-        Result result = client.delete(new FullInputArgument( mergeParam(PersistanceConstant.MONITORTREEORDER, arry)).getJson().toString());
+        Result result = client.delete(new FullInputArgument( mergeParam(PersistanceConstant.MONITORTREEORDER, arry)).getJson());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
     }

@@ -97,5 +97,17 @@ public class MonitorTreeOrderController {
     public Result revoked(@RequestParam(value="orderId",required=true) String orderId){
         return service.revoked(orderId);
     }
+    
+    /**
+     * 
+     * checkAvailableResource:校验是否存在资源未分配
+     * @author lijie
+     * @param orderId 临时单id
+     * @return
+     */
+    @RequestMapping(value="/resources", method = RequestMethod.GET)
+    public Result checkAvailableResource(@RequestParam(value="orderId",required=true) String orderId){
+        return service.checkAvailableResource(orderId);
+    }
 }
 

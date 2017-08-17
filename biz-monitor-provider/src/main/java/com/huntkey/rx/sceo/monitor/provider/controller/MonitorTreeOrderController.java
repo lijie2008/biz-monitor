@@ -165,6 +165,48 @@ public class MonitorTreeOrderController {
     
     /**
      * 
+     * checkAvailableResource:校验是否存在资源未分配
+     * @author lijie
+     * @param orderId 临时单id
+     * @return
+     */
+    @RequestMapping(value="/resources", method = RequestMethod.GET)
+    public Result checkAvailableResource(@RequestParam String orderId){
+       
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        if(JsonUtil.isEmpity(orderId))
+            ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(),ErrorMessage._60004.getMsg());
+        
+        MonitorTreeOrderTo order = service.queryOrder(orderId);
+        if(JsonUtil.isEmpity(order))
+            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),ErrorMessage._60005.getMsg());
+        
+        String mtor003 = order.getMtor003();
+        EdmClassTo edmClass = service.getEdmClass(mtor003, PersistanceConstant.EDMPCODE);
+        if(JsonUtil.isEmpity(edmClass) || JsonUtil.isEmpity(edmClass.getEdmcNameEn()))
+            ApplicationException.throwCodeMesg(ErrorMessage._60008.getCode(),ErrorMessage._60008.getMsg());
+        
+        String resourceEdmName = edmClass.getEdmcNameEn();
+        JSONArray resources = service.getAllResource(resourceEdmName);
+        if(JsonUtil.isEmpity(resources))
+            return result;
+        
+        List<ResourceTo> usedResources = service.queryTreeNodeUsingResource(orderId, null, null,null);
+        if(JsonUtil.isEmpity(usedResources))
+            return result;
+       Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
+       List<Object> datas = resources.parallelStream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
+                .collect(Collectors.toList());
+       if(datas == null || datas.size() == 0)
+            result.setData(false);
+        else
+            result.setData(true);
+       return result;
+    }
+    
+    /**
+     * 
      * addOtherNode: 将未分配的资源归类到其他节点上
      * @author lijie
      * @param orderId 临时单Id
@@ -268,7 +310,7 @@ public class MonitorTreeOrderController {
             ApplicationException.throwCodeMesg(ErrorMessage._60011.getCode(), ErrorMessage._60011.getMsg());
         
         if(redisService.size(orderId) == 1){
-            result.setData(new RevokedTo(null, OperateType.INITIALIZE));
+            result.setData(new RevokedTo(orderId, OperateType.INITIALIZE));
             return result;
         }
         
@@ -280,7 +322,6 @@ public class MonitorTreeOrderController {
                 
                 List<NodeDetailTo> allNodes = createNewTree(re.getObj(),orderId);
                 updateRedis(orderId,allNodes);
-                
                 break;
                 
             case DETAIL:
@@ -288,7 +329,6 @@ public class MonitorTreeOrderController {
                 NodeDetailTo to = JSON.parseObject(JSON.toJSONString(re.getObj()), NodeDetailTo.class);
                 service.updateNodeAndResource(PersistanceConstant.MTOR_MTOR005A,to);
                 re.setObj(to.getId());
-                
                 break;
                 
              default:
@@ -309,7 +349,7 @@ public class MonitorTreeOrderController {
         if(JsonUtil.isEmpity(allNodes))
             return;
         Long size = redisService.size(orderId);
-        for(Long i = size - 1 ; i >  0; i--){
+        for(int i = 0 ; i < size; i++){
             RevokedTo to = (RevokedTo)redisService.index(orderId, i);
             if(to.getType() != OperateType.DETAIL)
                 break;
@@ -364,7 +404,7 @@ public class MonitorTreeOrderController {
          });
         service.batchAdd(PersistanceConstant.MTOR_MTOR005A, JSON.parseArray(JSON.toJSONString(nodes_c)));
         
-        List<NodeDetailTo> allNodes = service.queryTargetNode(PersistanceConstant.MTOR_MTOR005A, "mtor013", orderId);
+        List<NodeDetailTo> allNodes = service.queryTargetNode(PersistanceConstant.MTOR_MTOR005A, "pid", orderId);
         if(JsonUtil.isEmpity(allNodes))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"临时单数据节点" + ErrorMessage._60005.getMsg());
         

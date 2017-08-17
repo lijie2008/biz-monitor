@@ -85,6 +85,17 @@ public interface MonitorTreeOrderService {
      */
     @RequestMapping(value="/monitor/revoked", method = RequestMethod.GET)
     public Result revoked(@RequestParam(value="orderId",required=true) String orderId);
+
+
+    /**
+     * 
+     * checkAvailableResource:校验是否存在资源未分配
+     * @author lijie
+     * @param orderId 临时单id
+     * @return
+     */
+    @RequestMapping(value="/monitor/resources", method = RequestMethod.GET)
+    public Result checkAvailableResource(@RequestParam(value="orderId",required=true) String orderId);
     
 }
 
