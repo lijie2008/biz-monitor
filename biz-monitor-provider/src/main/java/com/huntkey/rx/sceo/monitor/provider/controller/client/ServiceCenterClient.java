@@ -25,6 +25,7 @@ import java.util.List;
  * @author caozhenx
  */
 @FeignClient(value = "serviceCenter-provider", fallback = ServiceCenterClientFallback.class)
+//@FeignClient(value = "serviceCenter-provider", fallback = ServiceCenterClientFallback.class,url="http://192.168.13.34:2008")
 public interface ServiceCenterClient {
 
     /**
