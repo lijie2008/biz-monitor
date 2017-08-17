@@ -34,8 +34,8 @@ public @interface Revoked {
      * @author lijie
      * @return
      */
-    public OperateType type() default OperateType.INITIALIZE;
+    OperateType type() default OperateType.INITIALIZE;
     
-    public String key() default "";
+    String key() default "";
 }
 

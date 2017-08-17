@@ -72,7 +72,7 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
         }
         //取出数据
         Map<String, Object> map = list.get(0);
-        Object obj = map.get("edpg_property_group");
+        Object obj = map.get("edpg_property_group");//表中对应的分组字段
         if (obj != null) {
             Integer edpgPropertyGroup = (Integer) obj;
             //查询查询map
@@ -84,34 +84,41 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
             if (groupList != null && !groupList.isEmpty()) {
                 JSONArray jsonArray = new JSONArray();
                 for (Map<String, Object> m : groupList) {
-                    Object edpgEdmcIdObj = m.get("edpg_edmc_id");
-                    Object edpgEdmpIdObj = m.get("edpg_edmp_id");
-                    
+                    Object edpgEdmcIdObj = m.get("edpg_edmc_id");//类id
+                    Object edpgEdmpIdObj = m.get("edpg_edmp_id");//属性id
+
                     if (edpgEdmcIdObj != null && edpgEdmpIdObj != null) {
                         //类id
                         String edpgEdmcId = (String) edpgEdmcIdObj;
                         //属性id
                         String edpgEdmpId = (String) edpgEdmpIdObj;
-                        //根据类id判断是否为监管类的子孙节点
-                        Result r = modelerClient.checkIsChileNode(edmMonitorId, edpgEdmcId);
-                        if (r.getRetCode() == Result.RECODE_SUCCESS) {
-                            Boolean bool = (Boolean) r.getData();
-                            //结果为true时 排除查询条件自身
-                            if (bool && !edpgEdmcId.equals(jsonObject.get("edpg_edmc_id"))) {  //jsonObject.get("edpg_edmc_id")) 方法传入的类id
-                                Result re = modelerClient.queryEdmClassById(edpgEdmcId);
-                                if (re.getRetCode() == Result.RECODE_SUCCESS
-                                        && re.getData() != null) {
+
+                        //返回结果不含查询条件为自身对应的数据(jsonObject.get("edpg_edmc_id"))
+                        if (!edpgEdmcId.equals(jsonObject.get("edpg_edmc_id"))) {
+                            //根据类id判断是否为监管类的子孙节点
+                            Result isChileNodeResult = modelerClient.checkIsChileNode(edmMonitorId, edpgEdmcId);
+                            if (isChileNodeResult.getRetCode() == Result.RECODE_SUCCESS) {
+                                Boolean bool = (Boolean) isChileNodeResult.getData();
+
+                                if (bool) {//是监管类的子孙类时  添加返回结果
                                     JSONObject jsonObj = new JSONObject();
-                                    
-                                    JSONObject js = JsonUtil.getJson(re.getData());
-                                    jsonObj.put("edmcNameEn", js.getString("edmcNameEn"));
-                                    
                                     jsonObj.put("edpgEdmpId", edpgEdmpId);
+
+                                    //根据id查询edm类信息
+                                    Result edmClassResult = modelerClient.queryEdmClassById(edpgEdmcId);
+                                    if (edmClassResult.getRetCode() == Result.RECODE_SUCCESS && edmClassResult.getData() != null) {
+                                        JSONObject js = JsonUtil.getJson(edmClassResult.getData());
+                                        jsonObj.put("edmcNameEn", js.getString("edmcNameEn"));
+                                        String edmcShortName = js.getString("edmcShortName");
+                                        String tableName = getTableName(relate_feild, edmcShortName);
+                                        jsonObj.put("tableName", tableName);
+                                    }
                                     
-                                    String edmcShortName = js.getString("edmcShortName") ;
-                                    String tableName = getTableName(relate_feild,edmcShortName);
-                                    
-                                    jsonObj.put("tableName", tableName);
+                                    //根据属性id查询属性公式
+                                    Result propertyFormulaResult = modelerClient.getPropertyFormula(edpgEdmpId);
+                                    if(propertyFormulaResult.getRetCode() == Result.RECODE_SUCCESS){
+                                        jsonObj.put("formula", propertyFormulaResult.getData());
+                                    }
                                     jsonArray.add(jsonObj);
                                 }
                             }
@@ -160,19 +167,18 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
             edmName = edmName.substring(1);
         }
 
-//        // 如果参数不包含“.”, 说明传入的就是类名，因为约定，类名就是表名，直接返回；
-//        if (!edmName.contains(dot_split)) {
-//            // 如果以 _link结尾的，表示操作关联表
-//            if (edmName.endsWith("_link")) {
-//                return shortName + suffix;
-//            } else {
-//                return edmName;
-//            }
-//        }
+        //        // 如果参数不包含“.”, 说明传入的就是类名，因为约定，类名就是表名，直接返回；
+        //        if (!edmName.contains(dot_split)) {
+        //            // 如果以 _link结尾的，表示操作关联表
+        //            if (edmName.endsWith("_link")) {
+        //                return shortName + suffix;
+        //            } else {
+        //                return edmName;
+        //            }
+        //        }
 
         // 有效性校验，1. 不用用'.'打头或者结尾， 2. 不能包含二个或以上连续的'.',
-        if (edmName.startsWith(dot_split)
-                || edmName.endsWith(dot_split) || edmName.contains("..")) {
+        if (edmName.startsWith(dot_split) || edmName.endsWith(dot_split) || edmName.contains("..")) {
             throw new IllegalArgumentException("参数edm名称'" + edmName + "'无效!");
         }
 
