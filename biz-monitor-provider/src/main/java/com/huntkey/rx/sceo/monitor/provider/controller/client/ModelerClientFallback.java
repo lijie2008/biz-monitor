@@ -78,5 +78,13 @@ public class ModelerClientFallback implements ModelerClient{
 		result.setErrMsg("ModelerClient changePropertiesVisible fallback");
 		return result;
 	}
+	
+    @Override
+    public Result getPropertyFormula(String id) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("biz monitor provider client getPropertyFormula fallback");
+        return result;
+    }	
 }
 

@@ -99,5 +99,14 @@ public interface ModelerClient {
     @RequestMapping(value = "/properties/changeVisible", method = RequestMethod.POST)
     Result changePropertiesVisible(@RequestParam(value = "ids") String[] ids,
                                           @RequestParam(value = "b") byte b);
+    
+    /**
+     * getPropertyFormula:根据卷积属性id查询公式
+     * @author caozhenx
+     * @param id
+     * @return
+     */
+    @RequestMapping(value = "/convolutes/formula/{id}", method = RequestMethod.GET)
+    Result getPropertyFormula(@PathVariable(value = "id") String id);    
 
 }
