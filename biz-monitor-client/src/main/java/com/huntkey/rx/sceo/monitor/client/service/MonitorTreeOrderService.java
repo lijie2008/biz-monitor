@@ -10,8 +10,8 @@
 package com.huntkey.rx.sceo.monitor.client.service;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.huntkey.rx.commons.utils.rest.Result;
@@ -37,9 +37,11 @@ public interface MonitorTreeOrderService {
      * @param pageSize 页数
      * @return
      */
-    @RequestMapping(value="/monitor/queryNotUsingResource", method = RequestMethod.GET)
-    public Result queryNotUsingResource(@RequestParam(value="orderId",required=true) String orderId, @RequestParam(value="nodeId",required=true) String nodeId, 
-                                        @RequestParam(value="currentPage", defaultValue = "1",required=false) int currentPage, @RequestParam(value="pageSize", defaultValue="20",required=false) int pageSize);
+    @RequestMapping(value="/nodes/resource")
+    public Result queryNotUsingResource(@RequestParam(value="orderId") String orderId, 
+                                        @RequestParam(value="nodeId") String nodeId, 
+                                        @RequestParam(value="currentPage", defaultValue = "1",required=false) int currentPage,
+                                        @RequestParam(value="pageSize", defaultValue="20",required=false) int pageSize);
 
     
     /**
@@ -51,9 +53,10 @@ public interface MonitorTreeOrderService {
      * @param endDate 失效时间
      * @return
      */
-    @RequestMapping(value="/monitor/checkNodeResource", method = RequestMethod.GET)
-    public Result checkNodeResource(@RequestParam(value="nodeId",required=true) String nodeId, @RequestParam(value="startDate",required=true) String startDate,
-                                    @RequestParam(value="endDate",required=true) String endDate);
+    @RequestMapping(value="/nodes/checkDate")
+    public Result checkNodeResource(@RequestParam(value="nodeId") String nodeId,
+                                    @RequestParam(value="startDate") String startDate,
+                                    @RequestParam(value="endDate") String endDate);
 
     
     /**
@@ -63,8 +66,8 @@ public interface MonitorTreeOrderService {
      * @param orderId 临时单Id
      * @return
      */
-    @RequestMapping(value="/monitor/addOtherNode", method = RequestMethod.GET)
-    public Result addOtherNode(@RequestParam(value="orderId",required=true) String orderId);
+    @RequestMapping(value="/nodes/other")
+    public Result addOtherNode(@RequestParam(value="orderId") String orderId);
     
     /**
      * 
@@ -73,8 +76,8 @@ public interface MonitorTreeOrderService {
      * @param orderId 临时单Id
      * @return
      */
-    @RequestMapping(value="/monitor/store", method = RequestMethod.GET)
-    public Result store(@RequestParam(value="orderId",required=true) String orderId);
+    @RequestMapping(value="/nodes/{orderId}")
+    public Result store(@PathVariable(value="orderId") String orderId);
     
     /**
      * 
@@ -83,8 +86,8 @@ public interface MonitorTreeOrderService {
      * @param orderId 临时单ID
      * @return
      */
-    @RequestMapping(value="/monitor/revoked", method = RequestMethod.GET)
-    public Result revoked(@RequestParam(value="orderId",required=true) String orderId);
+    @RequestMapping(value="/nodes/revoke/{orderId}")
+    public Result revoked(@PathVariable(value="orderId") String orderId);
 
 
     /**
@@ -94,8 +97,8 @@ public interface MonitorTreeOrderService {
      * @param orderId 临时单id
      * @return
      */
-    @RequestMapping(value="/monitor/resources", method = RequestMethod.GET)
-    public Result checkAvailableResource(@RequestParam(value="orderId",required=true) String orderId);
+    @RequestMapping(value="/nodes/other/resource")
+    public Result checkAvailableResource(@RequestParam(value="orderId") String orderId);
     
 }
 

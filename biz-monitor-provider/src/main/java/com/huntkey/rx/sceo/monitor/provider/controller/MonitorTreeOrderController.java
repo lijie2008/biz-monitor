@@ -15,9 +15,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -53,7 +55,7 @@ import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
  * @see 	 
  */
 @RestController
-@RequestMapping("/monitor")
+@RequestMapping("/nodes")
 public class MonitorTreeOrderController {
     
     @Autowired
@@ -75,25 +77,31 @@ public class MonitorTreeOrderController {
      * @param pageSize 页大小
      * @return
      */
-    @RequestMapping(value="/queryNotUsingResource", method = RequestMethod.GET)
-    public Result queryNotUsingResource(@RequestParam(required=true) String orderId, @RequestParam(required=true) String nodeId,
-                                        @RequestParam(defaultValue = "1",required=false) int currentPage, @RequestParam(defaultValue="20",required=false) int pageSize){
+    @GetMapping("/resource")
+    public Result queryNotUsingResource(@RequestParam @NotBlank(message = "临时单ID不能为空") String orderId,
+                                        @RequestParam @NotBlank(message = "节点ID不能为空") String nodeId,
+                                        @RequestParam(defaultValue = "1",required=false) int currentPage, 
+                                        @RequestParam(defaultValue="20",required=false) int pageSize){
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
 
         MonitorTreeOrderTo order = service.queryOrder(orderId);
+        
         NodeTo node = service.queryNode(nodeId);
+        
         if(JsonUtil.isEmpity(order) || JsonUtil.isEmpity(node))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"表单、节点" + ErrorMessage._60005.getMsg());
         
         String mtor003 = order.getMtor003();
         EdmClassTo edmClass = service.getEdmClass(mtor003, PersistanceConstant.EDMPCODE);
+        
         if(JsonUtil.isEmpity(edmClass) || JsonUtil.isEmpity(edmClass.getEdmcNameEn()))
             ApplicationException.throwCodeMesg(ErrorMessage._60008.getCode(),ErrorMessage._60008.getMsg());
         
         String resourceEdmName = edmClass.getEdmcNameEn();
         JSONArray resources = service.getAllResource(resourceEdmName);
+        
         if(JsonUtil.isEmpity(resources))
             return result;
         
@@ -109,25 +117,36 @@ public class MonitorTreeOrderController {
         }
         
         int totalSize = datas == null ? 0 : datas.size();
+        
         List<Object> data = totalSize == 0 ? null : datas.subList((currentPage-1)*pageSize < 0 ? 0 : 
-            (currentPage-1)*pageSize > totalSize?totalSize:(currentPage-1)*pageSize, (currentPage*pageSize)>totalSize?totalSize:currentPage*pageSize);
+                    (currentPage-1)*pageSize > totalSize?totalSize:(currentPage-1)*pageSize, 
+                    (currentPage*pageSize)>totalSize?totalSize:currentPage*pageSize);
+        
         JSONArray re = new JSONArray();
+        
         if(!JsonUtil.isEmpity(data)){
+            
             CharacterAndFormatTo format = service.getCharacterAndFormat(edmClass.getId());
+            
             if(format == null)
                 ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"特征值" + ErrorMessage._60005.getMsg());
+            
             data.parallelStream().forEach(s->{
                 JSONObject obj = new JSONObject();
                 obj.put(PersistanceConstant.ID, ((JSONObject)s).get(PersistanceConstant.ID));
                 obj.put("text", format.format(obj));
                 re.add(obj);
             });   
+            
         }
+        
+        // 返回的data
         JSONObject obj = new JSONObject();
         obj.put("totalSize", totalSize);
         obj.put("currentPage", currentPage);
         obj.put("data", re);
         result.setData(obj);
+        
         return result;
     }
     
@@ -140,26 +159,33 @@ public class MonitorTreeOrderController {
      * @param endDate 失效时间
      * @return
      */
-    @RequestMapping(value="/checkNodeResource", method = RequestMethod.GET)
-    public Result checkNodeResource(@RequestParam(required=true) String nodeId, @RequestParam(required=true) String startDate, @RequestParam(required=true) String endDate){
+    @GetMapping("/checkDate")
+    public Result checkNodeResource(@RequestParam @NotBlank(message = "节点ID不能为空") String nodeId,
+                                    @RequestParam @NotBlank(message = "生效日期不能为空") String startDate, 
+                                    @RequestParam @NotBlank(message = "失效日期不能为空") String endDate){
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
 
         NodeTo node = service.queryNode(nodeId);
+        
         if(JsonUtil.isEmpity(node) || JsonUtil.isEmpity(node.getPid()))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"节点" + ErrorMessage._60005.getMsg());
     
        List<ResourceTo> nodeResources = service.queryResource(nodeId);
+       
        if(JsonUtil.isEmpity(nodeResources))
            return result;
         
         List<ResourceTo> usedResources = service.queryTreeNodeUsingResource(node.getPid(), startDate, endDate, nodeId);
+        
         if(JsonUtil.isEmpity(usedResources))
             return result;
         
        Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
+       
         if(nodeResources.parallelStream().anyMatch(re -> usedResourceIds.contains(re.getMtor020())))
             ApplicationException.throwCodeMesg(ErrorMessage._60006.getCode(),ErrorMessage._60006.getMsg());
+        
         return result;
     }
     
@@ -170,35 +196,15 @@ public class MonitorTreeOrderController {
      * @param orderId 临时单id
      * @return
      */
-    @RequestMapping(value="/resources", method = RequestMethod.GET)
-    public Result checkAvailableResource(@RequestParam String orderId){
+    @GetMapping("/other/resource")
+    public Result checkAvailableResource(@RequestParam @NotBlank(message="临时单ID不能为空") String orderId){
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        if(JsonUtil.isEmpity(orderId))
-            ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(),ErrorMessage._60004.getMsg());
         
-        MonitorTreeOrderTo order = service.queryOrder(orderId);
-        if(JsonUtil.isEmpity(order))
-            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),ErrorMessage._60005.getMsg());
-        
-        String mtor003 = order.getMtor003();
-        EdmClassTo edmClass = service.getEdmClass(mtor003, PersistanceConstant.EDMPCODE);
-        if(JsonUtil.isEmpity(edmClass) || JsonUtil.isEmpity(edmClass.getEdmcNameEn()))
-            ApplicationException.throwCodeMesg(ErrorMessage._60008.getCode(),ErrorMessage._60008.getMsg());
-        
-        String resourceEdmName = edmClass.getEdmcNameEn();
-        JSONArray resources = service.getAllResource(resourceEdmName);
-        if(JsonUtil.isEmpity(resources))
-            return result;
-        
-        List<ResourceTo> usedResources = service.queryTreeNodeUsingResource(orderId, null, null,null);
-        if(JsonUtil.isEmpity(usedResources))
-            return result;
-       Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
-       List<Object> datas = resources.parallelStream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
-                .collect(Collectors.toList());
-       if(datas == null || datas.size() == 0)
+        List<Object> datas = service.queryAvailableResource(orderId);
+       
+       if(JsonUtil.isEmpity(datas))
             result.setData(false);
         else
             result.setData(true);
@@ -212,47 +218,33 @@ public class MonitorTreeOrderController {
      * @param orderId 临时单Id
      * @return
      */
-    @RequestMapping(value="/addOtherNode", method = RequestMethod.GET)
-    public Result addOtherNode(@RequestParam String orderId){
+    @GetMapping("/other")
+    public Result addOtherNode(@RequestParam @NotBlank(message="临时单ID不能为空") String orderId){
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        if(JsonUtil.isEmpity(orderId))
-            ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(),ErrorMessage._60004.getMsg());
         
-        MonitorTreeOrderTo order = service.queryOrder(orderId);
-        if(JsonUtil.isEmpity(order))
-            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),ErrorMessage._60005.getMsg());
-        
-        String mtor003 = order.getMtor003();
-        EdmClassTo edmClass = service.getEdmClass(mtor003, PersistanceConstant.EDMPCODE);
-        if(JsonUtil.isEmpity(edmClass) || JsonUtil.isEmpity(edmClass.getEdmcNameEn()))
-            ApplicationException.throwCodeMesg(ErrorMessage._60008.getCode(),ErrorMessage._60008.getMsg());
-        
-        String resourceEdmName = edmClass.getEdmcNameEn();
-        JSONArray resources = service.getAllResource(resourceEdmName);
-        if(JsonUtil.isEmpity(resources))
-            return result;
-        
-        List<ResourceTo> usedResources = service.queryTreeNodeUsingResource(orderId, null, null,null);
-        if(JsonUtil.isEmpity(usedResources))
-            return result;
-       Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
-       List<Object> datas = resources.parallelStream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
-                .collect(Collectors.toList());
-        if(datas == null || datas.size() == 0)
+       List<Object> datas = service.queryAvailableResource(orderId);
+       
+        if(JsonUtil.isEmpity(datas))
             return result;
 
         NodeTo rootNode = service.queryRootNode(orderId);
+        
         if(JsonUtil.isEmpity(rootNode))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"根节点"+ErrorMessage._60005.getMsg());
+        
         NodeTo lastRootChildNode = service.queryRootChildrenNode(orderId, rootNode.getId());
+        
         String nodeId = null;
+        
         if(JsonUtil.isEmpity(lastRootChildNode))
             nodeId = mService.addNode(rootNode.getId(),0);
         else
             nodeId = mService.addNode(lastRootChildNode.getId(),2);
+        
         mService.addResource(nodeId, JsonUtil.getList(datas, NodeTo.class).parallelStream().map(NodeTo::getId).toArray(String[]::new));
+        
         return result;
     }
     
@@ -263,33 +255,41 @@ public class MonitorTreeOrderController {
      * @param orderId 临时单Id
      * @return
      */
-    @RequestMapping(value="/store", method = RequestMethod.GET)
-    public Result store(@RequestParam String orderId){
+    @RequestMapping("/{orderId}")
+    public Result store(@PathVariable(value="orderId") @NotBlank(message="临时单ID不能为空") String orderId){
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         
         MonitorTreeOrderTo order = service.queryOrder(orderId);
+        
         if(JsonUtil.isEmpity(order))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"临时单" + ErrorMessage._60005.getMsg());
         
         String edmName = service.queryEdmClassName(order.getMtor003());
+        
         if(JsonUtil.isEmpity(edmName))
             ApplicationException.throwCodeMesg(ErrorMessage._60008.getCode(),ErrorMessage._60008.getMsg());
         
         List<NodeDetailTo> treeNodes = service.getAllNodesAndResource(orderId);
+        
         if(JsonUtil.isEmpity(treeNodes))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"节点" + ErrorMessage._60005.getMsg());
-        List<NodeDetailTo> nodes = treeNodes.stream().filter(s->ChangeType.valueOf(s.getMtor021()) != ChangeType.INVALID).collect(Collectors.toList());
+        
+        List<NodeDetailTo> nodes = treeNodes.stream().filter(s->ChangeType.valueOf(s.getMtor021()) != ChangeType.INVALID)
+                .collect(Collectors.toList());
 
         ChangeType type = ChangeType.valueOf(order.getMtor002());
+        
         NodeDetailTo rootNode = null;
         
         if(type == ChangeType.UPDATE)
             rootNode = updateTargetRootNode(nodes, order, edmName);
         
         addTargetNode(nodes,edmName,type,rootNode,orderId);
+        
         service.deleteOrder(orderId);
+        
         return result;
     }
     
@@ -300,8 +300,8 @@ public class MonitorTreeOrderController {
      * @param orderId 临时单ID
      * @return
      */
-    @RequestMapping(value="/revoked", method = RequestMethod.GET)
-    public Result revoked(@RequestParam String orderId){
+    @GetMapping("/revoke/{orderId}")
+    public Result revoked(@PathVariable(value="orderId") @NotBlank(message="临时单ID不能为空") String orderId){
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
@@ -321,21 +321,29 @@ public class MonitorTreeOrderController {
             case NODE:
                 
                 List<NodeDetailTo> allNodes = createNewTree(re.getObj(),orderId);
+                
                 updateRedis(orderId,allNodes);
+                
+                re.setObj(orderId);
                 break;
                 
             case DETAIL:
                 
                 NodeDetailTo to = JSON.parseObject(JSON.toJSONString(re.getObj()), NodeDetailTo.class);
+                
                 service.updateNodeAndResource(PersistanceConstant.MTOR_MTOR005A,to);
+                
                 re.setObj(to.getId());
                 break;
                 
              default:
                  ApplicationException.throwCodeMesg(ErrorMessage._60000.getCode(), ErrorMessage._60000.getMsg());
         }
+        
         result.setData(re);
+        
         return result;
+        
     }
     
     /**
@@ -346,20 +354,29 @@ public class MonitorTreeOrderController {
      * @param allNodes 所有的节点
      */
     private void updateRedis(String orderId, List<NodeDetailTo> allNodes) {
+        
         if(JsonUtil.isEmpity(allNodes))
             return;
+        
         Long size = redisService.size(orderId);
+        
         for(int i = 0 ; i < size; i++){
+            
             RevokedTo to = (RevokedTo)redisService.index(orderId, i);
+            
             if(to.getType() != OperateType.DETAIL)
                 break;
+            
             NodeDetailTo node = (NodeDetailTo)to.getObj();
+            
             NodeDetailTo target = allNodes.parallelStream().filter(s->s.getMtor006().equals(node.getMtor006())).findFirst().get();
+            
             node.setId(target.getId());
             node.setMtor013(target.getMtor013());
             node.setMtor014(target.getMtor014());
             node.setMtor015(target.getMtor015());
             node.setMtor016(target.getMtor016());
+            
             to.setObj(node);
             redisService.set(orderId, i, to);
         }
@@ -376,14 +393,19 @@ public class MonitorTreeOrderController {
     private List<NodeDetailTo> createNewTree(Object data,String orderId) {
         // 清除原数据
         List<NodeTo> n_nodes = service.queryTreeNode(orderId);
+        
         if(JsonUtil.isEmpity(n_nodes))
             ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(), ErrorMessage._60003.getMsg());
+        
         List<String> nodeIds = n_nodes.stream().map(NodeTo::getId).collect(Collectors.toList());
+        
         service.batchDeleteResource(PersistanceConstant.MTOR_MTOR005A, nodeIds);
         
         // 新增redis中保存的数据
         List<NodeDetailTo> nodes = (List<NodeDetailTo>) data;
+        
         List<NodeDetailTo> nodes_c = new ArrayList<NodeDetailTo>();
+        
         nodes.parallelStream().forEach(s->{
             try {
                 NodeDetailTo tt = s.clone();
@@ -402,13 +424,16 @@ public class MonitorTreeOrderController {
                 ApplicationException.throwCodeMesg(ErrorMessage._60000.getCode(), ErrorMessage._60000.getMsg());
             }
          });
+        
         service.batchAdd(PersistanceConstant.MTOR_MTOR005A, JSON.parseArray(JSON.toJSONString(nodes_c)));
         
         List<NodeDetailTo> allNodes = service.queryTargetNode(PersistanceConstant.MTOR_MTOR005A, "pid", orderId);
+        
         if(JsonUtil.isEmpity(allNodes))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"临时单数据节点" + ErrorMessage._60005.getMsg());
         
         JSONArray ar = new JSONArray();
+        
         allNodes.stream().forEach(s->{
             NodeDetailTo no = nodes.parallelStream().filter(n->s.getMtor006().equals(n.getMtor006())).findFirst().get();
             JSONObject obj = new JSONObject();
@@ -423,7 +448,9 @@ public class MonitorTreeOrderController {
             s.setMtor015(obj.getString("mtor015"));
             s.setMtor016(obj.getString("mtor016"));
         });
+        
         service.batchUpdate(PersistanceConstant.MTOR_MTOR005A, ar);
+        
         return allNodes;
     }
     
@@ -441,7 +468,9 @@ public class MonitorTreeOrderController {
                                NodeDetailTo node,String orderId) {
         // 新增子节点信息
         List<TargetNodeTo> targetNodes = JSON.parseArray(JsonUtil.getJsonArrayString(nodes), TargetNodeTo.class);
+        
         if(!(targetNodes == null || targetNodes.isEmpty())){
+            
             targetNodes.parallelStream().forEach(s->{
                 s.setMoni006(orderId);
                 s.setMoni007(orderId);
@@ -454,6 +483,7 @@ public class MonitorTreeOrderController {
                         t.setPid(null);
                     });
             });
+            
             service.batchAdd(edmName, JSON.parseArray(JSON.toJSONString(targetNodes)));
         }
         
@@ -461,10 +491,12 @@ public class MonitorTreeOrderController {
             nodes.add(node);
         
         List<NodeDetailTo> targetAllNode = service.queryTargetNode(edmName, "moni006", orderId);
+        
         if(JsonUtil.isEmpity(targetAllNode))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"目标树节点" + ErrorMessage._60005.getMsg());
         
         JSONArray ar = new JSONArray();
+        
         targetAllNode.stream().forEach(s->{
             NodeDetailTo no = nodes.parallelStream().filter(n->s.getMtor006().equals(n.getMtor006())).findFirst().get();
             JSONObject obj = new JSONObject();
@@ -475,12 +507,14 @@ public class MonitorTreeOrderController {
             obj.put("moni009", getId(nodes,targetAllNode,no.getMtor016()));
             ar.add(obj);
         });
+        
         service.batchUpdate(edmName, ar);
+        
     }
 
     /**
      * 
-     * updateTargetRootNode:更新目标类根节点
+     * updateTargetRootNode:更新目标类根节点 和 目标表子节点信息
      * @author lijie
      * @param order 临时单信息
      * @param edmName 目标类名
@@ -488,40 +522,53 @@ public class MonitorTreeOrderController {
      * @return
      */
     private NodeDetailTo updateTargetRootNode(List<NodeDetailTo> nodes, MonitorTreeOrderTo order, String edmName) {
+        
         String orderId = order.getId();
+        
         String targetRootNodeId = order.getMtor004();
+        
         if(StringUtil.isNullOrEmpty(targetRootNodeId))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"目标根节点" + ErrorMessage._60005.getMsg());
+        
         // TODO null
         NodeDetailTo node = nodes.stream().filter(s -> Constant.NULL.equals(s.getMtor013())).findFirst().get();
+        
         TargetNodeTo targetNode = JsonUtil.getObject(JsonUtil.getJsonString(node), TargetNodeTo.class);
+        
         targetNode.setMoni006(orderId);
         targetNode.setMoni007(orderId);
         targetNode.setMoni008(orderId);
         targetNode.setMoni009(orderId);
         targetNode.setId(targetRootNodeId);
+        
         if(!( targetNode.getMoni015() == null || targetNode.getMoni015().size() == 0 )){
             targetNode.getMoni015().stream().forEach(s -> {
                 s.setId(null);
                 s.setPid(targetRootNodeId);
             });
         }
+        
        service.updateTargetNode(edmName, targetNode);
        
        nodes.remove(node);
        
        // 更新其他子节点信息(失效日期大于当天的，全部置为当天)
        JSONArray targetChildNodes = service.getTargetAllChildNode(edmName, targetRootNodeId, new Date(System.currentTimeMillis()).toString());
+       
        if(JsonUtil.isEmpity(targetChildNodes))
            return node;
+       
        JSONArray ar = new JSONArray();
+       
        targetChildNodes.parallelStream().forEach(s->{
            JSONObject obj = new JSONObject();
            obj.put(PersistanceConstant.ID, ((JSONObject)s).get(PersistanceConstant.ID));
            obj.put("moni005", new Date(System.currentTimeMillis()).toString());
            ar.add(obj);
        });
+       
        service.batchUpdate(edmName, ar);
+       
         return node;
     }
 
@@ -534,9 +581,12 @@ public class MonitorTreeOrderController {
      * @param str 原对象id信息
      */
     private String getId(List<NodeDetailTo> nodes, List<NodeDetailTo> targetAllNode, String str) {
+        
         if(JsonUtil.isEmpity(str) || !nodes.parallelStream().anyMatch(h->h.getId().equals(str)))
             return Constant.NULL;
+        
         String code = nodes.parallelStream().filter(h->h.getId().equals(str)).findFirst().get().getMtor006();
+        
         return targetAllNode.parallelStream().filter(q->q.getMtor006().equals(code)).findFirst().get().getId();
     }
 

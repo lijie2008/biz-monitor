@@ -226,5 +226,14 @@ public interface MonitorTreeOrderService {
      * @return
      */
     CharacterAndFormatTo getCharacterAndFormat(@RequestParam(value = "classId") String classId);
+    
+    /**
+     * 
+     * queryAvailableResource: 查询出可用的资源列表
+     * @author lijie
+     * @param orderId 临时单ID
+     * @return
+     */
+    List<Object> queryAvailableResource(String orderId);
 }
 
