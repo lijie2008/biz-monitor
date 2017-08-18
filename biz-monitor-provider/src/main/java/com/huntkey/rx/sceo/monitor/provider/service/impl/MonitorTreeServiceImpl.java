@@ -90,33 +90,35 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         if (rootNodeResult.getRetCode() != Result.RECODE_SUCCESS) {
             throw new ServiceException(rootNodeResult.getErrMsg());
         } else {
-            JSONObject rootData = JSONObject.parseObject(JSONObject.toJSONString(rootNodeResult.getData()));
+            if(rootNodeResult.getData()!=null){
+                JSONObject rootData = JSONObject.parseObject(JSONObject.toJSONString(rootNodeResult.getData()));
 
+                JSONArray rootArray = rootData.getJSONArray("dataset");
 
-            JSONArray rootArray = rootData.getJSONArray("dataset");
+                if (rootArray.size() == 1) {
+                    rootNode = rootArray.getJSONObject(0);
 
-            if (rootArray.size() == 1) {
-                rootNode = rootArray.getJSONObject(0);
+                    rootNodeId = rootNode.getString("id");
 
-                rootNodeId = rootNode.getString("id");
+                    //根据根节点ID，查询所有子节点
+                    Result childrenNpdeResult = serviceCenterClient.getMonitorTreeNodes(edmcNameEn, searchDate, rootNodeId);
+                    if (childrenNpdeResult.getRetCode() != Result.RECODE_SUCCESS) {
+                        throw new ServiceException(childrenNpdeResult.getErrMsg());
+                    } else {
+                        JSONArray childrenArray = new JSONArray((List<Object>) childrenNpdeResult.getData());
+                        childrenArray.add(rootNode);
+                        return childrenArray;
+                    }
 
-                //根据根节点ID，查询所有子节点
-                Result childrenNpdeResult = serviceCenterClient.getMonitorTreeNodes(edmcNameEn, searchDate, rootNodeId);
-                if (childrenNpdeResult.getRetCode() != Result.RECODE_SUCCESS) {
-                    throw new ServiceException(childrenNpdeResult.getErrMsg());
                 } else {
-                    JSONArray childrenArray = new JSONArray((List<Object>) childrenNpdeResult.getData());
-                    childrenArray.add(rootNode);
-                    return childrenArray;
+                    if(rootArray.size()>1){
+                        throw new ServiceException("数据异常，统一时间找到多个监管树！");
+                    }
+                    return null;
                 }
-
-            } else {
-                if(rootArray.size()>1){
-                    throw new ServiceException("数据异常，统一时间找到多个监管树！");
-                }
+            }else {
                 return null;
             }
-
         }
     }
 
@@ -167,6 +169,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                     tree.put("endTime", temp.getString("moni005"));
                     monitorTrees.add(tree);
                 }
+            } else {
+                return null;
             }
         } else {
             throw new ServiceException(treesResult.getErrMsg());
@@ -180,9 +184,12 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     public JSONArray getNodeResources(String name, List<String> nodes, String edmcId) {
         Result resourcesResult = serviceCenterClient.getNodeResources(name,nodes,edmcId);
         if(resourcesResult.getRetCode()==Result.RECODE_SUCCESS){
-            JSONArray childrenArray = new JSONArray((List<Object>) resourcesResult.getData());
-
-            return childrenArray;
+            if(resourcesResult.getData()!=null){
+                JSONArray childrenArray = new JSONArray((List<Object>) resourcesResult.getData());
+                return childrenArray;
+            }else {
+                return null;
+            }
         }else {
             throw new ServiceException(resourcesResult.getErrMsg());
         }
@@ -315,6 +322,9 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             Result result = serviceCenterClient.queryServiceCenter(json.toJSONString());
             
             if(result != null && result.getRetCode()==Result.RECODE_SUCCESS){
+                if(result.getData()==null){
+                    return null;
+                }
                 JSONObject jsonObj =  JsonUtil.getJson(result.getData());
                 JSONArray jsonArray = jsonObj.getJSONArray(ServiceCenterConstant.DATA_SET);
 
