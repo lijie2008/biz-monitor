@@ -10,8 +10,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.commons.utils.string.StringUtil;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.*;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,10 +21,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.Condition;
 import com.huntkey.rx.sceo.monitor.commom.model.InputArgument;
 import com.huntkey.rx.sceo.monitor.commom.model.JoinTO;
 import com.huntkey.rx.sceo.monitor.commom.model.LoopTO;
-import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailTo;
-import com.huntkey.rx.sceo.monitor.commom.model.NodeFieldMapTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
-import com.huntkey.rx.sceo.monitor.commom.model.ResourceFiledMapTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.DataUtil;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.commom.utils.ToolUtil;
@@ -58,8 +53,10 @@ public class MonitorServiceImpl implements MonitorService {
 		Condition condition=new Condition();
 		//组装查询条件
 		condition.addCondition(PID, EQUAL, tempId, true);
+		condition.addCondition(MTOR021, LT, ChangeType.INVALID.toString(), false);
 		//查询节点集合表
 		JSONArray nodeArray=DBUtils.getArrayResult(MTOR005,null,condition);
+		
 		validDate=StringUtil.isNullOrEmpty(validDate)?ToolUtil.getNowDateStr(YYYY_MM_DD):validDate;
 		//过滤出未失效节点
 		nodeArray=getValidNode(nodeArray,validDate);
@@ -290,10 +287,12 @@ public class MonitorServiceImpl implements MonitorService {
 		// TODO Auto-generated method stub
 		//根据nodeId查询当前节点信息
 		String newNodeId="";
-		JSONObject node= nodeDetail(nodeId);
+		Condition condition=new Condition();
+		condition.addCondition(ID, EQUAL, nodeId, true);
+		//查询节点详情
+		JSONObject node=queryNode(condition);
 		NodeTo nodeDetail=null;
 		JSONObject nodeRight=null;
-		Condition condition=new Condition();
 		if(node!=null){
 			switch (nodeType){
 				case 0://创建子节点
@@ -667,8 +666,7 @@ public class MonitorServiceImpl implements MonitorService {
 					map.put(PID, tempId);
 					map.put(MTOR021, changeType);
 					treeArr=JsonUtil.addAttr(treeArr, map);
-					List list=JsonUtil.getList(treeArr, NodeFieldMapTo.class);
-					treeArr=JsonUtil.listToJsonArray(list);//转换成临时单的字段
+					treeArr=ToolUtil.formal2Temp(treeArr,ToolUtil.treeConvert());//转换成临时树的字段
 					DBUtils.add(MTOR005, treeArr);//新增节点信息
 				}
 			}
@@ -681,9 +679,8 @@ public class MonitorServiceImpl implements MonitorService {
 		root.remove(ID);
 		root.put(PID, tempId);
 		root.put(MTOR021,changeType);
-		root=JsonUtil.getJson(JsonUtil.getObject(
-				JsonUtil.getJsonString(root), NodeFieldMapTo.class));
-		String rootNewId=DBUtils.add(MTOR005, root);
+		root=ToolUtil.formal2Temp(root,ToolUtil.treeConvert());
+		DBUtils.add(MTOR005, root);
 		//3.查询出所有新增的节点
 		condition.addCondition(PID, EQUAL, tempId, true);
 		treeTemp=DBUtils.getArrayResult(MTOR005, null, condition);
@@ -693,7 +690,7 @@ public class MonitorServiceImpl implements MonitorService {
 		if(retobj!=null){
 			treeTemp=JsonUtil.getJsonArrayByAttr(retobj,"treeTemp");
 			if(!JsonUtil.isNullOrEmpty(treeTemp)){
-				treeTemp=JsonUtil.listToJsonArray(JsonUtil.getList(treeTemp, NodeTo.class));
+				treeTemp=ToolUtil.formal2Temp(treeTemp, ToolUtil.treeConvert());
 				DBUtils.update(MTOR005, treeTemp);
 			}
 			
@@ -701,8 +698,7 @@ public class MonitorServiceImpl implements MonitorService {
 			if(!JsonUtil.isNullOrEmpty(resourceArr)){
 				//去除ID后新增
 				resourceArr=JsonUtil.removeAttr(resourceArr, ID);
-				resourceArr=JsonUtil.listToJsonArray(
-						JsonUtil.getList(resourceArr, ResourceFiledMapTo.class));
+				resourceArr=ToolUtil.formal2Temp(resourceArr,ToolUtil.resourceConvert());
 				DBUtils.add(MTOR019, resourceArr);
 			}
 		}

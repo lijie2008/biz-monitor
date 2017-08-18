@@ -67,6 +67,14 @@ public class MonitorTreeOrderServiceFallback implements MonitorTreeOrderService{
         result.setErrMsg("fallback");
         return result;
     }
+
+    @Override
+    public Result checkAvailableResource(String orderId) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("fallback");
+        return result;
+    }
     
 }
 
