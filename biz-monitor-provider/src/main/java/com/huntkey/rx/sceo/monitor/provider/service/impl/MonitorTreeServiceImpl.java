@@ -9,11 +9,14 @@ import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
-import com.huntkey.rx.sceo.serviceCenter.common.model.ConditionParam;
-import com.huntkey.rx.sceo.serviceCenter.common.model.PagenationParam;
-import com.huntkey.rx.sceo.serviceCenter.common.model.SortParam;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 
+import com.huntkey.rx.sceo.serviceCenter.common.emun.OperatorType;
+import com.huntkey.rx.sceo.serviceCenter.common.emun.SortType;
+import com.huntkey.rx.sceo.serviceCenter.common.model.ConditionNode;
+import com.huntkey.rx.sceo.serviceCenter.common.model.PagenationNode;
+import com.huntkey.rx.sceo.serviceCenter.common.model.SearchParam;
+import com.huntkey.rx.sceo.serviceCenter.common.model.SortNode;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,36 +56,20 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     public JSONArray getMonitorTreeNodes(String edmcNameEn, String searchDate, String rootNodeId) {
 
         //组装参数
-        JSONObject requestParams = new JSONObject();
-
-        JSONObject search = new JSONObject();
+        SearchParam requestParams = new SearchParam(edmcNameEn);
 
         String characters[] = new String[]{"moni001", "moni002", "moni006", "moni007", "moni008", "moni009"};
-        search.put("columns", characters);
-
-        JSONArray conditions = new JSONArray();
+        requestParams.addColumns(characters);
 
         if (StringUtil.isNullOrEmpty(rootNodeId)) {
             //根据时间查询根节点
-            ConditionParam beginDateParam = new ConditionParam("moni004","<=",searchDate);
-            conditions.add(beginDateParam);
-
-            ConditionParam endDateParam = new ConditionParam("moni005",">",searchDate);
-            conditions.add(endDateParam);
-
-            ConditionParam parentNodeParam = new ConditionParam("moni006","=","null");
-            conditions.add(parentNodeParam);
-
+            requestParams.addCondition(new ConditionNode("moni004", OperatorType.LessEquals,searchDate))
+                    .addCondition(new ConditionNode("moni005",OperatorType.Greater,searchDate))
+                    .addCondition(new ConditionNode("id",OperatorType.Equals,rootNodeId));
         } else {
             //根据ID查询跟节点
-            ConditionParam nodeIdParam = new ConditionParam("id","=",rootNodeId);
-            conditions.add(nodeIdParam);
+            requestParams.addCondition(new ConditionNode("id",OperatorType.Equals,rootNodeId));
         }
-
-        search.put("conditions", conditions);
-
-        requestParams.put("edmName", edmcNameEn);
-        requestParams.put("search", search);
 
         JSONObject rootNode;
 
@@ -126,32 +113,22 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     public JSONArray getMonitorTrees(String treeName, String edmcNameEn, String beginTime, String endTime) {
         JSONArray monitorTrees = new JSONArray();
 
-        JSONObject requestParams = new JSONObject();
-        JSONObject search = new JSONObject();
+        SearchParam requestParams = new SearchParam(edmcNameEn);
 
         String characters[] = new String[]{"moni001", "moni002", "moni004", "moni005"};
-        search.put("columns", characters);
 
-        JSONArray conditions = new JSONArray();
+        requestParams.addColumns(characters);
 
-        ConditionParam nodeIdParam = new ConditionParam("moni006","=","null");
-        conditions.add(nodeIdParam);
+        requestParams.addCondition(new ConditionNode("moni006",OperatorType.Equals,"null"));
 
         if (!StringUtil.isNullOrEmpty(treeName)) {
-            ConditionParam treeNameParam = new ConditionParam("moni002","like",treeName);
-            conditions.add(treeNameParam);
+            requestParams.addCondition(new ConditionNode("moni002",OperatorType.Like,treeName));
         }
 
         //ORM暂不支持or查询，先只根据失效时间过滤
         if (!StringUtil.isNullOrEmpty(endTime)) {
-            ConditionParam treeTimeParam = new ConditionParam("moni005","<=",endTime);
-            conditions.add(treeTimeParam);
+            requestParams.addCondition(new ConditionNode("moni005",OperatorType.LessEquals,endTime));
         }
-
-        search.put("conditions", conditions);
-
-        requestParams.put("edmName", edmcNameEn);
-        requestParams.put("search", search);
 
         Result treesResult = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
 
@@ -220,20 +197,12 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 
         JSONObject resultData = new JSONObject();
 
-        JSONObject requestParams = new JSONObject();
-        JSONObject search = new JSONObject();
+        SearchParam requestParams = new SearchParam(edmcNameEn);
+        ConditionNode nodeIdCondition = new ConditionNode("moni006",OperatorType.Equals,"null");
 
-        JSONArray conditions = new JSONArray();
-
-        ConditionParam nodeIdParam = new ConditionParam("moni006","=","null");
-        conditions.add(nodeIdParam);
+        requestParams.addCondition(nodeIdCondition);
 
         //统计所有根节点
-        search.put("conditions", conditions);
-
-        requestParams.put("edmName", edmcNameEn);
-        requestParams.put("search", search);
-
         Result counttreeResult = serviceCenterClient.countByConditions(requestParams.toJSONString());
         if(counttreeResult.getRetCode()==Result.RECODE_SUCCESS){
             JSONObject object = (JSONObject)JSONObject.toJSON(counttreeResult.getData());
@@ -242,11 +211,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                 resultData.put("type",2);
             }else {
                 //统计没有失效时间的根节点
-                ConditionParam treeTimeParam = new ConditionParam("moni005","is","null");
-                conditions.add(treeTimeParam);
 
-                search.put("conditions", conditions);
-                requestParams.put("search", search);
+                requestParams.addCondition(new ConditionNode("moni005",OperatorType.IsNull,"null"));
 
                 Result countResult = serviceCenterClient.countByConditions(requestParams.toJSONString());
                 if(countResult.getRetCode()==Result.RECODE_SUCCESS){
@@ -256,24 +222,16 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                         resultData.put("type",3);
                     }else {
                         //查询最大失效时间
-                        conditions.clear();
-                        conditions.add(nodeIdParam);
-                        search.put("conditions", conditions);
+                        requestParams.clearConditions();
+                        requestParams.addCondition(nodeIdCondition);
 
-                        SortParam sortParam = new SortParam("moni005","desc");
-                        JSONArray sorts = new JSONArray();
-                        sorts.add(sortParam);
+                        requestParams.addSortParam(new SortNode("moni005", SortType.DESC));
 
-                        PagenationParam page = new PagenationParam();
-                        page.setRows(1);
-                        page.setStartpage(1);
-
+                        requestParams.addPagenation(new PagenationNode(1,1));
 
                         String characters[] = new String[]{"moni005"};
-                        search.put("columns", characters);
+                        requestParams.addColumns(characters);
 
-                        search.put("orderby",sorts);
-                        requestParams.put("search", search);
                         Result treeResult = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
                         if(treeResult.getRetCode()==Result.RECODE_SUCCESS){
                             JSONObject data = (JSONObject)JSONObject.toJSON(treeResult.getData());
