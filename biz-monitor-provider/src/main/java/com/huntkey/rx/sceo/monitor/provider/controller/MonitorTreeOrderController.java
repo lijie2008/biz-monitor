@@ -184,7 +184,9 @@ public class MonitorTreeOrderController {
        Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
        
         if(nodeResources.parallelStream().anyMatch(re -> usedResourceIds.contains(re.getMtor020())))
-            ApplicationException.throwCodeMesg(ErrorMessage._60006.getCode(),ErrorMessage._60006.getMsg());
+            result.setData(false);
+        else
+            result.setData(true);
         
         return result;
     }
