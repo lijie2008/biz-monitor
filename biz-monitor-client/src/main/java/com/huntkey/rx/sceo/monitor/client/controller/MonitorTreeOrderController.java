@@ -9,9 +9,11 @@
 
 package com.huntkey.rx.sceo.monitor.client.controller;
 
+import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,7 +28,7 @@ import com.huntkey.rx.sceo.monitor.client.service.MonitorTreeOrderService;
  * @see 	 
  */
 @RestController
-@RequestMapping("/v1/monitor")
+@RequestMapping("/v1/nodes")
 public class MonitorTreeOrderController {
     
     @Autowired
@@ -42,11 +44,14 @@ public class MonitorTreeOrderController {
      * @param pageSize 页大小
      * @return
      */
-    @RequestMapping(value="/queryNotUsingResource", method = RequestMethod.GET)
-    public Result queryNotUsingResource(@RequestParam(value="orderId",required=true) String orderId, @RequestParam(value="nodeId",required=true) String nodeId, 
-                                        @RequestParam(value="currentPage", defaultValue = "1",required=false) int currentPage, @RequestParam(value="pageSize", defaultValue="20",required=false) int pageSize){
+    @GetMapping("/resource")
+    public Result queryNotUsingResource(@RequestParam @NotBlank(message = "临时单ID不能为空") String orderId,
+                                        @RequestParam @NotBlank(message = "节点ID不能为空") String nodeId, 
+                                        @RequestParam(defaultValue = "1",required=false) int currentPage, 
+                                        @RequestParam(defaultValue="20",required=false) int pageSize){
         return service.queryNotUsingResource(orderId,nodeId,currentPage,pageSize);
     }
+    
     /**
      * 
      * checkNodeResource: 节点时间区间修改检查
@@ -56,9 +61,10 @@ public class MonitorTreeOrderController {
      * @param endDate 失效时间
      * @return
      */
-    @RequestMapping(value="/checkNodeResource", method = RequestMethod.GET)
-    public Result checkNodeResource(@RequestParam(value="nodeId",required=true) String nodeId, @RequestParam(value="startDate",required=true) String startDate,
-                                    @RequestParam(value="endDate",required=true) String endDate){
+    @GetMapping(value="/checkDate")
+    public Result checkNodeResource(@RequestParam @NotBlank(message="临时单ID不能为空") String nodeId,
+                                    @RequestParam @NotBlank(message="生效日期不能为空") String startDate,
+                                    @RequestParam @NotBlank(message="失效日期不能为空") String endDate){
         return service.checkNodeResource(nodeId, startDate, endDate);
     }
     
@@ -69,8 +75,8 @@ public class MonitorTreeOrderController {
      * @param orderId 临时单Id
      * @return
      */
-    @RequestMapping(value="/addOtherNode", method = RequestMethod.GET)
-    public Result addOtherNode(@RequestParam(value="orderId",required=true) String orderId){
+    @GetMapping("/other")
+    public Result addOtherNode(@RequestParam @NotBlank(message="临时单ID不能为空") String orderId){
         return service.addOtherNode(orderId);
     }
     
@@ -81,8 +87,8 @@ public class MonitorTreeOrderController {
      * @param orderId 临时单Id
      * @return
      */
-    @RequestMapping(value="/store", method = RequestMethod.GET)
-    public Result store(@RequestParam(value="orderId",required=true) String orderId){
+    @GetMapping(value="/{orderId}")
+    public Result store(@PathVariable(value="orderId") @NotBlank(message="临时单ID不能为空") String orderId){
         return service.store(orderId);
     }
     
@@ -93,8 +99,8 @@ public class MonitorTreeOrderController {
      * @param orderId 临时单ID
      * @return
      */
-    @RequestMapping(value="/revoked", method = RequestMethod.GET)
-    public Result revoked(@RequestParam(value="orderId",required=true) String orderId){
+    @GetMapping("/revoke/{orderId}")
+    public Result revoked(@PathVariable(value="orderId") @NotBlank(message="临时单ID不能为空") String orderId){
         return service.revoked(orderId);
     }
     
@@ -105,8 +111,8 @@ public class MonitorTreeOrderController {
      * @param orderId 临时单id
      * @return
      */
-    @RequestMapping(value="/resources", method = RequestMethod.GET)
-    public Result checkAvailableResource(@RequestParam(value="orderId",required=true) String orderId){
+    @GetMapping("/other/resource")
+    public Result checkAvailableResource(@RequestParam @NotBlank(message = "临时单ID不能为空") String orderId){
         return service.checkAvailableResource(orderId);
     }
 }

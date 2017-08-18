@@ -8,8 +8,6 @@ import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.cloud.netflix.hystrix.EnableHystrix;
 import org.springframework.context.annotation.ComponentScan;
 
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
-
 /**
  * Created by zhaomj on 2017/4/24.
  */
@@ -18,7 +16,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @ComponentScan(basePackages ="com.huntkey.rx.sceo.monitor.client" )
 @EnableFeignClients
 @EnableDiscoveryClient
-@EnableSwagger2
 @EnableHystrix
 public class MonitorClientApplication {
     public static void main(String[] args) {

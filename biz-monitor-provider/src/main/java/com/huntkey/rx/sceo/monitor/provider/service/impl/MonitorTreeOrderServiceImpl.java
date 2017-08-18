@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -402,6 +403,37 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             return JsonUtil.getObject(value.toJSONString(), CharacterAndFormatTo.class);
         }
         return null;
+    }
+
+    @Override
+    public List<Object> queryAvailableResource(String orderId) {
+        
+       MonitorTreeOrderTo order = queryOrder(orderId);
+        
+        if(JsonUtil.isEmpity(order))
+            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),ErrorMessage._60005.getMsg());
+        
+        String mtor003 = order.getMtor003();
+        EdmClassTo edmClass = getEdmClass(mtor003, PersistanceConstant.EDMPCODE);
+        
+        if(JsonUtil.isEmpity(edmClass) || JsonUtil.isEmpity(edmClass.getEdmcNameEn()))
+            ApplicationException.throwCodeMesg(ErrorMessage._60008.getCode(),ErrorMessage._60008.getMsg());
+        
+        String resourceEdmName = edmClass.getEdmcNameEn();
+        JSONArray resources = getAllResource(resourceEdmName);
+        
+        if(JsonUtil.isEmpity(resources))
+            return null;
+        
+        List<ResourceTo> usedResources = queryTreeNodeUsingResource(orderId, null, null,null);
+        
+        if(JsonUtil.isEmpity(usedResources))
+            return JsonUtil.listToJsonArray(resources);
+        
+       Set<String> usedResourceIds = usedResources.parallelStream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
+       
+       return resources.parallelStream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
+                .collect(Collectors.toList());
     }
 }
 
