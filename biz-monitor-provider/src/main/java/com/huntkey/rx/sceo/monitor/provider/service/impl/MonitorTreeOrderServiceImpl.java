@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -39,7 +40,6 @@ import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.commom.model.SortParam;
 import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
-import com.huntkey.rx.sceo.monitor.provider.controller.client.HbaseClient;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
 
@@ -54,7 +54,7 @@ import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
 public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     
     @Autowired
-    private HbaseClient client;
+    private ServiceCenterClient client;
     
     @Autowired
     private ModelerClient edmClient;

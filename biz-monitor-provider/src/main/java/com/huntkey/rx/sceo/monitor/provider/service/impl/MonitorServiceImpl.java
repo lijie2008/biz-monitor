@@ -1,5 +1,6 @@
 package com.huntkey.rx.sceo.monitor.provider.service.impl;
 
+import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,6 @@ import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.DataUtil;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.commom.utils.ToolUtil;
-import com.huntkey.rx.sceo.monitor.provider.controller.client.HbaseClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import com.huntkey.rx.sceo.monitor.provider.service.OrderNumberService;
 import com.huntkey.rx.sceo.monitor.provider.utils.DBUtils;
@@ -34,7 +34,7 @@ public class MonitorServiceImpl implements MonitorService {
 	@Autowired
 	DBUtils DBUtils;
 	@Autowired
-	HbaseClient hbase;
+	ServiceCenterClient serviceCenterClient;
 	@Autowired
 	OrderNumberService orderNumberService;
 	private static final Logger logger = LoggerFactory.getLogger(MonitorServiceImpl.class);
@@ -42,7 +42,6 @@ public class MonitorServiceImpl implements MonitorService {
 	/***
 	 * 查询监管树临时结构
 	 * @param tempId 监管树临时单id
-	 * @param hasResource 是否包含资源
 	 * @param validDate 日期
 	 * @return
 	 */
@@ -238,7 +237,7 @@ public class MonitorServiceImpl implements MonitorService {
 		}else{
 			InputArgument inputArgument=new InputArgument();
 			inputArgument.addData(retObj);
-			result=hbase.delete(inputArgument.toString());
+			result= serviceCenterClient.delete(inputArgument.toString());
 		}
 		return result;
 	}
@@ -589,7 +588,7 @@ public class MonitorServiceImpl implements MonitorService {
 	/**
 	 * 监管树的操作
 	 * type 1新增 2复制新增 3树维护
-	 * @param monitorTreeTo
+	 * @param addMonitorTreeTo
 	 * @return
 	 */
 	@Override
@@ -654,7 +653,7 @@ public class MonitorServiceImpl implements MonitorService {
 					ErrorMessage._60014.getMsg());
 		}
 		//2.根据根节点ID 查询正式树表的所有节点
-		Result res= hbase.getMonitorTreeNodes(edmcNameEn,nowDate , rootId);
+		Result res= serviceCenterClient.getOrderMonitorTreeNodes(edmcNameEn,nowDate , rootId);
 		if(res.getRetCode()==Result.RECODE_SUCCESS ){
 			if(!JsonUtil.isEmpity(res.getData())){
 				treeArr=JsonUtil.listToJsonArray((List)res.getData());

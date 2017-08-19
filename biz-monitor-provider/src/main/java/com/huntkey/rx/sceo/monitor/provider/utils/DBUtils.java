@@ -1,5 +1,6 @@
 package com.huntkey.rx.sceo.monitor.provider.utils;
 
+import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +20,12 @@ import com.huntkey.rx.sceo.monitor.commom.model.Condition;
 import com.huntkey.rx.sceo.monitor.commom.model.InputArgument;
 import com.huntkey.rx.sceo.monitor.commom.model.LoopTO;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
-import com.huntkey.rx.sceo.monitor.provider.controller.client.HbaseClient;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 
 @Component
 public class DBUtils {
 	@Autowired
-	HbaseClient hbase;
+	ServiceCenterClient hbase;
 	@Autowired
 	ModelerClient modelerClient;
 	private Logger logger=LoggerFactory.getLogger(DBUtils.class);

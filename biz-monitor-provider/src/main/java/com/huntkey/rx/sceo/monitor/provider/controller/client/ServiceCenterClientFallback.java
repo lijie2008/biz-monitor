@@ -9,6 +9,7 @@
 
 package com.huntkey.rx.sceo.monitor.provider.controller.client;
 
+import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 import org.springframework.stereotype.Component;
 
 import com.huntkey.rx.commons.utils.rest.Result;
@@ -63,6 +64,81 @@ public class ServiceCenterClientFallback implements ServiceCenterClient{
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("监管服务无法连接共享服务中心 getNodeResources 服务！");
+        return result;
+    }
+
+    @Override
+    public Result find(String datas) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("hbase client find fallback");
+        return result;
+    }
+
+    @Override
+    public Result add(String datas) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("hbase client add fallback");
+        return result;
+    }
+
+    @Override
+    public Result delete(String datas) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("hbase client delete fallback");
+        return result;
+    }
+
+    @Override
+    public Result update(String datas) {
+        // TODO Auto-generated method stub
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("hbase client update fallback");
+        return result;
+    }
+
+    @Override
+    public Result queryTreeNodeResource(String orderId, String startDate, String endDate, String excNodeId) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("hbase client update fallback");
+        return result;
+    }
+
+    @Override
+    public Result updateTargetNode(String edmName, TargetNodeTo node) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("hbase client update fallback");
+        return result;
+    }
+
+    @Override
+    public Result getTargetAllChildNode(String edmName, String nodeId, String endDate) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("hbase client update fallback");
+        return result;
+    }
+
+    @Override
+    public Result getOrderMonitorTreeNodes(String edmcNameEn, String searchDate, String rootNodeId) {
+        // TODO Auto-generated method stub
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("hbase client getOrderMonitorTreeNodes fallback");
+        return result;
+    }
+
+    @Override
+    public Result load(String datas) {
+        // TODO Auto-generated method stub
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("hbase client load fallback");
         return result;
     }
 }
