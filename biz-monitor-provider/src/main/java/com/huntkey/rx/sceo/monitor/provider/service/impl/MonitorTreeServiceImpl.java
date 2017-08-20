@@ -64,8 +64,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         if (StringUtil.isNullOrEmpty(rootNodeId)) {
             //根据时间查询根节点
             requestParams.addCondition(new ConditionNode("moni004", OperatorType.LessEquals,searchDate))
-                    .addCondition(new ConditionNode("moni005",OperatorType.Greater,searchDate))
-                    .addCondition(new ConditionNode("id",OperatorType.Equals,rootNodeId));
+                    .addCondition(new ConditionNode("moni005",OperatorType.Greater,searchDate));
         } else {
             //根据ID查询跟节点
             requestParams.addCondition(new ConditionNode("id",OperatorType.Equals,rootNodeId));
@@ -76,36 +75,35 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         Result rootNodeResult = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
         if (rootNodeResult.getRetCode() != Result.RECODE_SUCCESS) {
             throw new ServiceException(rootNodeResult.getErrMsg());
-        } else {
-            if(rootNodeResult.getData()!=null){
-                JSONObject rootData = JSONObject.parseObject(JSONObject.toJSONString(rootNodeResult.getData()));
+        }
+        if(rootNodeResult.getData()!=null){
+            JSONObject rootData = JSONObject.parseObject(JSONObject.toJSONString(rootNodeResult.getData()));
 
-                JSONArray rootArray = rootData.getJSONArray("dataset");
+            JSONArray rootArray = rootData.getJSONArray("dataset");
 
-                if (rootArray.size() == 1) {
-                    rootNode = rootArray.getJSONObject(0);
+            if (rootArray.size() == 1) {
+                rootNode = rootArray.getJSONObject(0);
 
-                    rootNodeId = rootNode.getString("id");
+                rootNodeId = rootNode.getString("id");
 
-                    //根据根节点ID，查询所有子节点
-                    Result childrenNpdeResult = serviceCenterClient.getMonitorTreeNodes(edmcNameEn, searchDate, rootNodeId);
-                    if (childrenNpdeResult.getRetCode() != Result.RECODE_SUCCESS) {
-                        throw new ServiceException(childrenNpdeResult.getErrMsg());
-                    } else {
-                        JSONArray childrenArray = new JSONArray((List<Object>) childrenNpdeResult.getData());
-                        childrenArray.add(rootNode);
-                        return childrenArray;
-                    }
-
+                //根据根节点ID，查询所有子节点
+                Result childrenNpdeResult = serviceCenterClient.getMonitorTreeNodes(edmcNameEn, searchDate, rootNodeId);
+                if (childrenNpdeResult.getRetCode() != Result.RECODE_SUCCESS) {
+                    throw new ServiceException(childrenNpdeResult.getErrMsg());
                 } else {
-                    if(rootArray.size()>1){
-                        throw new ServiceException("数据异常，统一时间找到多个监管树！");
-                    }
-                    return null;
+                    JSONArray childrenArray = new JSONArray((List<Object>) childrenNpdeResult.getData());
+                    childrenArray.add(rootNode);
+                    return childrenArray;
                 }
-            }else {
+
+            } else {
+                if(rootArray.size()>1){
+                    throw new ServiceException("数据异常，同一时间找到多个监管树！");
+                }
                 return null;
             }
+        }else {
+            return null;
         }
     }
 
