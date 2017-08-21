@@ -3,6 +3,7 @@ package com.huntkey.rx.sceo.monitor.client.controller;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.client.service.MonitorTreeClient;
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -47,7 +48,7 @@ public class MonitorTreeController {
 
     @GetMapping("/trees/resources")
     public Result getNodeResources(@RequestParam(required = false) String name,
-                                   @RequestParam @NotBlank(message = "树节点集合不能为空") List<String> nodes,
+                                   @RequestParam @NotEmpty(message = "树节点集合不能为空") List<String> nodes,
                                    @RequestParam @NotBlank(message = "监管类ID不能为空") String edmcId) {
         Result result = treeClient.getNodeResources(name, nodes, edmcId);
         return result;
