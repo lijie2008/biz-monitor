@@ -120,7 +120,12 @@ public class DBUtils {
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), 
             		ErrorMessage._60002.getMsg());
         }
-        return (String) result.getData();
+        @SuppressWarnings("unchecked")
+		List<String> list=(List<String>) result.getData();
+        if(list!=null && list.size()>0)
+        	return list.get(0);
+        else
+        	return "" ;
 	}
 	public  String update(String edmName,Object params,String moduser) {
 		//设置查询参数
