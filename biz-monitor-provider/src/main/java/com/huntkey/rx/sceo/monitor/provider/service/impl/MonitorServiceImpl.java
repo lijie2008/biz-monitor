@@ -554,7 +554,7 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor016(rightNode);
 		node.setMtor021(updateType);
 		node.setPid(treeId);
-		node.setMtor006(orderNumberService.generateOrderNumber("NODE"));
+		node.setMtor006("NODE00000");//orderNumberService.generateOrderNumber("NODE")
 		return node;
 	}
 	
@@ -660,12 +660,12 @@ public class MonitorServiceImpl implements MonitorService {
 				treeFormal=JsonUtil.mergeJsonArray(treeFormal,treeArr);
 				if(!JsonUtil.isNullOrEmpty(treeArr)){
 					treeArr=JsonUtil.removeAttr(treeArr, ID);//去除ID后进行新增
+					treeArr=ToolUtil.formal2Temp(treeArr,ToolUtil.treeConvert());//转换成临时树的字段
 					//添加PID项
 					Map<String, Object> map=new HashMap<String, Object>();
 					map.put(PID, tempId);
 					map.put(MTOR021, changeType);
 					treeArr=JsonUtil.addAttr(treeArr, map);
-					treeArr=ToolUtil.formal2Temp(treeArr,ToolUtil.treeConvert());//转换成临时树的字段
 					DBUtils.add(MTOR005, treeArr,"");//新增节点信息
 				}
 			}
@@ -675,10 +675,10 @@ public class MonitorServiceImpl implements MonitorService {
 		resourceArr=DBUtils.loopQuery(loop, treeFormal);
 		
 		//4.新增根节点
+		root=ToolUtil.formal2Temp(root,ToolUtil.treeConvert());
 		root.remove(ID);
 		root.put(PID, tempId);
 		root.put(MTOR021,changeType);
-		root=ToolUtil.formal2Temp(root,ToolUtil.treeConvert());
 		DBUtils.add(MTOR005, root,"");
 		//3.查询出所有新增的节点
 		condition.addCondition(PID, EQUAL, tempId, true);
