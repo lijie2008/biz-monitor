@@ -173,13 +173,18 @@ public class MonitorTreeOrderController {
     
        List<ResourceTo> nodeResources = service.queryResource(nodeId);
        
-       if(JsonUtil.isEmpity(nodeResources))
+       if(JsonUtil.isEmpity(nodeResources)){
+           result.setData(true);
            return result;
+       }
+
         
         List<ResourceTo> usedResources = service.queryTreeNodeUsingResource(node.getPid(), startDate, endDate, nodeId);
         
-        if(JsonUtil.isEmpity(usedResources))
+        if(JsonUtil.isEmpity(usedResources)){
+            result.setData(true);
             return result;
+        }
         
        Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
        
