@@ -105,7 +105,18 @@ public class NodeTo implements Serializable{
      */
     private int mtor021;
     
-    /**
+    //修改用户
+    private String moduser;
+    
+    public String getModuser() {
+		return moduser;
+	}
+
+	public void setModuser(String moduser) {
+		this.moduser = moduser;
+	}
+
+	/**
      * 直属关联对象条件(方法)
      */
     private String mtor022;
