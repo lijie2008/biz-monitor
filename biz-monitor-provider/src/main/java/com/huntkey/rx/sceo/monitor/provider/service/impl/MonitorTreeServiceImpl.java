@@ -65,7 +65,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             //根据时间查询根节点
             requestParams.addCondition(new ConditionNode("moni004", OperatorType.LessEquals,searchDate))
                     .addCondition(new ConditionNode("moni005",OperatorType.Greater,searchDate))
-                    .addCondition(new ConditionNode("moni006",OperatorType.Equals,"null"));
+                    .addCondition(new ConditionNode("moni006",OperatorType.Equals,""));
         } else {
             //根据ID查询跟节点
             requestParams.addCondition(new ConditionNode("id",OperatorType.Equals,rootNodeId));
@@ -118,7 +118,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 
         requestParams.addColumns(characters);
 
-        requestParams.addCondition(new ConditionNode("moni006",OperatorType.Equals,"null"));
+        requestParams.addCondition(new ConditionNode("moni006",OperatorType.Equals,""));
 
         if (!StringUtil.isNullOrEmpty(treeName)) {
             requestParams.addCondition(new ConditionNode("moni002",OperatorType.Like,treeName));
@@ -197,7 +197,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         JSONObject resultData = new JSONObject();
 
         SearchParam requestParams = new SearchParam(edmcNameEn);
-        ConditionNode nodeIdCondition = new ConditionNode("moni006",OperatorType.Equals,"null");
+        ConditionNode nodeIdCondition = new ConditionNode("moni006",OperatorType.Equals,"");
 
         requestParams.addCondition(nodeIdCondition);
 
@@ -211,7 +211,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             }else {
                 //统计没有失效时间的根节点
 
-                requestParams.addCondition(new ConditionNode("moni005",OperatorType.IsNull,"null"));
+                requestParams.addCondition(new ConditionNode("moni005",OperatorType.Equals,""));
 
                 Result countResult = serviceCenterClient.countByConditions(requestParams.toJSONString());
                 if(countResult.getRetCode()==Result.RECODE_SUCCESS){
