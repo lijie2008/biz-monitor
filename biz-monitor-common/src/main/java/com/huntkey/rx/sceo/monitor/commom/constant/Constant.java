@@ -147,7 +147,7 @@ public interface Constant {
     
     String MTOR021="mtor021";//监管更新标记
     
-    String NULL="null";//空标记
+    String NULL="";//空标记
     
     String STAFF="staff";//员工表
     

@@ -2,7 +2,7 @@ spring:
   cloud:
     config:
       profile: dev
-      uri: http://192.168.13.53:9999
+      uri: http://192.168.13.39:9999
 hystrix:
   command:
     default:

@@ -307,7 +307,7 @@ public class MonitorServiceImpl implements MonitorService {
 						changeNodePosition(nodeRight.getString(ID), 4, newNodeId);
 					}
 					
-					if(StringUtil.isEqual(NULL, node.getString(MTOR014))) {
+					if(StringUtil.isNullOrEmpty(node.getString(MTOR014))) {
 						//如果父节点以前没有子节点  变更父节点的子节点信息
 						changeNodePosition(node.getString(ID), 2, newNodeId);
 					}
@@ -319,7 +319,7 @@ public class MonitorServiceImpl implements MonitorService {
 							node.getString(PID),1);
 					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
 					//2.如果当前节点之前没有左节点 则变更父节点的子节点信息 
-					if(StringUtil.isEqual(NULL, node.getString(MTOR015))){
+					if(StringUtil.isNullOrEmpty(node.getString(MTOR015))){
 						changeNodePosition(node.getString(MTOR013), 2, newNodeId);
 					}else{//4.如果有左节点 则变更之前左节点的有节点
 						changeNodePosition(node.getString(MTOR015), 4, newNodeId);
@@ -337,7 +337,7 @@ public class MonitorServiceImpl implements MonitorService {
 					//2.要变更当前节点的右节点信息
 					changeNodePosition(node.getString(ID), 4, newNodeId);
 					//3.变更之前右节点的左节点信息
-					if(!StringUtil.isEqual(NULL, node.getString(MTOR016))){
+					if(!StringUtil.isNullOrEmpty(node.getString(MTOR016))){
 						changeNodePosition(node.getString(MTOR016), 3, newNodeId);
 					}
 				break;
@@ -415,16 +415,16 @@ public class MonitorServiceImpl implements MonitorService {
 			nodeRight=delNode.getString(MTOR016);
 			//3.变更各节点信息
 			//a.如果删除的节点没有左右节点 
-			if(StringUtil.isEqual(NULL,nodeLeft) && StringUtil.isEqual(NULL,nodeRight)){
+			if(StringUtil.isNullOrEmpty(nodeLeft) && StringUtil.isNullOrEmpty(nodeRight)){
 				changeNodePosition(nodeParent, 2, NULL);//将父节点的子节点置空
 			}
 			//b.如果删除的节点没有左节点右有节点   
-			else if(StringUtil.isEqual(NULL,nodeLeft) && !StringUtil.isEqual(NULL,nodeRight)){
+			else if(StringUtil.isNullOrEmpty(nodeLeft) && !StringUtil.isNullOrEmpty(nodeRight)){
 				changeNodePosition(nodeParent, 2, nodeRight);//更改父节点的子节点为右节点
 				changeNodePosition(nodeRight, 3, NULL);//右节点的左节点置空
 			}
 			//c.如果删除的节点有左节点没有右节点  
-			else if(!StringUtil.isEqual(NULL,nodeLeft) && StringUtil.isEqual(NULL,nodeRight)){
+			else if(!StringUtil.isNullOrEmpty(nodeLeft) && StringUtil.isNullOrEmpty(nodeRight)){
 				changeNodePosition(nodeLeft, 4, NULL);//将左节点的右节点置空
 			}
 			//d.如果存在左右节点
@@ -499,7 +499,7 @@ public class MonitorServiceImpl implements MonitorService {
 				JSONObject json=JsonUtil.getJson(obj);
 				if(json!=null){
 					allNodes.add(json);//添加本节点
-					if(StringUtil.isEqual(NULL,json.getString(MTOR014))){
+					if(StringUtil.isNullOrEmpty(json.getString(MTOR014))){
 						nodes=getChildNode(json.getString(ID));
 						allNodes=JsonUtil.mergeJsonArray(allNodes,nodes);
 					}
