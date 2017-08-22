@@ -206,14 +206,15 @@ public class MonitorServiceImpl implements MonitorService {
 	@Override
 	public String saveNodeDetail(NodeTo nodeDetail) {
 		// TODO Auto-generated method stub
-		String retStr="";
+		
 		InputArgument inputArgument=new InputArgument();
 		inputArgument.addData(JsonUtil.getJson(nodeDetail));
 		inputArgument.setEdmName(MTOR005);
-		if(StringUtil.isNullOrEmpty(nodeDetail.getId())){
+		String retStr=nodeDetail.getId();
+		if(StringUtil.isNullOrEmpty(retStr)){
 			retStr=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
 		}else{//修改
-			retStr=DBUtils.update(MTOR005, JsonUtil.getJson(nodeDetail),"");
+			DBUtils.update(MTOR005, JsonUtil.getJson(nodeDetail),"");
 		}
 		return retStr;
 	}
@@ -235,9 +236,7 @@ public class MonitorServiceImpl implements MonitorService {
 		if(retObj==null){
 			return result;
 		}else{
-			InputArgument inputArgument=new InputArgument();
-			inputArgument.addData(retObj);
-			result= serviceCenterClient.delete(inputArgument.toString());
+			DBUtils.delete(MTOR019, retObj);
 		}
 		return result;
 	}
