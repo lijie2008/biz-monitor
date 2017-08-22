@@ -236,9 +236,7 @@ public class MonitorServiceImpl implements MonitorService {
 		if(retObj==null){
 			return result;
 		}else{
-			InputArgument inputArgument=new InputArgument();
-			inputArgument.addData(retObj);
-			result= serviceCenterClient.delete(inputArgument.toString());
+			DBUtils.delete(MTOR019, retObj);
 		}
 		return result;
 	}
