@@ -103,9 +103,9 @@ public class NodeTo implements Serializable{
     /**
      * 监管更新标记
      */
-    private int mtor021;
-    
-    /**
+    private int mtor021; 
+
+	/**
      * 直属关联对象条件(方法)
      */
     private String mtor022;

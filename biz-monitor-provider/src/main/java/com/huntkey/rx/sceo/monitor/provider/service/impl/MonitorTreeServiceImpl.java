@@ -64,7 +64,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         if (StringUtil.isNullOrEmpty(rootNodeId)) {
             //根据时间查询根节点
             requestParams.addCondition(new ConditionNode("moni004", OperatorType.LessEquals,searchDate))
-                    .addCondition(new ConditionNode("moni005",OperatorType.Greater,searchDate));
+                    .addCondition(new ConditionNode("moni005",OperatorType.Greater,searchDate))
+                    .addCondition(new ConditionNode("moni006",OperatorType.Equals,"null"));
         } else {
             //根据ID查询跟节点
             requestParams.addCondition(new ConditionNode("id",OperatorType.Equals,rootNodeId));

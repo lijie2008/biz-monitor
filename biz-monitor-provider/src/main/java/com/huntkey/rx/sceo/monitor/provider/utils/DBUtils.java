@@ -106,10 +106,11 @@ public class DBUtils {
 	 * @param params 提交数据
 	 * @return JSONObject
 	 */
-	public  String add(String edmName,Object params) {
+	public  String add(String edmName,Object params,String adduser) {
 		//设置查询参数
 		InputArgument inputArgument=new InputArgument();
 		inputArgument.setEdmName(edmName);
+		inputArgument.setAdduser(adduser);
 		inputArgument.addData(params);
         Result result = hbase.add(inputArgument.toString());
         //进行查询
@@ -119,12 +120,19 @@ public class DBUtils {
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), 
             		ErrorMessage._60002.getMsg());
         }
-        return (String) result.getData();
+        @SuppressWarnings("unchecked")
+		List<String> list=(List<String>) result.getData();
+        if(list!=null && list.size()>0)
+        	return list.get(0);
+        else
+        	return "" ;
 	}
-	public  String update(String edmName,Object params) {
+	public  String update(String edmName,Object params,String moduser) {
 		//设置查询参数
 		InputArgument inputArgument=new InputArgument();
 		inputArgument.setEdmName(edmName);
+		inputArgument.setAddOrUpdate(1);;
+		inputArgument.setModuser(moduser);
 		inputArgument.addData(params);
         Result result = hbase.update(inputArgument.toString());
         //进行查询

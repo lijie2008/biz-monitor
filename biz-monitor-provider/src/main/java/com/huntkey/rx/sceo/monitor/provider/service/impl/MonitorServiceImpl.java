@@ -211,9 +211,9 @@ public class MonitorServiceImpl implements MonitorService {
 		inputArgument.addData(JsonUtil.getJson(nodeDetail));
 		inputArgument.setEdmName(MTOR005);
 		if(StringUtil.isNullOrEmpty(nodeDetail.getId())){
-			retStr=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
+			retStr=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
 		}else{//修改
-			retStr=DBUtils.update(MTOR005, JsonUtil.getJson(nodeDetail));
+			retStr=DBUtils.update(MTOR005, JsonUtil.getJson(nodeDetail),"");
 		}
 		return retStr;
 	}
@@ -267,7 +267,7 @@ public class MonitorServiceImpl implements MonitorService {
 				params.add(param);
 			}
 		}
-		String resId=DBUtils.add(MTOR019, params);
+		String resId=DBUtils.add(MTOR019, params,"");
 		return resId;
 	}
 	@Override
@@ -300,7 +300,7 @@ public class MonitorServiceImpl implements MonitorService {
 					nodeRight=DBUtils.getObjectResult(MTOR005,null,condition);
 					nodeDetail=setNodePosition(node.getString(ID), NULL, 
 							nodeRight!=null?nodeRight.getString(ID):NULL, NULL,node.getString(PID),1);
-					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
+					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
 					
 					//如果存在最右侧节点  则变更最右侧节点的右节点信息
 					if(nodeRight!=null){
@@ -317,7 +317,7 @@ public class MonitorServiceImpl implements MonitorService {
 					nodeDetail=setNodePosition(node.getString(MTOR013), NULL, 
 							node.getString(MTOR015),node.getString(ID), 
 							node.getString(PID),1);
-					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
+					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
 					//2.如果当前节点之前没有左节点 则变更父节点的子节点信息 
 					if(StringUtil.isEqual(NULL, node.getString(MTOR015))){
 						changeNodePosition(node.getString(MTOR013), 2, newNodeId);
@@ -333,7 +333,7 @@ public class MonitorServiceImpl implements MonitorService {
 					nodeDetail=setNodePosition(node.getString(MTOR013), NULL, 
 							node.getString(ID), node.getString(MTOR016),
 							node.getString(PID),1);
-					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail));
+					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
 					//2.要变更当前节点的右节点信息
 					changeNodePosition(node.getString(ID), 4, newNodeId);
 					//3.变更之前右节点的左节点信息
@@ -399,13 +399,13 @@ public class MonitorServiceImpl implements MonitorService {
 				Map<String, Object> map=new HashMap<String, Object>();
 				map.put(MTOR021, ChangeType.INVALID.getValue());
 				JsonUtil.addAttr(updateNodes, map);
-				DBUtils.update(MTOR005, addNodes);
+				DBUtils.update(MTOR005, addNodes,"");
 			}else{//没有子节点只失效当前一个节点
 				if(type==0){
 					JSONObject json=new JSONObject();
 					json.put(ID, delNode.getString(ID));
 					json.put(MTOR021, ChangeType.INVALID.getValue());
-					DBUtils.update(MTOR005, json);
+					DBUtils.update(MTOR005, json,"");
 				}
 			}
 			
@@ -554,7 +554,7 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor016(rightNode);
 		node.setMtor021(updateType);
 		node.setPid(treeId);
-		node.setMtor006(orderNumberService.generateOrderNumber("NODE"));
+		node.setMtor006("NODE00000");//orderNumberService.generateOrderNumber("NODE")
 		return node;
 	}
 	
@@ -582,7 +582,7 @@ public class MonitorServiceImpl implements MonitorService {
 				break;	
 		}
 		json.put(ID,nodeId);
-		DBUtils.update(MTOR005, json);
+		DBUtils.update(MTOR005, json,"");
 	}
 	
 	/**
@@ -621,11 +621,11 @@ public class MonitorServiceImpl implements MonitorService {
 	private String createTemp(String classId,int changeType,String rootId){
 		//1.生成监管类临时单
 		JSONObject jsonTemp=new JSONObject();
-		jsonTemp.put(MTOR001,orderNumberService.generateOrderNumber("LS"));
+		jsonTemp.put(MTOR001,"LS0000");//orderNumberService.generateOrderNumber("LS"));
 		jsonTemp.put(MTOR002, changeType);
 		jsonTemp.put(MTOR003, classId);
 		jsonTemp.put(MTOR004, rootId);
-		return DBUtils.add(MONITORTREEORDER, jsonTemp);
+		return DBUtils.add(MONITORTREEORDER, jsonTemp,"");
 	}
 	
 	/**
@@ -660,13 +660,13 @@ public class MonitorServiceImpl implements MonitorService {
 				treeFormal=JsonUtil.mergeJsonArray(treeFormal,treeArr);
 				if(!JsonUtil.isNullOrEmpty(treeArr)){
 					treeArr=JsonUtil.removeAttr(treeArr, ID);//去除ID后进行新增
+					treeArr=ToolUtil.formal2Temp(treeArr,ToolUtil.treeConvert());//转换成临时树的字段
 					//添加PID项
 					Map<String, Object> map=new HashMap<String, Object>();
 					map.put(PID, tempId);
 					map.put(MTOR021, changeType);
 					treeArr=JsonUtil.addAttr(treeArr, map);
-					treeArr=ToolUtil.formal2Temp(treeArr,ToolUtil.treeConvert());//转换成临时树的字段
-					DBUtils.add(MTOR005, treeArr);//新增节点信息
+					DBUtils.add(MTOR005, treeArr,"");//新增节点信息
 				}
 			}
 		}
@@ -675,11 +675,11 @@ public class MonitorServiceImpl implements MonitorService {
 		resourceArr=DBUtils.loopQuery(loop, treeFormal);
 		
 		//4.新增根节点
+		root=ToolUtil.formal2Temp(root,ToolUtil.treeConvert());
 		root.remove(ID);
 		root.put(PID, tempId);
 		root.put(MTOR021,changeType);
-		root=ToolUtil.formal2Temp(root,ToolUtil.treeConvert());
-		DBUtils.add(MTOR005, root);
+		DBUtils.add(MTOR005, root,"");
 		//3.查询出所有新增的节点
 		condition.addCondition(PID, EQUAL, tempId, true);
 		treeTemp=DBUtils.getArrayResult(MTOR005, null, condition);
@@ -689,8 +689,7 @@ public class MonitorServiceImpl implements MonitorService {
 		if(retobj!=null){
 			treeTemp=JsonUtil.getJsonArrayByAttr(retobj,"treeTemp");
 			if(!JsonUtil.isNullOrEmpty(treeTemp)){
-				treeTemp=ToolUtil.formal2Temp(treeTemp, ToolUtil.treeConvert());
-				DBUtils.update(MTOR005, treeTemp);
+				DBUtils.update(MTOR005, treeTemp,"");
 			}
 			
 			resourceArr=JsonUtil.getJsonArrayByAttr(retobj,"resource");
@@ -698,7 +697,7 @@ public class MonitorServiceImpl implements MonitorService {
 				//去除ID后新增
 				resourceArr=JsonUtil.removeAttr(resourceArr, ID);
 				resourceArr=ToolUtil.formal2Temp(resourceArr,ToolUtil.resourceConvert());
-				DBUtils.add(MTOR019, resourceArr);
+				DBUtils.add(MTOR019, resourceArr,"");
 			}
 		}
 	}
@@ -770,12 +769,12 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor016(NULL);
 		node.setMtor021(1);
 		node.setPid(pid);
-		return DBUtils.add(MTOR005, JsonUtil.getJson(node));
+		return DBUtils.add(MTOR005, JsonUtil.getJson(node),"");
 	}
 	@Override
 	public String treeMaintaince(String classId, String rootId, String edmcNameEn) {
 		// TODO Auto-generated method stub
-		//先根据根节点查询是否存在临时树
+		//先根据根节点查询是否存在临时树\
 		Condition condition=new Condition();
 		condition.addCondition(MTOR004, EQUAL, rootId, true);
 		JSONObject ret=DBUtils.getObjectResult(MONITORTREEORDER, null, condition);

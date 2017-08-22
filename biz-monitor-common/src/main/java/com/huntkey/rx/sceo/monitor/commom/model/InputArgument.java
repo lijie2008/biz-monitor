@@ -1,6 +1,8 @@
 package com.huntkey.rx.sceo.monitor.commom.model;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -8,12 +10,30 @@ import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 public class InputArgument {
 	
+	public void setAdduser(String adduser) {
+		this.adduser = adduser;
+	}
+
+	public void setModuser(String moduser) {
+		this.moduser = moduser;
+	}
+
+
 	// 1. 需要持久化的数据集合
     private JSONArray params;
+    
+    // 1. 新增还是修改
+    private int addOrUpdate;
 
-    // 2. 操作的edm类名称
+	// 2. 操作的edm类名称
     private String edmName;
 
+    // 2. 操作的新增人
+    private String adduser;
+    
+    // 2. 操作的修改人
+    private String moduser;
+    
     // 3. 查询的条件
     private JSONArray conditions;
 
@@ -35,15 +55,30 @@ public class InputArgument {
     public JSONArray getData() {
         return params;
     }
-
+    public void setAddOrUpdate(int addOrUpdate) {
+		this.addOrUpdate = addOrUpdate;
+	}
     public void addData(Object data) {
     	if(data instanceof JSONObject){
 	    	if(params==null){
 	    		params=new JSONArray();
 	    	}
+	    	if(addOrUpdate==0){
+	    		((JSONObject) data).put("adduser", adduser);
+	    	}
+	    	else{
+	    		((JSONObject) data).put("moduser", moduser);
+	    	}
 	        this.params.add(data);
     	}else if(data instanceof JSONArray){
-    		this.params=(JSONArray) data;
+    		Map<String, Object> map=new HashMap<String, Object>();  
+    		if(addOrUpdate==0){
+    			map.put("adduser", adduser);
+    		}
+    		else{
+    			map.put("moduser", moduser);
+    		}
+    		this.params=JsonUtil.addAttr((JSONArray) data, map);
     	}
     }
 
