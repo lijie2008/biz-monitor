@@ -109,6 +109,16 @@ public class NodeTo implements Serializable{
      * 直属关联对象条件(方法)
      */
     private String mtor022;
+    
+    /**
+     * 创建人
+     */
+    private String adduser;
+    
+    /**
+     * 修改人
+     */
+    private String moduser;
 
     public String getId() {
         return id;
@@ -244,5 +254,21 @@ public class NodeTo implements Serializable{
         this.mtor022 = mtor022;
     }
 
+    public String getAdduser() {
+        return adduser;
+    }
+
+    public void setAdduser(String adduser) {
+        this.adduser = adduser;
+    }
+
+    public String getModuser() {
+        return moduser;
+    }
+
+    public void setModuser(String moduser) {
+        this.moduser = moduser;
+    }
+    
 }
 

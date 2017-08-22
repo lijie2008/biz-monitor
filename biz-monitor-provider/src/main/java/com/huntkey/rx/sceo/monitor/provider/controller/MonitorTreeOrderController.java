@@ -58,6 +58,10 @@ import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
 @RequestMapping("/nodes")
 public class MonitorTreeOrderController {
     
+    private static final String MODUSER = "admin";
+    
+    private static final String ADDUSER = "admin";
+    
     @Autowired
     private MonitorTreeOrderService service;
     
@@ -134,7 +138,7 @@ public class MonitorTreeOrderController {
             data.parallelStream().forEach(s->{
                 JSONObject obj = new JSONObject();
                 obj.put(PersistanceConstant.ID, ((JSONObject)s).get(PersistanceConstant.ID));
-                obj.put("text", format.format(obj));
+                obj.put("text", format.format((JSONObject)s));
                 re.add(obj);
             });   
             
@@ -163,6 +167,7 @@ public class MonitorTreeOrderController {
     public Result checkNodeResource(@RequestParam @NotBlank(message = "节点ID不能为空") String nodeId,
                                     @RequestParam @NotBlank(message = "生效日期不能为空") String startDate, 
                                     @RequestParam @NotBlank(message = "失效日期不能为空") String endDate){
+        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
 
@@ -332,6 +337,7 @@ public class MonitorTreeOrderController {
             case DETAIL:
                 
                 NodeDetailTo to = JSON.parseObject(JSON.toJSONString(re.getObj()), NodeDetailTo.class);
+                to.setModuser(MODUSER);
                 
                 service.updateNodeAndResource(PersistanceConstant.MTOR_MTOR005A,to);
                 
@@ -416,10 +422,12 @@ public class MonitorTreeOrderController {
                 tt.setMtor015(orderId);
                 tt.setMtor016(orderId);
                 tt.setId(null);
+                tt.setAdduser(ADDUSER);
                 if(!JsonUtil.isEmpity(tt.getMtor019()))
                     tt.getMtor019().stream().forEach(t->{
                         t.setId(null);
                         t.setPid(null);
+                        t.setAdduser(ADDUSER);
                     });
                 nodes_c.add(tt);
             } catch (CloneNotSupportedException e) {
@@ -444,11 +452,13 @@ public class MonitorTreeOrderController {
             obj.put("mtor014", getId(nodes,allNodes,no.getMtor014()));
             obj.put("mtor015", getId(nodes,allNodes,no.getMtor015()));
             obj.put("mtor016", getId(nodes,allNodes,no.getMtor016()));
+            obj.put("moduser", MODUSER);
             ar.add(obj);
             s.setMtor013(obj.getString("mtor013"));
             s.setMtor014(obj.getString("mtor014"));
             s.setMtor015(obj.getString("mtor015"));
             s.setMtor016(obj.getString("mtor016"));
+            s.setModuser(MODUSER);
         });
         
         service.batchUpdate(PersistanceConstant.MTOR_MTOR005A, ar);
@@ -479,10 +489,12 @@ public class MonitorTreeOrderController {
                 s.setMoni008(orderId);
                 s.setMoni009(orderId);
                 s.setId(null);
+                s.setAdduser(ADDUSER);
                 if(!JsonUtil.isEmpity(s.getMoni015()))
                     s.getMoni015().stream().forEach(t->{
                         t.setId(null);
                         t.setPid(null);
+                        t.setAdduser(ADDUSER);
                     });
             });
             
@@ -507,6 +519,7 @@ public class MonitorTreeOrderController {
             obj.put("moni007", getId(nodes,targetAllNode,no.getMtor014()));
             obj.put("moni008", getId(nodes,targetAllNode,no.getMtor015()));
             obj.put("moni009", getId(nodes,targetAllNode,no.getMtor016()));
+            obj.put("moduser", MODUSER);
             ar.add(obj);
         });
         
@@ -542,6 +555,7 @@ public class MonitorTreeOrderController {
         targetNode.setMoni008(orderId);
         targetNode.setMoni009(orderId);
         targetNode.setId(targetRootNodeId);
+        targetNode.setModuser(MODUSER);
         
         if(!( targetNode.getMoni015() == null || targetNode.getMoni015().size() == 0 )){
             targetNode.getMoni015().stream().forEach(s -> {
@@ -566,6 +580,7 @@ public class MonitorTreeOrderController {
            JSONObject obj = new JSONObject();
            obj.put(PersistanceConstant.ID, ((JSONObject)s).get(PersistanceConstant.ID));
            obj.put("moni005", new Date(System.currentTimeMillis()).toString());
+           obj.put("moduser", MODUSER);
            ar.add(obj);
        });
        

@@ -36,6 +36,16 @@ public class ResourceTo implements Serializable{
      * 资源对象
      */
     private String mtor020;
+    
+    /**
+     * 创建人
+     */
+    private String adduser;
+    
+    /**
+     * 修改人
+     */
+    private String moduser;
 
     public String getId() {
         return id;
@@ -71,6 +81,22 @@ public class ResourceTo implements Serializable{
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+
+    public String getAdduser() {
+        return adduser;
+    }
+
+    public void setAdduser(String adduser) {
+        this.adduser = adduser;
+    }
+
+    public String getModuser() {
+        return moduser;
+    }
+
+    public void setModuser(String moduser) {
+        this.moduser = moduser;
     }
     
 }

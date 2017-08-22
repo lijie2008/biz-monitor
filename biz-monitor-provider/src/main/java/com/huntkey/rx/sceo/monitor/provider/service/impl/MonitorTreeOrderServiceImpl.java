@@ -61,9 +61,13 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     
     @Override
     public NodeTo queryNode(String nodeId) {
+        
         List<ConditionParam> cnds = new ArrayList<ConditionParam>();
+        
         ConditionParam cnd = new ConditionParam(Constant.ID, "=", nodeId); 
+        
         cnds.add(cnd);
+        
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR005A,null, cnds, null, null));
         
         Result result = client.find(input.getJson());
@@ -72,10 +76,14 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         
         if(!JsonUtil.isEmpity(result.getData())){
+            
             JSONArray dataset = JsonUtil.getJson(result.getData()).getJSONArray(PersistanceConstant.DATASET);
+            
             if(!JsonUtil.isEmpity(dataset))
                 return JsonUtil.getObject(dataset.getJSONObject(0).toJSONString(), NodeTo.class);
+            
         }
+        
         return null;
     }
 
@@ -313,6 +321,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             return;
         resources.parallelStream().forEach(s->{
             s.setId(null);
+            s.setAdduser("admin");
         });
         batchAdd(PersistanceConstant.MTOR_MTOR019B, JSONArray.parseArray(JSON.toJSONString(resources)));
     }

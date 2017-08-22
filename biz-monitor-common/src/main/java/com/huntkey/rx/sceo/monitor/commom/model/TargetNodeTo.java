@@ -102,6 +102,16 @@ public class TargetNodeTo {
      * 是否枚举
      */
     private String moni018;
+    
+    /**
+     * 创建人
+     */
+    private String adduser;
+    
+    /**
+     * 修改人
+     */
+    private String moduser;
 
     public String getId() {
         return id;
@@ -251,6 +261,23 @@ public class TargetNodeTo {
     public void setMoni018(String moni018) {
         this.moni018 = moni018;
     }
+
+    public String getAdduser() {
+        return adduser;
+    }
+
+    public void setAdduser(String adduser) {
+        this.adduser = adduser;
+    }
+
+    public String getModuser() {
+        return moduser;
+    }
+
+    public void setModuser(String moduser) {
+        this.moduser = moduser;
+    }
+    
 
 }
 
