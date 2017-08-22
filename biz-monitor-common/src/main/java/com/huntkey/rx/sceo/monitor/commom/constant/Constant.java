@@ -133,6 +133,8 @@ public interface Constant {
     
     String MTOR010="mtor010";//协管人
     
+    String MTOR011="mtor011";//监管树临时单_资源集合表_生效时间字段
+    
     String MTOR012="mtor012";//监管树临时单_资源集合表_失效时间字段
     
     String MTOR020="mtor020";//资源对象ID
