@@ -291,14 +291,20 @@ public class MonitorServiceImpl implements MonitorService {
 		JSONObject node=queryNode(condition);
 		NodeTo nodeDetail=null;
 		JSONObject nodeRight=null;
+		String beginDate="";
+		String endDate="";
+		JSONObject nodeParent=null;
 		if(node!=null){
 			switch (nodeType){
 				case 0://创建子节点
+					beginDate=node.getString(MTOR011);
+					endDate=node.getString(MTOR012);
 					condition.addCondition(MTOR013, EQUAL, node.getString(ID), true);//当前节点的子节点
 					condition.addCondition(MTOR016, EQUAL, NULL, false);//最右侧节点
 					nodeRight=DBUtils.getObjectResult(MTOR005,null,condition);
 					nodeDetail=setNodePosition(node.getString(ID), NULL, 
-							nodeRight!=null?nodeRight.getString(ID):NULL, NULL,node.getString(PID),1);
+							nodeRight!=null?nodeRight.getString(ID):NULL, 
+							NULL,node.getString(PID),beginDate,endDate);
 					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
 					
 					//如果存在最右侧节点  则变更最右侧节点的右节点信息
@@ -312,10 +318,17 @@ public class MonitorServiceImpl implements MonitorService {
 					}
 				break;
 				case 1://创建左节点
+					//0.获取父节点信息
+					condition.addCondition(ID, EQUAL, node.getString(MTOR013), true);
+					nodeParent=DBUtils.getObjectResult(MTOR005, null, condition);
+					if(nodeParent!=null){
+						beginDate=nodeParent.getString(MTOR011);
+						endDate=nodeParent.getString(MTOR012);
+					}
 					//1.创建新的左节点
 					nodeDetail=setNodePosition(node.getString(MTOR013), NULL, 
 							node.getString(MTOR015),node.getString(ID), 
-							node.getString(PID),1);
+							node.getString(PID),beginDate,endDate);
 					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
 					//2.如果当前节点之前没有左节点 则变更父节点的子节点信息 
 					if(StringUtil.isNullOrEmpty(node.getString(MTOR015))){
@@ -328,10 +341,17 @@ public class MonitorServiceImpl implements MonitorService {
 					
 				break;	
 				case 2://创建右节点
+					//0.获取父节点信息
+					condition.addCondition(ID, EQUAL, node.getString(MTOR013), true);
+					nodeParent=DBUtils.getObjectResult(MTOR005, null, condition);
+					if(nodeParent!=null){
+						beginDate=nodeParent.getString(MTOR011);
+						endDate=nodeParent.getString(MTOR012);
+					}
 					//1.创建新的右节点
 					nodeDetail=setNodePosition(node.getString(MTOR013), NULL, 
 							node.getString(ID), node.getString(MTOR016),
-							node.getString(PID),1);
+							node.getString(PID),beginDate,endDate);
 					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
 					//2.要变更当前节点的右节点信息
 					changeNodePosition(node.getString(ID), 4, newNodeId);
@@ -544,19 +564,23 @@ public class MonitorServiceImpl implements MonitorService {
 	 * @return
 	 */
 	private NodeTo setNodePosition(String parentNode,String childNode,
-			String leftNode,String rightNode,String treeId,int updateType){
+			String leftNode,String rightNode,String treeId,
+			String beginDate,String endDate){
 		NodeTo node=new NodeTo();
 		node.setMtor007("未命名节点");
 		node.setMtor013(parentNode);
 		node.setMtor014(childNode);
 		node.setMtor015(leftNode);
 		node.setMtor016(rightNode);
-		node.setMtor021(updateType);
+		node.setMtor021(1);
+		if(!StringUtil.isNullOrEmpty(beginDate))
+			node.setMtor011(beginDate);
+		if(!StringUtil.isNullOrEmpty(endDate))
+			node.setMtor012(endDate);
 		node.setPid(treeId);
-		node.setMtor006("NODE00000");//orderNumberService.generateOrderNumber("NODE")
+		node.setMtor006("NODE00000");//orderNumberService.generateOrderNumber("NODE"));//"NODE00000");
 		return node;
 	}
-	
 	
 	/**
 	 * 改变节点的位置
