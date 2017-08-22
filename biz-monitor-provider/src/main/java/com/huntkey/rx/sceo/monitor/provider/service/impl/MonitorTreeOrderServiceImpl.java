@@ -109,9 +109,13 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     
     @Override
     public MonitorTreeOrderTo queryOrder(String orderId){
+        
         List<ConditionParam> cnds = new ArrayList<ConditionParam>();
+        
         ConditionParam cnd = new ConditionParam(Constant.ID,"=",orderId);
+        
         cnds.add(cnd);
+        
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MONITORTREEORDER,null, cnds, null, null));
 
         Result result = client.find(input.getJson());
@@ -120,22 +124,30 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         
         if(!JsonUtil.isEmpity(result.getData())){
+            
             JSONArray dataset = JsonUtil.getJson(result.getData()).getJSONArray(PersistanceConstant.DATASET);
+            
             if(!JsonUtil.isEmpity(dataset))
                 return JsonUtil.getObject(dataset.getJSONObject(0).toJSONString(), MonitorTreeOrderTo.class);
+            
         }
         return null;
     }
     
     @Override
-    public List<ResourceTo> queryTreeNodeUsingResource(String orderId, String startDate, String endDate, String excNodeId) {
+    public List<ResourceTo> queryTreeNodeUsingResource(String orderId, String startDate, 
+                                                       String endDate, String excNodeId) {
+        
         Result result = client.queryTreeNodeResource(orderId, startDate, endDate,excNodeId);
+        
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         
         List<ResourceTo> data = JSON.parseArray(JsonUtil.getJsonArrayString(result.getData()), ResourceTo.class);
+        
         if(data == null || data.size() == 0)
             return null;
+        
         return  new ArrayList<>(new HashSet<>(data));
     }
     
@@ -174,11 +186,17 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     
     @Override
     public NodeTo queryRootNode(String orderId) {
+        
         List<ConditionParam> cnds = new ArrayList<ConditionParam>();
+        
         ConditionParam cnd = new ConditionParam(Constant.PID,"=",orderId);
+        
         cnds.add(cnd);
+        
         ConditionParam cnd2 = new ConditionParam("mtor013","=",Constant.NULL);
+        
         cnds.add(cnd2);
+        
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR005A, null,cnds, null, null));
         
         Result result = client.find(input.getJson());
@@ -187,31 +205,46 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         
         if(!JsonUtil.isEmpity(result.getData())){
+            
             JSONArray dataset = JsonUtil.getJson(result.getData()).getJSONArray(PersistanceConstant.DATASET);
+            
             if(!JsonUtil.isEmpity(dataset))
                 return JsonUtil.getObject(dataset.getJSONObject(0).toJSONString(), NodeTo.class);
+            
         }
+        
         return null;
     }
 
     @Override
     public NodeTo queryRootChildrenNode(String orderId, String rootNodeId) {
+        
         List<ConditionParam> cnds = new ArrayList<ConditionParam>();
+        
         ConditionParam cnd = new ConditionParam(Constant.PID,"=",orderId);
         cnds.add(cnd);
+        
         ConditionParam cnd2 = new ConditionParam("mtor013","=",rootNodeId);
         cnds.add(cnd2);
+        
         ConditionParam cnd3 = new ConditionParam("mtor016","=",Constant.NULL);
         cnds.add(cnd3);
+        
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR005A, null,cnds, null, null));
+        
         Result result = client.find(input.getJson());
+        
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
+        
         if(!JsonUtil.isEmpity(result.getData())){
+            
             JSONArray dataset = JsonUtil.getJson(result.getData()).getJSONArray(PersistanceConstant.DATASET);
+            
             if(!JsonUtil.isEmpity(dataset))
                 return JsonUtil.getObject(dataset.getJSONObject(0).toJSONString(), NodeTo.class);
         }
+        
         return null;
     }
     
@@ -429,6 +462,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             ApplicationException.throwCodeMesg(ErrorMessage._60008.getCode(),ErrorMessage._60008.getMsg());
         
         String resourceEdmName = edmClass.getEdmcNameEn();
+        
         JSONArray resources = getAllResource(resourceEdmName);
         
         if(JsonUtil.isEmpity(resources))
