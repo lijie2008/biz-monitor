@@ -111,7 +111,14 @@ public class DBUtils {
 		InputArgument inputArgument=new InputArgument();
 		inputArgument.setEdmName(edmName);
 		inputArgument.setAdduser(adduser);
+		 if(params instanceof JSONObject){
+        	((JSONObject) params).remove("moduser");
+        	((JSONObject) params).remove("modtime");
+        }else{
+        	params=JsonUtil.removeAttr((JSONArray)params, new String[]{"moduser","modtime"});
+        }
 		inputArgument.addData(params);
+
         Result result = hbase.add(inputArgument.toString());
         //进行查询
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
@@ -127,12 +134,18 @@ public class DBUtils {
         else
         	return "" ;
 	}
-	public  String update(String edmName,Object params,String moduser) {
+	public  void update(String edmName,Object params,String moduser) {
 		//设置查询参数
 		InputArgument inputArgument=new InputArgument();
 		inputArgument.setEdmName(edmName);
 		inputArgument.setAddOrUpdate(1);;
 		inputArgument.setModuser(moduser);
+		if(params instanceof JSONObject){
+        	((JSONObject) params).remove("adduser");
+        	((JSONObject) params).remove("addtime");
+        }else{
+        	params=JsonUtil.removeAttr((JSONArray)params, new String[]{"adduser","addtime"});
+        }
 		inputArgument.addData(params);
         Result result = hbase.update(inputArgument.toString());
         //进行查询
@@ -142,7 +155,6 @@ public class DBUtils {
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), 
             		ErrorMessage._60002.getMsg());
         }
-        return (String) result.getData();
 	}
 	/****
 	 * 删除(根据id删除)
