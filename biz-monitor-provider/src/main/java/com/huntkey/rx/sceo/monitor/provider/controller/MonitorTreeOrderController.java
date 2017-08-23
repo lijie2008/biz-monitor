@@ -514,7 +514,7 @@ public class MonitorTreeOrderController {
                     });
             });
             
-            service.batchAdd(edmName, JSON.parseArray(JSON.toJSONString(targetNodes)));
+            service.batchAdd(edmName, JSON.parseArray(JSONArray.toJSONString(targetNodes)));
             
             logger.info("更新 所有目标 节点结束" + new Timestamp(System.currentTimeMillis()));
         }
