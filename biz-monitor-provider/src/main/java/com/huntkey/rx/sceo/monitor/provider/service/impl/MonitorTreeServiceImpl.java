@@ -209,7 +209,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             //查询临时单是否存在
             String tempId="";
             SearchParam Params = new SearchParam("monitortreeorder");
-            Params.addCondition(new ConditionNode("mtor002",OperatorType.Equals,"2"));
+            Params.addCondition(new ConditionNode("mtor002",OperatorType.Equals,"1"));
             Params.addCondition(new ConditionNode("mtor003",OperatorType.Equals,classId));
             Result temptreeResult = serviceCenterClient.queryServiceCenter(Params.toJSONString());
             if(temptreeResult.getRetCode()==Result.RECODE_SUCCESS){
