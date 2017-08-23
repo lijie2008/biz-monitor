@@ -300,7 +300,7 @@ public class MonitorTreeOrderController {
         
         addTargetNode(nodes,edmName,type,rootNode,orderId);
         
-        service.deleteOrder(orderId);
+//        service.deleteOrder(orderId);
         
         return result;
     }
@@ -585,6 +585,9 @@ public class MonitorTreeOrderController {
            JSONObject obj = new JSONObject();
            obj.put(PersistanceConstant.ID, ((JSONObject)s).get(PersistanceConstant.ID));
            obj.put("moni005", new Date(System.currentTimeMillis()).toString());
+           Date start_date = Date.valueOf(((JSONObject)s).getString("moni004"));
+           if(!new Date(System.currentTimeMillis()).after(start_date))
+               obj.put("moni004", new Date(System.currentTimeMillis()).toString());
            obj.put("moduser", MODUSER);
            ar.add(obj);
        });

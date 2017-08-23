@@ -104,6 +104,16 @@ public class TargetNodeTo {
     private String moni018;
     
     /**
+     * 主管人
+     */
+    private String moni019;
+    
+    /**
+     * 协管人
+     */
+    private String moni020;
+    
+    /**
      * 创建人
      */
     private String adduser;
@@ -277,7 +287,24 @@ public class TargetNodeTo {
     public void setModuser(String moduser) {
         this.moduser = moduser;
     }
-    
 
+    public String getMoni019() {
+        return moni019;
+    }
+    
+    @JSONField(name="mtor009")
+    public void setMoni019(String moni019) {
+        this.moni019 = moni019;
+    }
+
+    public String getMoni020() {
+        return moni020;
+    }
+    
+    @JSONField(name="mtor010")
+    public void setMoni020(String moni020) {
+        this.moni020 = moni020;
+    }
+    
 }
 
