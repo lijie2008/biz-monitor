@@ -64,7 +64,7 @@ public class TestController {
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        mService.addNode(nodeId, 0);
+        mService.addNode(nodeId, 0,"其他节点");
         return result;
     }
     
