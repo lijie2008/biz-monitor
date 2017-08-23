@@ -24,7 +24,7 @@ public interface MonitorService {
 	String addResource(String nodeId,String[] resourceIds);
 	Result saveTemp(String datas);
 	//新增节点
-	String addNode(String nodeId,int nodeType);
+	String addNode(String nodeId,int nodeType,String nodeName);
 	//删除节点
 	String deleteNode(String nodeId,int type);
 	//移动节点

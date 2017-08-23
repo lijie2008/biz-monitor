@@ -149,7 +149,7 @@ public class MonitorController {
                                   int nodeType) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.addNode(nodeId, nodeType));
+        result.setData(service.addNode(nodeId, nodeType,""));
         return result;
     }
 
