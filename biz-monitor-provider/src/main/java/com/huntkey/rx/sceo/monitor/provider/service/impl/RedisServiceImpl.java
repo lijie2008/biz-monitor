@@ -17,7 +17,7 @@ import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
 public class RedisServiceImpl implements RedisService{
 
     @Autowired
-    private RedisTemplate<String, Object> redis;
+    private RedisTemplate<Object, Object> redis;
     
     @Override
     public Long size(String key) {
