@@ -87,6 +87,7 @@ public class PeriodServiceImpl implements PeriodService {
 
             return jsonObj;
         }else{
+            LOG.error("orm查询出错，参数：{}",queryString);
             throw new ServiceException(result.getErrMsg());
         }
     }
@@ -148,7 +149,8 @@ public class PeriodServiceImpl implements PeriodService {
         order.put(ServiceCenterConstant.SORT, ServiceCenterConstant.SORT_ASC);
         orderBy.add(order);
 
-        search.put(ServiceCenterConstant.CONDITIONS, conditions);
+        if(conditions.size()>0)
+            search.put(ServiceCenterConstant.CONDITIONS, conditions);
         search.put(ServiceCenterConstant.ORDER_BY, orderBy);
 
         //edm类名称

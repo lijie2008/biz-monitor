@@ -40,6 +40,6 @@ public interface MonitorTreeClient {
     Result getConProperties(@RequestParam(value = "edmcNameEn") String edmcNameEn,
                             @RequestParam(value = "enable",defaultValue = "true") boolean enable);
 
-    @RequestMapping("/monitors/{edmcNameEn}/newDate")
-    Result getNewMonitorTreeStartDate(@PathVariable(value = "edmcNameEn") String edmcNameEn);
+    @RequestMapping("/monitors/newDate")
+    Result getNewMonitorTreeStartDate(@RequestParam(value = "edmcNameEn") String edmcNameEn,@RequestParam(value = "classId") String classId);
 }

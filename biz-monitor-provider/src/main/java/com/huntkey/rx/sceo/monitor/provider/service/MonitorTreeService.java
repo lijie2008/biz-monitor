@@ -38,7 +38,7 @@ public interface MonitorTreeService {
 
     JSONArray getConProperties(String edmcNameEn, boolean enable);
 
-    JSONObject getNewMonitorTreeStartDate(String edmcNameEn);
+    JSONObject getNewMonitorTreeStartDate(String edmcNameEn,String classId);
     
     /**
      * getChileNodes:根据节点id查询其子节点信息

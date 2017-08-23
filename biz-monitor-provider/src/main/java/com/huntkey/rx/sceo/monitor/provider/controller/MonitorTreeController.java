@@ -108,11 +108,12 @@ public class MonitorTreeController {
         return result;
     }
 
-    @GetMapping("/{edmcNameEn}/newDate")
-    public Result getNewMonitorTreeStartDate(@PathVariable(value = "edmcNameEn") @NotBlank(message = "类英文名不能为空") String edmcNameEn){
+    @GetMapping("/newDate")
+    public Result getNewMonitorTreeStartDate(@RequestParam(value = "edmcNameEn") @NotBlank(message = "类英文名不能为空") String edmcNameEn,
+    		@RequestParam(value="classId") @NotBlank(message="监管类ID不能为空") String classId){
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(monitorTreeService.getNewMonitorTreeStartDate(edmcNameEn));
+        result.setData(monitorTreeService.getNewMonitorTreeStartDate(edmcNameEn,classId));
         return result;
     }
 }

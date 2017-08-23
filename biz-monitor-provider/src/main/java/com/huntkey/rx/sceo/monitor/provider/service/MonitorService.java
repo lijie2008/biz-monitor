@@ -1,7 +1,5 @@
 package com.huntkey.rx.sceo.monitor.provider.service;
 
-import java.util.List;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
@@ -11,7 +9,7 @@ public interface MonitorService {
 	//监管树临时单预览查询
 	JSONArray tempTree(String tempId,String validDate);
 	//监管树临时单预览是否包含资源
-	JSONArray containResource(String[] nodes,String classId);
+	JSONArray resource(String[] nodes,String classId);
 	//节点详情查询
 	JSONObject nodeDetail(String nodeId);
 	//节点关联资源查询
@@ -26,7 +24,7 @@ public interface MonitorService {
 	String addResource(String nodeId,String[] resourceIds);
 	Result saveTemp(String datas);
 	//新增节点
-	String addNode(String nodeId,int nodeType);
+	String addNode(String nodeId,int nodeType,String nodeName);
 	//删除节点
 	String deleteNode(String nodeId,int type);
 	//移动节点

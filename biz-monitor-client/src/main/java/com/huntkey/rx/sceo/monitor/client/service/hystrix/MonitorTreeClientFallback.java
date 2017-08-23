@@ -52,7 +52,7 @@ public class MonitorTreeClientFallback implements MonitorTreeClient {
     }
 
     @Override
-    public Result getNewMonitorTreeStartDate(String edmcNameEn) {
+    public Result getNewMonitorTreeStartDate(String edmcNameEn,String classId) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("MonitorTreeClient getNewMonitorTreeStartDate fallback");
