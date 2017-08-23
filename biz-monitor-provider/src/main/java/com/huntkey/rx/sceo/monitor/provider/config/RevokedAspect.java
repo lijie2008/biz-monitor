@@ -63,14 +63,20 @@ public class RevokedAspect {
     public void serviceStart(JoinPoint point, Revoked revoked) {
         
         String key = getKey(point,revoked.type());
+        
         switch(revoked.type()){
+            
             case INITIALIZE: 
                 return;
             case NODE: 
+                
                 String orderId = getNode(key).getPid();
+                
                 originalMap.put(key, service.getAllNodesAndResource(orderId));
                 break;
+                
             case DETAIL: 
+                
                 originalMap.put(key,  getNode(key));
                 break;
         }
@@ -84,6 +90,7 @@ public class RevokedAspect {
         
         if(!JsonUtil.isEmpity(key))
             originalMap.remove(key);
+        
     }
     
     // 服务正常完成后
@@ -91,43 +98,56 @@ public class RevokedAspect {
     public void serviceEnd(JoinPoint point, Revoked revoked,Result result){
         
         String key = getKey(point,revoked.type());
+        
         Object value = null;
         
-        if(result.getRetCode() != Result.RECODE_SUCCESS){
+        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
+            
             value = JsonUtil.isEmpity(key) ? null: originalMap.remove(key);
             return;
+            
         }
         
         value = (revoked.type() == OperateType.INITIALIZE || JsonUtil.isEmpity(key))? null : originalMap.get(key);
         
         String orderId = null;
+        
         switch(revoked.type()){
             
             case INITIALIZE:
-                orderId = JsonUtil.getJson(result.getData()).getString(Constant.ID);
+                
+                orderId = result.getData().toString();
+                
                 if(orderId == null)
                     return;
+                
                 if(!redisService.isEmpity(orderId))
                    redisService.delete(orderId);
+                
                 redisService.lPush(orderId, new RevokedTo(null, revoked.type()));
                 return;
                 
             case NODE:
+                
                 JSONArray arry = JSON.parseArray(JSONArray.toJSONString(value));
+                
                 orderId = JsonUtil.isEmpity(arry) ? null : arry.getJSONObject(0).getString(Constant.PID);
                 break;
                 
             case DETAIL:
+                
                 orderId = JsonUtil.getJson(value).getString(Constant.PID);
                 break;
         }
         
         if(orderId == null || redisService.isEmpity(orderId)) // 未初始化堆栈进行的操作 不做撤销储备
             return;
+        
         redisService.lPush(orderId, new RevokedTo(value, revoked.type()));
         
         if(!JsonUtil.isEmpity(key))
             originalMap.remove(key);
+        
     }
     
     /**
@@ -138,23 +158,36 @@ public class RevokedAspect {
      * @return
      */
     public String getKey(JoinPoint point,OperateType type){
+        
         if(type == OperateType.INITIALIZE)
             return null;
+        
         Method method = ((MethodSignature)point.getSignature()).getMethod();
+        
         Annotation[][] types = method.getParameterAnnotations();
         
         for(int i = 0; i< types.length; i++){
+            
             for(int j = 0; j< types[i].length;j++){
+                
                 if(Revoked.class.isInstance(types[i][j])){
+                    
                     Revoked revoked = (Revoked)types[i][j];
+                    
                     String key = revoked.key();
+                    
                     Object arg = point.getArgs()[i];
+                    
                     if(arg instanceof java.lang.String){
+                        
                         return (String)arg;
                     }else{
+                        
                         if(JsonUtil.isEmpity(key))
                             ApplicationException.throwCodeMesg(ErrorMessage._60001.getCode(), ErrorMessage._60001.getMsg());
+                        
                         return (String)JsonUtil.getJson(arg).get(key);
+                        
                     }
                 }
             }

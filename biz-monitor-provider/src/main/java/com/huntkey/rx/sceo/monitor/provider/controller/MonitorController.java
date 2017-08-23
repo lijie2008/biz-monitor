@@ -1,8 +1,10 @@
 package com.huntkey.rx.sceo.monitor.provider.controller;
 
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
+import com.huntkey.rx.sceo.monitor.provider.config.Revoked;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -190,6 +192,7 @@ public class MonitorController {
      * @param edmcNameEn
      * @return
      */
+    @Revoked(type=OperateType.INITIALIZE)
     @RequestMapping(value = "/addMonitorTree", method = RequestMethod.POST)
     public Result addMonitorTree(@RequestBody AddMonitorTreeTo addMonitorTreeTo
     ) {
