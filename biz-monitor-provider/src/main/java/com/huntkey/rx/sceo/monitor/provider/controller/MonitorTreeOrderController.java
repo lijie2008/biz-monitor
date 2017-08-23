@@ -10,12 +10,15 @@
 package com.huntkey.rx.sceo.monitor.provider.controller;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -61,6 +64,8 @@ public class MonitorTreeOrderController {
     private static final String MODUSER = "admin";
     
     private static final String ADDUSER = "admin";
+    
+    private static final Logger logger = LoggerFactory.getLogger(MonitorTreeOrderController.class);
     
     @Autowired
     private MonitorTreeOrderService service;
@@ -283,7 +288,11 @@ public class MonitorTreeOrderController {
         if(JsonUtil.isEmpity(edmName))
             ApplicationException.throwCodeMesg(ErrorMessage._60008.getCode(),ErrorMessage._60008.getMsg());
         
+        logger.info("查询临时单所有节点 和 对应资源信息 开始" + new Timestamp(System.currentTimeMillis()));
+        
         List<NodeDetailTo> treeNodes = service.getAllNodesAndResource(orderId);
+        
+        logger.info("查询临时单所有节点 和 对应资源信息 结束" + new Timestamp(System.currentTimeMillis()));
         
         if(JsonUtil.isEmpity(treeNodes))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"节点" + ErrorMessage._60005.getMsg());
@@ -483,6 +492,8 @@ public class MonitorTreeOrderController {
      */
     private void addTargetNode(List<NodeDetailTo> nodes, String edmName, ChangeType type,
                                NodeDetailTo node,String orderId) {
+        
+        logger.info("更新 所有目标 节点 开始" + new Timestamp(System.currentTimeMillis()));
         // 新增子节点信息
         List<TargetNodeTo> targetNodes = JSON.parseArray(JsonUtil.getJsonArrayString(nodes), TargetNodeTo.class);
         
@@ -504,6 +515,8 @@ public class MonitorTreeOrderController {
             });
             
             service.batchAdd(edmName, JSON.parseArray(JSON.toJSONString(targetNodes)));
+            
+            logger.info("更新 所有目标 节点结束" + new Timestamp(System.currentTimeMillis()));
         }
         
         if(type == ChangeType.UPDATE && !JsonUtil.isEmpity(node))
@@ -528,7 +541,9 @@ public class MonitorTreeOrderController {
             ar.add(obj);
         });
         
+        logger.info("更新 所有目标 节点 上下级树关系开始" + new Timestamp(System.currentTimeMillis()));
         service.batchUpdate(edmName, ar);
+        logger.info("更新 所有目标 节点 上下级树关系结束" + new Timestamp(System.currentTimeMillis()));
         
     }
 
@@ -542,6 +557,8 @@ public class MonitorTreeOrderController {
      * @return
      */
     private NodeDetailTo updateTargetRootNode(List<NodeDetailTo> nodes, MonitorTreeOrderTo order, String edmName) {
+        
+        logger.info("更新 目标 根节点 开始" + new Timestamp(System.currentTimeMillis()));
         
         String orderId = order.getId();
         
@@ -571,8 +588,11 @@ public class MonitorTreeOrderController {
         
        service.updateTargetNode(edmName, targetNode);
        
+       logger.info("更新 目标 根节点 结束" + new Timestamp(System.currentTimeMillis()));
+       
        nodes.remove(node);
        
+       logger.info("更新 目标所有 子节点开始" + new Timestamp(System.currentTimeMillis()));
        // 更新其他子节点信息(失效日期大于当天的，全部置为当天)
        JSONArray targetChildNodes = service.getTargetAllChildNode(edmName, targetRootNodeId, new Date(System.currentTimeMillis()).toString());
        
@@ -593,6 +613,8 @@ public class MonitorTreeOrderController {
        });
        
        service.batchUpdate(edmName, ar);
+       
+       logger.info("更新 目标所有 子节点结束" + new Timestamp(System.currentTimeMillis()));
        
         return node;
     }
