@@ -575,7 +575,7 @@ public class MonitorServiceImpl implements MonitorService {
 		if(!StringUtil.isNullOrEmpty(endDate))
 			node.setMtor012(endDate);
 		node.setPid(treeId);
-		node.setMtor006("NODE00000");//orderNumberService.generateOrderNumber("NODE"));//"NODE00000");
+		node.setMtor006(orderNumberService.generateOrderNumber("NODE"));//orderNumberService.generateOrderNumber("NODE"));//"NODE00000");
 		return node;
 	}
 	
@@ -641,7 +641,7 @@ public class MonitorServiceImpl implements MonitorService {
 	private String createTemp(String classId,int changeType,String rootId){
 		//1.生成监管类临时单
 		JSONObject jsonTemp=new JSONObject();
-		jsonTemp.put(MTOR001,"LS0000");//orderNumberService.generateOrderNumber("LS"));
+		jsonTemp.put(MTOR001,orderNumberService.generateOrderNumber("LS"));//orderNumberService.generateOrderNumber("LS"));
 		jsonTemp.put(MTOR002, changeType);
 		jsonTemp.put(MTOR003, classId);
 		jsonTemp.put(MTOR004, rootId);
