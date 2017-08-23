@@ -9,7 +9,7 @@
 
 package com.huntkey.rx.sceo.monitor.provider.config;
 
-import java.util.List;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
@@ -19,8 +19,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 
 import redis.clients.jedis.JedisPoolConfig;
 
@@ -33,6 +35,9 @@ import redis.clients.jedis.JedisPoolConfig;
  * @version  
  * @see 	 
  */
+@Component
+@Configuration
+@EnableCaching
 public class RedisConfig extends CachingConfigurerSupport{
     
     private final static int MAX_TOTAL = 20;
@@ -43,8 +48,17 @@ public class RedisConfig extends CachingConfigurerSupport{
 
     private final static long MAX_WAIT_MILLIS = 6000;
     
-    @Value("${redis.cluster.nodes}")
-    private List<String> node;
+    @Value("${redis.nodes}")
+    private String nodes ;
+    
+    @Bean
+    public JedisConnectionFactory redisConnectionFactory() {
+        RedisClusterConfiguration config = new RedisClusterConfiguration(Arrays.asList(nodes.split(",")));
+        JedisConnectionFactory redisConnectionFactory = new JedisConnectionFactory(config,getJedisPoolConfig());
+        redisConnectionFactory.afterPropertiesSet();
+        return redisConnectionFactory;
+    }
+    
     
     @Bean
     public RedisTemplate<String, Object> redisTemplate(JedisConnectionFactory cf) {
@@ -54,11 +68,10 @@ public class RedisConfig extends CachingConfigurerSupport{
     }
     
     @Bean
-    public JedisConnectionFactory redisConnectionFactory() {
-        RedisClusterConfiguration config = new RedisClusterConfiguration(node);
-        JedisConnectionFactory redisConnectionFactory = new JedisConnectionFactory(config,getJedisPoolConfig());
-        redisConnectionFactory.afterPropertiesSet();
-        return redisConnectionFactory;
+    public RedisTemplate<String, String> expressTemplate(RedisConnectionFactory cf) {
+        RedisTemplate<String, String> redisTemplate = new RedisTemplate<String, String>();
+        redisTemplate.setConnectionFactory(cf);
+        return redisTemplate;
     }
     
     private JedisPoolConfig getJedisPoolConfig(){
@@ -71,13 +84,16 @@ public class RedisConfig extends CachingConfigurerSupport{
         config.setTestOnBorrow(true);
         return config;
     }
-    
+
+
     @Bean
     public CacheManager cacheManager(RedisTemplate<?, ?> redisTemplate) {
         RedisCacheManager cacheManager = new RedisCacheManager(redisTemplate);
         cacheManager.setDefaultExpiration(300);
         return cacheManager;
     }
+    
+    
     
 }
 
