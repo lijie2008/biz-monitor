@@ -10,6 +10,7 @@
 package com.huntkey.rx.sceo.monitor.provider.service.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -411,9 +412,13 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         // 资源信息
         List<ResourceTo> allResource = queryTreeNodeUsingResource(orderId, null, null, null);
-        Map<String, List<ResourceTo>> groupResource = allResource.parallelStream().collect(Collectors.groupingBy(ResourceTo::getPid));
         
+        Map<String, List<ResourceTo>> groupResource = new HashMap<String, List<ResourceTo>>();
         List<NodeDetailTo> nodes = new ArrayList<NodeDetailTo>();
+        
+        if(!JsonUtil.isEmpity(allResource))
+            allResource.parallelStream().collect(Collectors.groupingBy(ResourceTo::getPid));
+        
         treeNodes.parallelStream().forEach(s->{
             NodeDetailTo nodeDetail = JsonUtil.getObject(JsonUtil.getJsonString(s), NodeDetailTo.class);
             nodeDetail.setMtor019(groupResource.get(nodeDetail.getId()));
