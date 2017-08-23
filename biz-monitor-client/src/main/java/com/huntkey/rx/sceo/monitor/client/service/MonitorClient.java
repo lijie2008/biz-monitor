@@ -4,6 +4,8 @@ import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.client.service.hystrix.MonitorClientFallback;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
+import com.huntkey.rx.sceo.monitor.commom.model.QueryResourceTO;
+import com.huntkey.rx.sceo.monitor.commom.model.ResourcesTO;
 
 import java.util.List;
 
@@ -33,10 +35,11 @@ public interface MonitorClient {
 	 * @param nodes
 	 * @return
 	 */
-	@RequestMapping(value="/monitors/containResource")
-	Result containResource(@RequestParam(value="nodes") 
+	@RequestMapping(value="/monitors/resource")
+	Result resource(	@RequestParam(value="nodes") 
 	String[] nodes,
 	@RequestParam(value="classId")  String classId);
+
 	/**
 	 * 查询节点详情
 	 * @param nodeId 节点ID  
@@ -85,9 +88,10 @@ public interface MonitorClient {
 	 * @param resourceIds 资源id集合
 	 * @return
 	 */
-	@RequestMapping(value="/monitors/addResource",method=RequestMethod.GET)
+	@RequestMapping(value="/monitors/addResource")
 	Result addResource(@RequestParam(value="nodeId") String nodeId,
-		@RequestParam(value="resourceIds") String[] resourceIds);
+			@RequestParam(value="resourceIds") String[] resourceIds);
+	
 	
 	/**
 	 * 新增节点

@@ -4,6 +4,8 @@ import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.client.service.MonitorClient;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
+import com.huntkey.rx.sceo.monitor.commom.model.QueryResourceTO;
+import com.huntkey.rx.sceo.monitor.commom.model.ResourcesTO;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.Range;
@@ -44,11 +46,10 @@ public class MonitorController {
 	 * @param nodes
 	 * @return
 	 */
-	@RequestMapping(value="/containResource")
-	public Result containResource(@RequestParam(value="nodes") @Size(min=1) 
-	String[] nodes,
-	@RequestParam(value="classId") @NotBlank(message="监管树类ID不能为空") String classId){
-		return monitorClient.containResource(nodes,classId);
+	@RequestMapping(value="/resource")
+	public Result resource(@RequestParam(value="nodes") @Size(min=1) String[] nodes,
+			@RequestParam(value="classId") @NotBlank(message="监管树类ID不能为空") String classId){
+		return monitorClient.resource(nodes,classId);
 	}
 	/**
 	 * 查询节点详情
@@ -108,9 +109,9 @@ public class MonitorController {
 	 * @param resourceIds 资源id集合
 	 * @return
 	 */
-	@RequestMapping(value="/addResource",method=RequestMethod.GET)
+	@RequestMapping(value="/addResource")
 	public Result addResource(@RequestParam(value="nodeId") @NotBlank(message="监管树节点ID不能为空") String nodeId,
-		@RequestParam(value="resourceIds") @NotBlank(message="资源ID不能为空") String[] resourceIds){
+			@RequestParam(value="resourceIds") @NotBlank(message="资源ID不能为空") String[] resourceIds){
 		return monitorClient.addResource(nodeId,resourceIds);
 	}
 	

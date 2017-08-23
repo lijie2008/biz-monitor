@@ -62,8 +62,9 @@ public class MonitorTreeController {
     }
 
     @GetMapping("/{edmcNameEn}/newDate")
-    public Result getNewMonitorTreeStartDate(@PathVariable(value = "edmcNameEn") @NotBlank(message = "类英文名不能为空") String edmcNameEn){
-        Result result = treeClient.getNewMonitorTreeStartDate(edmcNameEn);
+    public Result getNewMonitorTreeStartDate(@PathVariable(value = "edmcNameEn") @NotBlank(message = "类英文名不能为空") String edmcNameEn,
+    		@RequestParam(value="classId") @NotBlank(message="监管类ID不能为空") String classId){
+        Result result = treeClient.getNewMonitorTreeStartDate(edmcNameEn,classId);
         return result;
     }
 

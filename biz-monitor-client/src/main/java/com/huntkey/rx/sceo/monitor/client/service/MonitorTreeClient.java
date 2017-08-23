@@ -41,5 +41,5 @@ public interface MonitorTreeClient {
                             @RequestParam(value = "enable",defaultValue = "true") boolean enable);
 
     @RequestMapping("/monitors/{edmcNameEn}/newDate")
-    Result getNewMonitorTreeStartDate(@PathVariable(value = "edmcNameEn") String edmcNameEn);
+    Result getNewMonitorTreeStartDate(@PathVariable(value = "edmcNameEn") String edmcNameEn,@RequestParam(value = "classId") String classId);
 }

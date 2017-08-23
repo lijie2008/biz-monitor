@@ -42,7 +42,7 @@ public class MonitorServiceImpl implements MonitorService {
 	/***
 	 * 查询监管树临时结构
 	 * @param tempId 监管树临时单id
-	 * @param validDate 日期
+	 * @param validDate 日期   
 	 * @return
 	 */
 	@Override
@@ -89,7 +89,7 @@ public class MonitorServiceImpl implements MonitorService {
 	 * @return
 	 */
 	@Override
-	public JSONArray containResource(String[] nodes,String classId) {
+	public JSONArray resource(String[] nodes,String classId) {
 		// TODO Auto-generated method stub
 		Result result=new Result();
 		result.setRetCode(Result.RECODE_SUCCESS);
@@ -177,9 +177,6 @@ public class MonitorServiceImpl implements MonitorService {
 			//数据集做交集
 			JoinTO join=new JoinTO(MTOR020,ID,new String[]{"text"});
 			resourceArr=DataUtil.mergeJsonArray(resourceArr, resources, join);
-		}else{
-			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(), 
-					ErrorMessage._60003.getMsg());
 		}
 		return resourceArr;
 	}

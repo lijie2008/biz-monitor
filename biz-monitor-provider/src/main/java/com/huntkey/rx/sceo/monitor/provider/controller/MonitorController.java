@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
+import com.huntkey.rx.sceo.monitor.commom.model.QueryResourceTO;
+import com.huntkey.rx.sceo.monitor.commom.model.ResourcesTO;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 
 @RestController
@@ -46,13 +48,12 @@ public class MonitorController {
 	 * @param nodes
 	 * @return
 	 */
-	@RequestMapping(value="/containResource")
-	public Result containResource(@RequestParam(value="nodes") @Size(min=1) 
-	String[] nodes,
-	@RequestParam(value="classId")  String classId){
+	@RequestMapping(value="/resource")
+	public Result resource(@RequestParam(value="nodes") @Size(min=1) 
+	String[] nodes,@RequestParam(value="classId")  String classId){
 		Result result=new Result();
 		result.setRetCode(Result.RECODE_SUCCESS);
-		result.setData(service.containResource(nodes,classId));
+		result.setData(service.resource(nodes,classId));
 		return result;
 	}
 	/**
@@ -122,9 +123,11 @@ public class MonitorController {
 	 * @param resourceIds 资源id集合
 	 * @return
 	 */
-	@RequestMapping(value="/addResource",method=RequestMethod.GET)
-	public Result addResource(@RequestParam(value="nodeId")  String nodeId,
-		@RequestParam(value="resourceIds")  String[] resourceIds){
+	@RequestMapping(value="/addResource")
+	public Result addResource(@RequestParam(value="nodeId") @NotBlank(message="节点ID不能为空")  
+	String nodeId,
+	@RequestParam(value="resourceIds") @Size(min=1)  
+	String[] resourceIds){
 		Result result=new Result();
 		result.setRetCode(Result.RECODE_SUCCESS);
 		result.setData(service.addResource(nodeId,resourceIds));

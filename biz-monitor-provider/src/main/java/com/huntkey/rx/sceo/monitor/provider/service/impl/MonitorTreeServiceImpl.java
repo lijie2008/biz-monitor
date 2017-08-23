@@ -192,7 +192,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     }
 
     @Override
-    public JSONObject getNewMonitorTreeStartDate(String edmcNameEn) {
+    public JSONObject getNewMonitorTreeStartDate(String edmcNameEn,String classId) {
 
         JSONObject resultData = new JSONObject();
 
@@ -206,43 +206,60 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         if(counttreeResult.getRetCode()==Result.RECODE_SUCCESS){
             JSONObject object = (JSONObject)JSONObject.toJSON(counttreeResult.getData());
             int count = object.getIntValue("count");
-            if(count<=0){
-                resultData.put("type",2);
-            }else {
-                //统计没有失效时间的根节点
-
-                requestParams.addCondition(new ConditionNode("moni005",OperatorType.Equals,""));
-
-                Result countResult = serviceCenterClient.countByConditions(requestParams.toJSONString());
-                if(countResult.getRetCode()==Result.RECODE_SUCCESS){
-                    JSONObject maxObject = (JSONObject)JSONObject.toJSON(countResult.getData());
-                    int maxCount = maxObject.getIntValue("count");
-                    if(maxCount>0){
-                        resultData.put("type",3);
-                    }else {
-                        //查询最大失效时间
-                        requestParams.clearConditions();
-                        requestParams.addCondition(nodeIdCondition);
-
-                        requestParams.addSortParam(new SortNode("moni005", SortType.DESC));
-
-                        requestParams.addPagenation(new PagenationNode(1,1));
-
-                        String characters[] = new String[]{"moni005"};
-                        requestParams.addColumns(characters);
-
-                        Result treeResult = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
-                        if(treeResult.getRetCode()==Result.RECODE_SUCCESS){
-                            JSONObject data = (JSONObject)JSONObject.toJSON(treeResult.getData());
-                            JSONArray rootArray = data.getJSONArray("dataset");
-                            if(rootArray.size()>0){
-                                resultData.put("type",1);
-                                resultData.put("date",rootArray.getJSONObject(0).getString("moni005"));
-                            }
-                        }
-                    }
+            //查询临时单是否存在
+            String tempId="";
+            SearchParam Params = new SearchParam("monitortreeorder");
+            Params.addCondition(new ConditionNode("mtor002",OperatorType.Equals,"2"));
+            Params.addCondition(new ConditionNode("mtor003",OperatorType.Equals,classId));
+            Result temptreeResult = serviceCenterClient.queryServiceCenter(Params.toJSONString());
+            if(temptreeResult.getRetCode()==Result.RECODE_SUCCESS){
+                JSONObject tempTree = (JSONObject)JSONObject.toJSON(temptreeResult.getData());
+                JSONArray tempArray = tempTree.getJSONArray("dataset");
+                if(tempArray.size()>0){
+                    tempId=tempArray.getJSONObject(0).getString("id");
+                    resultData.put("type", 4);
+                    resultData.put("tempId", tempId);
                 }
             }
+            if(!StringUtils.isNotEmpty(tempId)){
+	            if(count<=0){
+	                resultData.put("type",2);
+	            }else {
+	                //统计没有失效时间的根节点
+	            	
+	                requestParams.addCondition(new ConditionNode("moni005",OperatorType.Equals,""));
+	
+	                Result countResult = serviceCenterClient.countByConditions(requestParams.toJSONString());
+	                if(countResult.getRetCode()==Result.RECODE_SUCCESS){
+	                    JSONObject maxObject = (JSONObject)JSONObject.toJSON(countResult.getData());
+	                    int maxCount = maxObject.getIntValue("count");
+	                    if(maxCount>0){
+	                        resultData.put("type",3);
+	                    }else {
+	                        //查询最大失效时间
+	                        requestParams.clearConditions();
+	                        requestParams.addCondition(nodeIdCondition);
+	
+	                        requestParams.addSortParam(new SortNode("moni005", SortType.DESC));
+	
+	                        requestParams.addPagenation(new PagenationNode(1,1));
+	
+	                        String characters[] = new String[]{"moni005"};
+	                        requestParams.addColumns(characters);
+	
+	                        Result treeResult = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
+	                        if(treeResult.getRetCode()==Result.RECODE_SUCCESS){
+	                            JSONObject data = (JSONObject)JSONObject.toJSON(treeResult.getData());
+	                            JSONArray rootArray = data.getJSONArray("dataset");
+	                            if(rootArray.size()>0){
+	                                resultData.put("type",1);
+	                                resultData.put("date",rootArray.getJSONObject(0).getString("moni005"));
+	                            }
+	                        }
+	                    }
+	                }
+	            }
+	        }
         }
         return resultData;
     }

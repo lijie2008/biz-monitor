@@ -4,6 +4,8 @@ import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.client.service.MonitorClient;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
+import com.huntkey.rx.sceo.monitor.commom.model.QueryResourceTO;
+import com.huntkey.rx.sceo.monitor.commom.model.ResourcesTO;
 
 import java.util.List;
 
@@ -25,7 +27,7 @@ public class MonitorClientFallback implements MonitorClient {
 	}
 
 	@Override
-	public Result containResource(String[] nodes, String classId) {
+	public Result resource(String[] nodes,String classId) {
 		// TODO Auto-generated method stub
 		Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
@@ -79,7 +81,7 @@ public class MonitorClientFallback implements MonitorClient {
 	}
 
 	@Override
-	public Result addResource(String nodeId, String[] resourceIds) {
+	public Result addResource(String nodeId,String[] resourceIds) {
 		// TODO Auto-generated method stub
 		Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
