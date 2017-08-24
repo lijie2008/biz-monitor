@@ -101,6 +101,5 @@ public class TestController {
         result.setData(obj);    
         return result;
     }
-    
 }
 

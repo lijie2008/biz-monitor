@@ -1,16 +1,16 @@
 package com.huntkey.rx.sceo.monitor.provider.exception;
 
-import com.huntkey.rx.commons.utils.rest.Result;
-import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
-import com.huntkey.rx.sceo.monitor.commom.exception.BusinessValidateException;
-import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
-import com.huntkey.rx.sceo.monitor.commom.utils.ValidatorResultUtil;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.ValidationException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.stereotype.Component;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
@@ -22,10 +22,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.ValidationException;
-import java.util.Set;
+import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
+import com.huntkey.rx.sceo.monitor.commom.exception.BusinessValidateException;
+import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
+import com.huntkey.rx.sceo.monitor.commom.utils.ValidatorResultUtil;
 
 /**
  * Created by xuyf on 2017/5/22 0022.

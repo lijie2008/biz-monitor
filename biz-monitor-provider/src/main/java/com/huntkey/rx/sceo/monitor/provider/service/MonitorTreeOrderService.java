@@ -164,7 +164,7 @@ public interface MonitorTreeOrderService {
      * @param nodes 目标表节点集合
      * @return
      */
-    void batchAdd(String edmName, JSONArray nodes);
+    List<String> batchAdd(String edmName, JSONArray nodes);
 
     /**
      * 
@@ -195,13 +195,12 @@ public interface MonitorTreeOrderService {
     
     /**
      * 
-     * queryTargetNode: 根据上级节点查询所有的节点信息
+     * load: 根据id 查询edm信息
      * @author lijie
      * @param edmName edm
-     * @param fieldName 字段名称
-     * @param orderId 临时单id
+     * @param ids ids
      */
-    List<NodeDetailTo> queryTargetNode(String edmName, String fieldName, String orderId);
+    List<NodeDetailTo> load(String edmName, List<String> ids);
     
     /**
      * 

@@ -46,6 +46,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
 import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
+import com.huntkey.rx.sceo.monitor.provider.config.Revoked;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
 import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
@@ -235,8 +236,9 @@ public class MonitorTreeOrderController {
      * @param orderId 临时单Id
      * @return
      */
+    @Revoked(type=OperateType.NODE)
     @GetMapping("/other")
-    public Result addOtherNode(@RequestParam @NotBlank(message="临时单ID不能为空") String orderId){
+    public Result addOtherNode(@RequestParam @NotBlank(message="临时单ID不能为空") @Revoked String orderId){
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
@@ -304,10 +306,15 @@ public class MonitorTreeOrderController {
         
         NodeDetailTo rootNode = null;
         
-        if(type == ChangeType.UPDATE)
+        if(type == ChangeType.UPDATE){
+            // 原节点数据生效日期全部置为当天 (除根节点)
+            nodes.parallelStream().filter(s->!JsonUtil.isEmpity(s.getMtor013())).forEach(s->{
+                s.setMtor011(new Date(System.currentTimeMillis()).toString());
+            });
             rootNode = updateTargetRootNode(nodes, order, edmName);
+        }
         
-        addTargetNode(nodes,edmName,type,rootNode,orderId);
+        addTargetNode(nodes,edmName,type,rootNode,order);
         
 //        service.deleteOrder(orderId);
         
@@ -449,9 +456,12 @@ public class MonitorTreeOrderController {
             }
          });
         
-        service.batchAdd(PersistanceConstant.MTOR_MTOR005A, JSON.parseArray(JSON.toJSONString(nodes_c)));
+        List<String> ids = service.batchAdd(PersistanceConstant.MTOR_MTOR005A, JSON.parseArray(JSON.toJSONString(nodes_c)));
         
-        List<NodeDetailTo> allNodes = service.queryTargetNode(PersistanceConstant.MTOR_MTOR005A, "pid", orderId);
+        if(ids.isEmpty())
+            ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),"新增节点信息失败" + ErrorMessage._60003.getMsg());
+        
+        List<NodeDetailTo> allNodes = service.load(PersistanceConstant.MTOR_MTOR005A, ids);
         
         if(JsonUtil.isEmpity(allNodes))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"临时单数据节点" + ErrorMessage._60005.getMsg());
@@ -488,13 +498,15 @@ public class MonitorTreeOrderController {
      * @param edmName 目标类
      * @param type 类型
      * @param node 根节点信息
-     * @param orderId 临时单信息
+     * @param order 临时单信息
      */
     private void addTargetNode(List<NodeDetailTo> nodes, String edmName, ChangeType type,
-                               NodeDetailTo node,String orderId) {
+                               NodeDetailTo node,MonitorTreeOrderTo order) {
         
         logger.info("更新 所有目标 节点 开始" + new Timestamp(System.currentTimeMillis()));
         // 新增子节点信息
+        String orderId = order.getId();
+        List<String> ids = null;
         List<TargetNodeTo> targetNodes = JSON.parseArray(JsonUtil.getJsonArrayString(nodes), TargetNodeTo.class);
         
         if(!(targetNodes == null || targetNodes.isEmpty())){
@@ -514,15 +526,22 @@ public class MonitorTreeOrderController {
                     });
             });
             
-            service.batchAdd(edmName, JSON.parseArray(JSONArray.toJSONString(targetNodes)));
+            ids = service.batchAdd(edmName, JSON.parseArray(JSONArray.toJSONString(targetNodes)));
             
             logger.info("更新 所有目标 节点结束" + new Timestamp(System.currentTimeMillis()));
         }
         
-        if(type == ChangeType.UPDATE && !JsonUtil.isEmpity(node))
-            nodes.add(node);
+        List<String> ids_list = ids == null ? new ArrayList<>(): ids;
         
-        List<NodeDetailTo> targetAllNode = service.queryTargetNode(edmName, "moni006", orderId);
+        if(type == ChangeType.UPDATE && !JsonUtil.isEmpity(node)){
+            nodes.add(node);
+            ids_list.add(order.getMtor004());
+        }
+        
+        if(ids_list.isEmpty())
+            ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),"新增节点信息失败" + ErrorMessage._60003.getMsg());
+        
+        List<NodeDetailTo> targetAllNode = service.load(edmName, ids_list);
         
         if(JsonUtil.isEmpity(targetAllNode))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"目标树节点" + ErrorMessage._60005.getMsg());
