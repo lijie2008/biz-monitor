@@ -263,11 +263,16 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR005A, null,cnds, null, null));
         Result result = client.find(input.getJson());
         
+        logger.info("查询所有的节点信息queryTreeNode ： " + JsonUtil.getJsonString(result));
+        
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         
         if(!JsonUtil.isEmpity(result.getData())){
             JSONArray dataset = JsonUtil.getJson(result.getData()).getJSONArray(PersistanceConstant.DATASET);
+            
+            logger.info("查询的结果集信息queryTreeNode  result ： " + JsonUtil.getJsonString(dataset));
+            
             if(!JsonUtil.isEmpity(dataset))
                 return JsonUtil.getList(dataset, NodeTo.class);
         }
@@ -430,7 +435,11 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
 
     @Override
     public List<NodeDetailTo> getAllNodesAndResource(String orderId) {
+        
         List<NodeTo> treeNodes = queryTreeNode(orderId);
+        
+        logger.info("所有节点的个数: " + treeNodes.size() + ", 查询所有的节点： " + JsonUtil.getJsonArrayString(treeNodes));
+        
         if(JsonUtil.isEmpity(treeNodes))
             return null;
         
