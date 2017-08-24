@@ -156,5 +156,7 @@ public interface Constant {
     String STAF002="staf002";//员工姓名字段
     
     String INITNODENAME="未命名节点";//初始化节点名称
+    
+    String MAXINVALIDDATE="9999-12-31";//最大失效日期
 }
 

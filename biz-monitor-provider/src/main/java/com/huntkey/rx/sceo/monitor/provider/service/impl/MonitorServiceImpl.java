@@ -570,8 +570,8 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor015(leftNode);
 		node.setMtor016(rightNode);
 		node.setMtor021(1);
-		node.setMtor011(StringUtil.isNullOrEmpty(beginDate)?"":beginDate);
-		node.setMtor012(StringUtil.isNullOrEmpty(endDate)?"":endDate);
+		node.setMtor011(StringUtil.isNullOrEmpty(beginDate)?ToolUtil.getNowDateStr(YYYY_MM_DD):beginDate);
+		node.setMtor012(StringUtil.isNullOrEmpty(endDate)?MAXINVALIDDATE:endDate);
 		node.setPid(treeId);
 		node.setMtor006(orderNumberService.generateOrderNumber("NODE"));//orderNumberService.generateOrderNumber("NODE"));//"NODE00000");
 		return node;
@@ -780,7 +780,7 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor007(INITNODENAME);
 		node.setMtor011(StringUtil.isNullOrEmpty(beginDate)?
 				ToolUtil.getNowDateStr(YYYY_MM_DD):beginDate);
-		node.setMtor012(StringUtil.isNullOrEmpty(endDate)?"":endDate);
+		node.setMtor012(StringUtil.isNullOrEmpty(endDate)?MAXINVALIDDATE:endDate);
 		node.setMtor013(NULL);
 		node.setMtor014(NULL);
 		node.setMtor015(NULL);
