@@ -27,7 +27,6 @@ import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.provider.config.Revoked;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
-import com.netflix.governator.annotations.binding.Main;
 
 /**
  * ClassName:TestController
