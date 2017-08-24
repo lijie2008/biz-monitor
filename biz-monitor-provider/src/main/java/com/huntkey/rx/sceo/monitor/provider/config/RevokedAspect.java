@@ -21,6 +21,8 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +38,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
+import com.huntkey.rx.sceo.monitor.provider.controller.MonitorTreeOrderController;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
 import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
 
@@ -52,6 +55,8 @@ public class RevokedAspect {
     
     private static final Map<String,Object> originalMap = new ConcurrentHashMap<String, Object>();
     
+    private static final Logger logger = LoggerFactory.getLogger(MonitorTreeOrderController.class);
+    
     @Autowired 
     private RedisService redisService;
     
@@ -64,6 +69,8 @@ public class RevokedAspect {
         
         String key = getKey(point,revoked.type());
         
+        logger.info("服务开始前, 取出 key 值  ： " + key);
+        
         switch(revoked.type()){
             
             case INITIALIZE: 
@@ -72,7 +79,13 @@ public class RevokedAspect {
                 
                 String orderId = getNode(key).getPid();
                 
-                originalMap.put(key, service.getAllNodesAndResource(orderId));
+                logger.info("服务开始前, 节点型操作， 取出表单 单号 ： " + orderId);
+                
+                List<NodeDetailTo> nodes = service.getAllNodesAndResource(orderId);
+                
+                logger.info("服务开始前, 节点型操作，查出所有的nodes信息 ： " + JsonUtil.listToJsonArray(nodes));
+                
+                originalMap.put(key, nodes);
                 break;
                 
             case DETAIL: 
@@ -99,16 +112,20 @@ public class RevokedAspect {
         
         String key = getKey(point,revoked.type());
         
+        logger.info("服务完成后, 取出key值  ： " + key);
+        logger.info("服务完成后, 答应执行结果  result ： " + JsonUtil.getJsonString(result));
+        
         Object value = null;
         
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
             
             value = JsonUtil.isEmpity(key) ? null: originalMap.remove(key);
             return;
-            
         }
         
         value = (revoked.type() == OperateType.INITIALIZE || JsonUtil.isEmpity(key))? null : originalMap.get(key);
+        
+        logger.info("服务完成后, 取出Map里面的值  ： " + JsonUtil.getJsonString(value));
         
         String orderId = null;
         
@@ -131,7 +148,11 @@ public class RevokedAspect {
                 
                 JSONArray arry = JSON.parseArray(JSONArray.toJSONString(value));
                 
+                logger.info("服务完成后, 节点型操作arry值 ： " + JsonUtil.getJsonArrayString(arry));
+                
                 orderId = JsonUtil.isEmpity(arry) ? null : arry.getJSONObject(0).getString(Constant.PID);
+                
+                logger.info("服务完成后, 取出orderId ： " + orderId);
                 break;
                 
             case DETAIL:
