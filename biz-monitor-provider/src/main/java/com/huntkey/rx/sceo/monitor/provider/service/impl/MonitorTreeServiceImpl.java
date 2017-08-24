@@ -319,7 +319,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 		 Result resourcesResult = serviceCenterClient.searchResourceObj(resourceClassId,resourceValue);
         if(resourcesResult.getRetCode()==Result.RECODE_SUCCESS){
             if(resourcesResult.getData()!=null){
-                JSONArray childrenArray = new JSONArray((List<Object>) resourcesResult.getData());
+                @SuppressWarnings("unchecked")
+				JSONArray childrenArray = new JSONArray((List<Object>) resourcesResult.getData());
                 return childrenArray;
             }else {
                 return null;

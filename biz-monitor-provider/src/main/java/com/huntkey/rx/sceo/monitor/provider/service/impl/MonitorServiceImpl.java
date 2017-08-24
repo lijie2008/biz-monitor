@@ -141,10 +141,11 @@ public class MonitorServiceImpl implements MonitorService {
 		}else{
 			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(), 
 					ErrorMessage._60003.getMsg());
+			logger.info("MonitorServiceImpl类的nodeDetail方法：==》"+ErrorMessage._60003.getMsg());
 		}
 		return nodeJson;
 	}
-	/**
+	/**  
 	 * 查询节点关联资源
 	 * @param nodeId 节点ID
 	 * @return
@@ -165,6 +166,7 @@ public class MonitorServiceImpl implements MonitorService {
 		}else{
 			ApplicationException.throwCodeMesg(ErrorMessage._60012.getCode(), 
 					ErrorMessage._60012.getMsg());
+			logger.info("MonitorServiceImpl类的nodeResource方法：==》"+ErrorMessage._60012.getMsg());
 		}
 		//根据节点ID查询出关联资源结果集
 		Condition condition=new Condition();
@@ -571,7 +573,10 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor011(StringUtil.isNullOrEmpty(beginDate)?ToolUtil.getNowDateStr(YYYY_MM_DD):beginDate);
 		node.setMtor012(StringUtil.isNullOrEmpty(endDate)?MAXINVALIDDATE:endDate);
 		node.setPid(treeId);
+		logger.info("MonitorServiceImpl类的setNodePosition方法：==》节点编码生成前");
+		String orderNum=orderNumberService.generateOrderNumber("NODE");
 		node.setMtor006(orderNumberService.generateOrderNumber("NODE"));//orderNumberService.generateOrderNumber("NODE"));//"NODE00000");
+		logger.info("MonitorServiceImpl类的setNodePosition方法：==》节点编码生成后，节点编码为："+orderNum);
 		return node;
 	}
 	
@@ -668,6 +673,7 @@ public class MonitorServiceImpl implements MonitorService {
 		}else{
 			ApplicationException.throwCodeMesg(ErrorMessage._60014.getCode(), 
 					ErrorMessage._60014.getMsg());
+			logger.info("MonitorServiceImpl类的copyTree方法："+ErrorMessage._60014.getMsg());
 		}
 		List<String> listNodeIds=new ArrayList<String>();
 		//2.根据根节点ID 查询正式树表的所有节点
