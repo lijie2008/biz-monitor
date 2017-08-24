@@ -46,6 +46,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
 import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
+import com.huntkey.rx.sceo.monitor.provider.config.Revoked;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
 import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
@@ -235,8 +236,9 @@ public class MonitorTreeOrderController {
      * @param orderId 临时单Id
      * @return
      */
+    @Revoked(type=OperateType.NODE)
     @GetMapping("/other")
-    public Result addOtherNode(@RequestParam @NotBlank(message="临时单ID不能为空") String orderId){
+    public Result addOtherNode(@RequestParam @NotBlank(message="临时单ID不能为空") @Revoked String orderId){
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);

@@ -86,8 +86,9 @@ public class MonitorController {
      * @param nodeId 节点ID
      * @return
      */
+    @Revoked(type=OperateType.DETAIL)
     @RequestMapping(value = "/saveNodeDetail", method = RequestMethod.POST)
-    public Result saveNodeDetail(@RequestBody NodeTo nodeDetail) {
+    public Result saveNodeDetail(@RequestBody @Revoked(key="id") NodeTo nodeDetail) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(service.saveNodeDetail(nodeDetail));
@@ -101,8 +102,9 @@ public class MonitorController {
      * @param resourceId 临时单ID
      * @return
      */
+    @Revoked(type=OperateType.DETAIL)
     @RequestMapping(value = "/deleteNodeResource")
-    public Result deleteNodeResource(@RequestParam(value = "nodeId") String nodeId,
+    public Result deleteNodeResource(@RequestParam(value = "nodeId") @Revoked String nodeId,
                                      @RequestParam(value = "resourceId") String resourceId) {
         return service.deleteNodeResource(nodeId, resourceId);
     }
@@ -127,9 +129,10 @@ public class MonitorController {
      * @param resourceIds 资源id集合
      * @return
      */
+    @Revoked(type=OperateType.DETAIL)
     @RequestMapping(value = "/addResource")
     public Result addResource(@RequestParam(value = "nodeId") @NotBlank(message = "节点ID不能为空")
-                                      String nodeId,
+                                      @Revoked String nodeId,
                               @RequestParam(value = "resourceIds") @Size(min = 1)
                                       String[] resourceIds) {
         Result result = new Result();
@@ -145,8 +148,9 @@ public class MonitorController {
      * @param nodeType 创建节点的类型
      * @return
      */
+    @Revoked(type=OperateType.NODE)
     @RequestMapping(value = "/addNode", method = RequestMethod.GET)
-    public Result addNode(@RequestParam(value = "nodeId") String nodeId,
+    public Result addNode(@RequestParam(value = "nodeId") @Revoked String nodeId,
                           @RequestParam(value = "nodeType")
                                   int nodeType) {
         Result result = new Result();
@@ -162,17 +166,19 @@ public class MonitorController {
      * @param type   0代表失效 1代表删除
      * @return
      */
+    @Revoked(type=OperateType.NODE)
     @RequestMapping(value = "/deleteNode", method = RequestMethod.GET)
-    public Result deleteNode(@RequestParam(value = "nodeId") String nodeId,
+    public Result deleteNode(@RequestParam(value = "nodeId") @Revoked String nodeId,
                              @RequestParam(value = "type") int type) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(service.deleteNode(nodeId, type));
         return result;
     }
-
+    
+    @Revoked(type=OperateType.NODE)
     @RequestMapping(value = "/moveNode", method = RequestMethod.GET)
-    public Result moveNode(@RequestParam(value = "nodeId") String nodeId,
+    public Result moveNode(@RequestParam(value = "nodeId") @Revoked String nodeId,
                            @RequestParam(value = "nodeParentId") String nodeParentId,
                            @RequestParam(value = "nodeLeftId") String nodeLeftId,
                            @RequestParam(value = "nodeRightId") String nodeRightId

@@ -203,12 +203,18 @@ public class RevokedAspect {
      * @return
      */
     private NodeDetailTo getNode(String key) {
+        
         NodeTo node = service.queryNode(key);
+        
         List<ResourceTo> resources = service.queryResource(key);
+        
         NodeDetailTo detail = JSON.parseObject(JSON.toJSONString(node),NodeDetailTo.class);
+        
         if(JsonUtil.isEmpity(detail))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), ErrorMessage._60005.getMsg());
+        
         detail.setMtor019(resources);
+        
         return detail;
     }
 }
