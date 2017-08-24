@@ -18,6 +18,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +44,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.commom.model.SortParam;
 import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
+import com.huntkey.rx.sceo.monitor.provider.controller.MonitorTreeOrderController;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
 
@@ -305,7 +309,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
 
     @Override
     public void batchUpdate(String edmName, JSONArray nodes) {
-        
+        logger.info("批量更新的参数信息: " + new FullInputArgument(mergeParam(edmName, nodes)).getJson());
         Result result = client.update(new FullInputArgument(mergeParam(edmName, nodes)).getJson());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
@@ -330,11 +334,14 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         json.put(PersistanceConstant.EDMNAME, edmName);
         return json.toJSONString();
     }
-
+    
+    private static final Logger logger = LoggerFactory.getLogger(MonitorTreeOrderController.class);
+    
     @SuppressWarnings("unchecked")
     @Override
     public List<String> batchAdd(String edmName, JSONArray nodes) {
-        
+        logger.info("新增的数据为：" + nodes.toJSONString());
+        logger.info("新增的参数为: " + new FullInputArgument(mergeParam(edmName, nodes)).getJson());
         Result result = client.add(new FullInputArgument(mergeParam(edmName, nodes)).getJson());
         
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
@@ -403,7 +410,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         search.put("type", "base");
         json.put("search", search);
         json.put(PersistanceConstant.EDMNAME, edmName);
-        
+        logger.info("load 的参数信息： " + new FullInputArgument(json.toJSONString()).getJson());
         Result result = client.load(new FullInputArgument(json.toJSONString()).getJson());
         
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)

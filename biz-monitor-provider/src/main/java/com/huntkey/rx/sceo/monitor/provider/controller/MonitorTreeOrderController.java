@@ -12,6 +12,7 @@ package com.huntkey.rx.sceo.monitor.provider.controller;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -528,7 +529,7 @@ public class MonitorTreeOrderController {
             
             ids = service.batchAdd(edmName, JSON.parseArray(JSONArray.toJSONString(targetNodes)));
             
-            logger.info("更新 所有目标 节点结束" + new Timestamp(System.currentTimeMillis()));
+            logger.info("更新 所有目标 节点结束" + new Timestamp(System.currentTimeMillis()) + "数据：" + JsonUtil.listToJsonArray(ids));
         }
         
         List<String> ids_list = ids == null ? new ArrayList<>(): ids;
@@ -546,6 +547,8 @@ public class MonitorTreeOrderController {
         if(JsonUtil.isEmpity(targetAllNode))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"目标树节点" + ErrorMessage._60005.getMsg());
         
+        logger.info("查询目标节点数据 " + new Timestamp(System.currentTimeMillis()) +"大小： " + targetAllNode.size() +", 数据： "+JsonUtil.listToJsonArray(targetAllNode).toJSONString());
+        
         JSONArray ar = new JSONArray();
         
         targetAllNode.stream().forEach(s->{
@@ -561,6 +564,7 @@ public class MonitorTreeOrderController {
         });
         
         logger.info("更新 所有目标 节点 上下级树关系开始" + new Timestamp(System.currentTimeMillis()));
+        logger.info("批量更新的数据信息：" + ar.toJSONString());
         service.batchUpdate(edmName, ar);
         logger.info("更新 所有目标 节点 上下级树关系结束" + new Timestamp(System.currentTimeMillis()));
         
