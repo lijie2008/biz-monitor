@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.commons.utils.string.StringUtil;
+import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
@@ -227,7 +228,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 	            }else {
 	                //统计没有失效时间的根节点
 	            	
-	                requestParams.addCondition(new ConditionNode("moni005",OperatorType.Equals,""));
+	                requestParams.addCondition(new ConditionNode("moni005",OperatorType.Equals, Constant.MAXINVALIDDATE));
 	
 	                Result countResult = serviceCenterClient.countByConditions(requestParams.toJSONString());
 	                if(countResult.getRetCode()==Result.RECODE_SUCCESS){
