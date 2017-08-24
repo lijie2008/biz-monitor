@@ -104,20 +104,23 @@ public class DBUtils {
         return JsonUtil.getJsonArrayByAttr(result.getData(), DATASET);
 	}
 	/****
-	 * 新增修改
+	 * 单条新增
 	 * @param edmName 表名
 	 * @param params 提交数据
 	 * @return JSONObject
 	 */
-	public  String add(String edmName,Object params,String adduser) {
+	public  Object add(String edmName,Object params,String adduser) {
+		int addType=0;
 		//设置查询参数
 		InputArgument inputArgument=new InputArgument();
 		inputArgument.setEdmName(edmName);
 		inputArgument.setAdduser(adduser);
 		 if(params instanceof JSONObject){
+			 addType=0;
         	((JSONObject) params).remove("moduser");
         	((JSONObject) params).remove("modtime");
         }else{
+        	addType=1;
         	params=JsonUtil.removeAttr((JSONArray)params, new String[]{"moduser","modtime"});
         }
 		inputArgument.addData(params);
@@ -132,10 +135,15 @@ public class DBUtils {
         }
         @SuppressWarnings("unchecked")
 		List<String> list=(List<String>) result.getData();
-        if(list!=null && list.size()>0)
-        	return list.get(0);
-        else
-        	return "" ;
+        if(addType==0){
+        	if(list!=null && list.size()>0){
+        		return list.get(0);
+        	}else{
+        		return "";
+        	}
+        }else{
+        	return list;
+        }
 	}
 	public  void update(String edmName,Object params,String moduser) {
 		//设置查询参数

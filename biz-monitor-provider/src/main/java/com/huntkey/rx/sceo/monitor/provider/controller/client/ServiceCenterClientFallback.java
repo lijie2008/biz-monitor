@@ -141,5 +141,14 @@ public class ServiceCenterClientFallback implements ServiceCenterClient{
         result.setErrMsg("hbase client load fallback");
         return result;
     }
+
+	@Override
+	public Result searchResourceObj(String resourceClassId, String resourceValue) {
+		// TODO Auto-generated method stub
+		Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("监管服务无法连接共享服务中心 searchResourceObj 服务！");
+        return result;
+	}
 }
 

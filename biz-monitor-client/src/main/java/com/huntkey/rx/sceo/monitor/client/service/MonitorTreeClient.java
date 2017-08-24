@@ -42,4 +42,8 @@ public interface MonitorTreeClient {
 
     @RequestMapping("/monitors/newDate")
     Result getNewMonitorTreeStartDate(@RequestParam(value = "edmcNameEn") String edmcNameEn,@RequestParam(value = "classId") String classId);
+    
+    @RequestMapping("/monitors/search")
+    Result searchResourceObj(@RequestParam(value = "resourceClassId") String resourceClassId,
+    		@RequestParam(value = "resourceValue") String resourceValue);
 }

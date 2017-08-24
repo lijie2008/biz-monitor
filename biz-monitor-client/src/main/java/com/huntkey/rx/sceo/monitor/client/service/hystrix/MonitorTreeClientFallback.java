@@ -58,4 +58,13 @@ public class MonitorTreeClientFallback implements MonitorTreeClient {
         result.setErrMsg("MonitorTreeClient getNewMonitorTreeStartDate fallback");
         return result;
     }
+
+	@Override
+	public Result searchResourceObj(String resourceClassId, String resourceValue) {
+		// TODO Auto-generated method stub
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("MonitorTreeClient searchResourceObj fallback");
+        return result;
+	}
 }
