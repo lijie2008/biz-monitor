@@ -250,7 +250,7 @@ public class MonitorServiceImpl implements MonitorService {
 	 * @return
 	 */
 	@Override
-	public String addResource(String nodeId,String[] resourceIds) {
+	public List<String> addResource(String nodeId,String[] resourceIds) {
 		// TODO Auto-generated method stub
 		Result result=new Result();
 		result.setRetCode(Result.RECODE_SUCCESS);
@@ -263,8 +263,8 @@ public class MonitorServiceImpl implements MonitorService {
 				params.add(param);
 			}
 		}
-		String resId=(String) DBUtils.add(MTOR019, params,"");
-		return resId;
+		List<String> list=(List<String>) DBUtils.add(MTOR019, params,"");
+		return list;
 	}
 	@Override
 	public Result saveTemp(String datas) {

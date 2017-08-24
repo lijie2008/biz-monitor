@@ -1,5 +1,7 @@
 package com.huntkey.rx.sceo.monitor.provider.service;
 
+import java.util.List;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
@@ -21,7 +23,7 @@ public interface MonitorService {
 	//变更公式
 	Result changeFormula(String nodeId,String formularId);
 	//新增资源
-	String addResource(String nodeId,String[] resourceIds);
+	List<String> addResource(String nodeId,String[] resourceIds);
 	Result saveTemp(String datas);
 	//新增节点
 	String addNode(String nodeId,int nodeType,String nodeName);
