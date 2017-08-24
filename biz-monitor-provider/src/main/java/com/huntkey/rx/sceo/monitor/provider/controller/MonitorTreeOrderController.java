@@ -12,7 +12,6 @@ package com.huntkey.rx.sceo.monitor.provider.controller;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -468,7 +467,7 @@ public class MonitorTreeOrderController {
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"临时单数据节点" + ErrorMessage._60005.getMsg());
         
         JSONArray ar = new JSONArray();
-        
+        logger.info("旧数据 ： " +  JsonUtil.listToJsonArray(nodes).toJSONString() + "新数据： " + JsonUtil.listToJsonArray(allNodes).toJSONString());
         allNodes.stream().forEach(s->{
             NodeDetailTo no = nodes.parallelStream().filter(n->s.getMtor006().equals(n.getMtor006())).findFirst().get();
             JSONObject obj = new JSONObject();
@@ -657,7 +656,7 @@ public class MonitorTreeOrderController {
         
         String code = nodes.parallelStream().filter(h->h.getId().equals(str)).findFirst().get().getMtor006();
         
-        return targetAllNode.parallelStream().filter(q->q.getMtor006().equals(code)).findFirst().get().getId();
+        return targetAllNode.stream().filter(q->q.getMtor006().equals(code)).findFirst().get().getId();
     }
 
 }

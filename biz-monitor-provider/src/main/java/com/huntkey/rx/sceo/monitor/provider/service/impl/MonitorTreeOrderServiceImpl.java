@@ -395,6 +395,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             obj.remove("mtor011");
         if(JsonUtil.isEmpity(obj.get("mtor012")))
             obj.remove("mtor012");
+        obj.remove("adduser");
         array.add(obj);
         Result result = client.update(new FullInputArgument( mergeParam(edmName, array)).getJson());
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
