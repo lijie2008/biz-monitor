@@ -298,6 +298,7 @@ public class MonitorServiceImpl implements MonitorService {
 					endDate=node.getString(MTOR012);
 					condition.addCondition(MTOR013, EQUAL, node.getString(ID), true);//当前节点的子节点
 					condition.addCondition(MTOR016, EQUAL, NULL, false);//最右侧节点
+					condition.addCondition(MTOR021, LT, ChangeType.INVALID.toString(), false);//过滤失效节点
 					nodeRight=DBUtils.getObjectResult(MTOR005,null,condition);
 					nodeDetail=setNodePosition(node.getString(ID), NULL, 
 							nodeRight!=null?nodeRight.getString(ID):NULL, 
