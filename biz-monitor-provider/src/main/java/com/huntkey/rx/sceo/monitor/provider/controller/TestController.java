@@ -10,7 +10,10 @@
 package com.huntkey.rx.sceo.monitor.provider.controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -101,6 +104,5 @@ public class TestController {
         result.setData(obj);    
         return result;
     }
-    
 }
 
