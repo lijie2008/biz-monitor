@@ -569,13 +569,13 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor014(childNode);
 		node.setMtor015(leftNode);
 		node.setMtor016(rightNode);
-		node.setMtor021(1);
+		node.setMtor021(1);  
 		node.setMtor011(StringUtil.isNullOrEmpty(beginDate)?ToolUtil.getNowDateStr(YYYY_MM_DD):beginDate);
 		node.setMtor012(StringUtil.isNullOrEmpty(endDate)?MAXINVALIDDATE:endDate);
 		node.setPid(treeId);
 		logger.info("MonitorServiceImpl类的setNodePosition方法：==》节点编码生成前");
 		String orderNum=orderNumberService.generateOrderNumber("NODE");
-		node.setMtor006(orderNumberService.generateOrderNumber("NODE"));//orderNumberService.generateOrderNumber("NODE"));//"NODE00000");
+		node.setMtor006(orderNum);//orderNumberService.generateOrderNumber("NODE"));//"NODE00000");
 		logger.info("MonitorServiceImpl类的setNodePosition方法：==》节点编码生成后，节点编码为："+orderNum);
 		return node;
 	}
