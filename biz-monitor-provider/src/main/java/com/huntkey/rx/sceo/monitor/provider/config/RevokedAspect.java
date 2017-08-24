@@ -83,7 +83,7 @@ public class RevokedAspect {
                 
                 List<NodeDetailTo> nodes = service.getAllNodesAndResource(orderId);
                 
-                logger.info("服务开始前, 节点型操作，查出所有的nodes信息 ： " + JsonUtil.listToJsonArray(nodes));
+                logger.info("查询结果nodes 的大小 ：" + nodes.size() + ", 服务开始前, 节点型操作，查出所有的nodes信息 ： " + JsonUtil.listToJsonArray(nodes));
                 
                 originalMap.put(key, nodes);
                 break;

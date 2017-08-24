@@ -271,7 +271,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         if(!JsonUtil.isEmpity(result.getData())){
             JSONArray dataset = JsonUtil.getJson(result.getData()).getJSONArray(PersistanceConstant.DATASET);
             
-            logger.info("查询的结果集信息queryTreeNode  result ： " + JsonUtil.getJsonString(dataset));
+            logger.info("dataset 大小 ：" + dataset.size() + "查询的结果集信息queryTreeNode  result ： " + JsonUtil.getJsonString(dataset));
             
             if(!JsonUtil.isEmpity(dataset))
                 return JsonUtil.getList(dataset, NodeTo.class);
