@@ -789,6 +789,7 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor016(NULL);
 		node.setMtor021(1);
 		node.setPid(pid);
+		node.setMtor006(orderNumberService.generateOrderNumber("NODE"));
 		return DBUtils.add(MTOR005, JsonUtil.getJson(node),"");
 	}
 	@Override
