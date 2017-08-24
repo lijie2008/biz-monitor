@@ -17,8 +17,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +44,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.MonitorTreeOrderController;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
+import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
 
 /**
@@ -361,7 +360,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     public void updateNodeAndResource(String edmName, NodeDetailTo to) {
         List<ResourceTo> resources = queryResource(to.getId());
         if(!JsonUtil.isEmpity(resources)){
-            List<String> resourceIds = resources.parallelStream().map(ResourceTo::getId).collect(Collectors.toList());
+            List<String> resourceIds = resources.stream().map(ResourceTo::getId).collect(Collectors.toList());
             batchDeleteResource(PersistanceConstant.MTOR_MTOR019B, resourceIds);
             resources = to.getMtor019();
         }
@@ -371,7 +370,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         // 新增资源信息
         if(resources == null || resources.size() == 0)
             return;
-        resources.parallelStream().forEach(s->{
+        resources.stream().forEach(s->{
             s.setId(null);
             s.setAdduser("admin");
         });
@@ -447,11 +446,11 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         List<ResourceTo> allResource = queryTreeNodeUsingResource(orderId, null, null, null);
         
         Map<String, List<ResourceTo>> groupResource = JsonUtil.isEmpity(allResource) ? new HashMap<>():
-            allResource.parallelStream().collect(Collectors.groupingBy(ResourceTo::getPid));
+            allResource.stream().collect(Collectors.groupingBy(ResourceTo::getPid));
         
         List<NodeDetailTo> nodes = new ArrayList<NodeDetailTo>();
         
-        treeNodes.parallelStream().forEach(s->{
+        treeNodes.stream().forEach(s->{
             NodeDetailTo nodeDetail = JsonUtil.getObject(JsonUtil.getJsonString(s), NodeDetailTo.class);
             nodeDetail.setMtor019(groupResource.get(nodeDetail.getId()));
             nodes.add(nodeDetail);
@@ -510,9 +509,9 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         if(JsonUtil.isEmpity(usedResources))
             return JsonUtil.listToJsonArray(resources);
         
-       Set<String> usedResourceIds = usedResources.parallelStream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
+       Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
        
-       return resources.parallelStream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
+       return resources.stream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
                 .collect(Collectors.toList());
     }
 }

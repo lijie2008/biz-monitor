@@ -121,8 +121,8 @@ public class MonitorTreeOrderController {
         if(JsonUtil.isEmpity(usedResources))
             datas = resources;
         else{
-            Set<String> usedResourceIds = usedResources.parallelStream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
-            datas = resources.parallelStream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
+            Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
+            datas = resources.stream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
                     .collect(Collectors.toList());
         }
         
@@ -141,7 +141,7 @@ public class MonitorTreeOrderController {
             if(format == null)
                 ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"特征值" + ErrorMessage._60005.getMsg());
             
-            data.parallelStream().forEach(s->{
+            data.stream().forEach(s->{
                 JSONObject obj = new JSONObject();
                 obj.put(PersistanceConstant.ID, ((JSONObject)s).get(PersistanceConstant.ID));
                 obj.put("text", format.format((JSONObject)s));
@@ -199,7 +199,7 @@ public class MonitorTreeOrderController {
         
        Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
        
-        if(nodeResources.parallelStream().anyMatch(re -> usedResourceIds.contains(re.getMtor020())))
+        if(nodeResources.stream().anyMatch(re -> usedResourceIds.contains(re.getMtor020())))
             result.setData(false);
         else
             result.setData(true);
@@ -262,7 +262,7 @@ public class MonitorTreeOrderController {
         else
             nodeId = mService.addNode(lastRootChildNode.getId(),2,"其他节点");
         
-        mService.addResource(nodeId, JsonUtil.getList(datas, NodeTo.class).parallelStream().map(NodeTo::getId).toArray(String[]::new));
+        mService.addResource(nodeId, JsonUtil.getList(datas, NodeTo.class).stream().map(NodeTo::getId).toArray(String[]::new));
         
         return result;
     }
@@ -308,7 +308,7 @@ public class MonitorTreeOrderController {
         
         if(type == ChangeType.UPDATE){
             // 原节点数据生效日期全部置为当天 (除根节点)
-            nodes.parallelStream().filter(s->!JsonUtil.isEmpity(s.getMtor013())).forEach(s->{
+            nodes.stream().filter(s->!JsonUtil.isEmpity(s.getMtor013())).forEach(s->{
                 s.setMtor011(new Date(System.currentTimeMillis()).toString());
             });
             rootNode = updateTargetRootNode(nodes, order, edmName);
@@ -398,7 +398,7 @@ public class MonitorTreeOrderController {
             
             NodeDetailTo node = (NodeDetailTo)to.getObj();
             
-            NodeDetailTo target = allNodes.parallelStream().filter(s->s.getMtor006().equals(node.getMtor006())).findFirst().get();
+            NodeDetailTo target = allNodes.stream().filter(s->s.getMtor006().equals(node.getMtor006())).findFirst().get();
             
             node.setId(target.getId());
             node.setMtor013(target.getMtor013());
@@ -435,7 +435,7 @@ public class MonitorTreeOrderController {
         
         List<NodeDetailTo> nodes_c = new ArrayList<NodeDetailTo>();
         
-        nodes.parallelStream().forEach(s->{
+        nodes.stream().forEach(s->{
             try {
                 NodeDetailTo tt = s.clone();
                 tt.setMtor013(orderId);
@@ -469,7 +469,7 @@ public class MonitorTreeOrderController {
         JSONArray ar = new JSONArray();
         logger.info("旧数据 ： " +  JsonUtil.listToJsonArray(nodes).toJSONString() + "新数据： " + JsonUtil.listToJsonArray(allNodes).toJSONString());
         allNodes.stream().forEach(s->{
-            NodeDetailTo no = nodes.parallelStream().filter(n->s.getMtor006().equals(n.getMtor006())).findFirst().get();
+            NodeDetailTo no = nodes.stream().filter(n->s.getMtor006().equals(n.getMtor006())).findFirst().get();
             JSONObject obj = new JSONObject();
             obj.put(PersistanceConstant.ID, s.getId());
             obj.put("mtor013", getId(nodes,allNodes,no.getMtor013()));
@@ -511,7 +511,7 @@ public class MonitorTreeOrderController {
         
         if(!(targetNodes == null || targetNodes.isEmpty())){
             
-            targetNodes.parallelStream().forEach(s->{
+            targetNodes.stream().forEach(s->{
                 s.setMoni006(orderId);
                 s.setMoni007(orderId);
                 s.setMoni008(orderId);
@@ -551,7 +551,7 @@ public class MonitorTreeOrderController {
         JSONArray ar = new JSONArray();
         
         targetAllNode.stream().forEach(s->{
-            NodeDetailTo no = nodes.parallelStream().filter(n->s.getMtor006().equals(n.getMtor006())).findFirst().get();
+            NodeDetailTo no = nodes.stream().filter(n->s.getMtor006().equals(n.getMtor006())).findFirst().get();
             JSONObject obj = new JSONObject();
             obj.put(PersistanceConstant.ID, s.getId());
             obj.put("moni006", getId(nodes,targetAllNode,no.getMtor013()));
@@ -623,7 +623,7 @@ public class MonitorTreeOrderController {
        
        JSONArray ar = new JSONArray();
        
-       targetChildNodes.parallelStream().forEach(s->{
+       targetChildNodes.stream().forEach(s->{
            JSONObject obj = new JSONObject();
            obj.put(PersistanceConstant.ID, ((JSONObject)s).get(PersistanceConstant.ID));
            obj.put("moni005", new Date(System.currentTimeMillis()).toString());
@@ -651,10 +651,10 @@ public class MonitorTreeOrderController {
      */
     private String getId(List<NodeDetailTo> nodes, List<NodeDetailTo> targetAllNode, String str) {
         
-        if(JsonUtil.isEmpity(str) || !nodes.parallelStream().anyMatch(h->h.getId().equals(str)))
+        if(JsonUtil.isEmpity(str) || !nodes.stream().anyMatch(h->h.getId().equals(str)))
             return Constant.NULL;
         
-        String code = nodes.parallelStream().filter(h->h.getId().equals(str)).findFirst().get().getMtor006();
+        String code = nodes.stream().filter(h->h.getId().equals(str)).findFirst().get().getMtor006();
         
         return targetAllNode.stream().filter(q->q.getMtor006().equals(code)).findFirst().get().getId();
     }
