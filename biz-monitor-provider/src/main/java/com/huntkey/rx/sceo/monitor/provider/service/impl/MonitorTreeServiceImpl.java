@@ -312,4 +312,20 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         
         return null;
     }
+
+	@Override
+	public JSONArray searchResourceObj(String resourceClassId, String resourceValue) {
+		// TODO Auto-generated method stub
+		 Result resourcesResult = serviceCenterClient.searchResourceObj(resourceClassId,resourceValue);
+        if(resourcesResult.getRetCode()==Result.RECODE_SUCCESS){
+            if(resourcesResult.getData()!=null){
+                JSONArray childrenArray = new JSONArray((List<Object>) resourcesResult.getData());
+                return childrenArray;
+            }else {
+                return null;
+            }
+        }else {
+            throw new ServiceException(resourcesResult.getErrMsg());
+        }
+	}
 }

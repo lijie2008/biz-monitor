@@ -106,6 +106,10 @@ public interface ServiceCenterClient {
     Result getOrderMonitorTreeNodes(@RequestParam(value = "edmcNameEn") String edmcNameEn,
                                     @RequestParam(value = "searchDate") String searchDate,
                                     @RequestParam(value = "rootNodeId") String rootNodeId);
+    
+    @RequestMapping(value= "/servicecenter/business/monitors/trees/search", method = RequestMethod.GET)
+    Result searchResourceObj(@RequestParam(value = "resourceClassId") String resourceClassId,
+                                    @RequestParam(value = "resourceValue") String resourceValue);
 
     @RequestMapping(value= "/servicecenter/load", method = RequestMethod.POST)
     Result load(@RequestBody String datas);

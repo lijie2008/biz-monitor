@@ -11,6 +11,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.commons.utils.string.StringUtil;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.*;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -203,13 +205,9 @@ public class MonitorServiceImpl implements MonitorService {
 	@Override
 	public String saveNodeDetail(NodeTo nodeDetail) {
 		// TODO Auto-generated method stub
-		
-		InputArgument inputArgument=new InputArgument();
-		inputArgument.addData(JsonUtil.getJson(nodeDetail));
-		inputArgument.setEdmName(MTOR005);
 		String retStr=nodeDetail.getId();
 		if(StringUtil.isNullOrEmpty(retStr)){
-			retStr=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
+			retStr=(String) DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
 		}else{//修改
 			DBUtils.update(MTOR005, JsonUtil.getJson(nodeDetail),"");
 		}
@@ -263,7 +261,7 @@ public class MonitorServiceImpl implements MonitorService {
 				params.add(param);
 			}
 		}
-		String resId=DBUtils.add(MTOR019, params,"");
+		String resId=(String) DBUtils.add(MTOR019, params,"");
 		return resId;
 	}
 	@Override
@@ -302,7 +300,7 @@ public class MonitorServiceImpl implements MonitorService {
 					nodeDetail=setNodePosition(node.getString(ID), NULL, 
 							nodeRight!=null?nodeRight.getString(ID):NULL, 
 							NULL,node.getString(PID),beginDate,endDate,nodeName);
-					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
+					newNodeId=(String) DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
 					
 					//如果存在最右侧节点  则变更最右侧节点的右节点信息
 					if(nodeRight!=null){
@@ -326,7 +324,7 @@ public class MonitorServiceImpl implements MonitorService {
 					nodeDetail=setNodePosition(node.getString(MTOR013), NULL, 
 							node.getString(MTOR015),node.getString(ID), 
 							node.getString(PID),beginDate,endDate,nodeName);
-					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
+					newNodeId=(String) DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
 					//2.如果当前节点之前没有左节点 则变更父节点的子节点信息 
 					if(StringUtil.isNullOrEmpty(node.getString(MTOR015))){
 						changeNodePosition(node.getString(MTOR013), 2, newNodeId);
@@ -349,7 +347,7 @@ public class MonitorServiceImpl implements MonitorService {
 					nodeDetail=setNodePosition(node.getString(MTOR013), NULL, 
 							node.getString(ID), node.getString(MTOR016),
 							node.getString(PID),beginDate,endDate,nodeName);
-					newNodeId=DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
+					newNodeId=(String) DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
 					//2.要变更当前节点的右节点信息
 					changeNodePosition(node.getString(ID), 4, newNodeId);
 					//3.变更之前右节点的左节点信息
@@ -643,7 +641,7 @@ public class MonitorServiceImpl implements MonitorService {
 		jsonTemp.put(MTOR002, changeType);
 		jsonTemp.put(MTOR003, classId);
 		jsonTemp.put(MTOR004, rootId);
-		return DBUtils.add(MONITORTREEORDER, jsonTemp,"");
+		return (String) DBUtils.add(MONITORTREEORDER, jsonTemp,"");
 	}
 	
 	/**
@@ -653,6 +651,7 @@ public class MonitorServiceImpl implements MonitorService {
 	 * @param tempId 临时单ID
 	 * @param changeType 变更类型
 	 */
+	@SuppressWarnings("unchecked")
 	private void copyTree(String edmcNameEn,String rootId,String tempId,int changeType) {
 		// TODO Auto-generated method stub
 		String nowDate=ToolUtil.getNowDateStr(YYYY_MM_DD);
@@ -670,6 +669,7 @@ public class MonitorServiceImpl implements MonitorService {
 			ApplicationException.throwCodeMesg(ErrorMessage._60014.getCode(), 
 					ErrorMessage._60014.getMsg());
 		}
+		List<String> listNodeIds=new ArrayList<String>();
 		//2.根据根节点ID 查询正式树表的所有节点
 		Result res= serviceCenterClient.getOrderMonitorTreeNodes(edmcNameEn,nowDate , rootId);
 		if(res.getRetCode()==Result.RECODE_SUCCESS ){
@@ -684,7 +684,7 @@ public class MonitorServiceImpl implements MonitorService {
 					map.put(PID, tempId);
 					map.put(MTOR021, changeType);
 					treeArr=JsonUtil.addAttr(treeArr, map);
-					DBUtils.add(MTOR005, treeArr,"");//新增节点信息
+					listNodeIds=(List<String>) DBUtils.add(MTOR005, treeArr,"");//新增节点信息
 				}
 			}
 		}
@@ -697,10 +697,9 @@ public class MonitorServiceImpl implements MonitorService {
 		root.remove(ID);
 		root.put(PID, tempId);
 		root.put(MTOR021,changeType);
-		DBUtils.add(MTOR005, root,"");
+		listNodeIds.add((String)DBUtils.add(MTOR005, root,""));
 		//3.查询出所有新增的节点
-		condition.addCondition(PID, EQUAL, tempId, true);
-		treeTemp=DBUtils.getArrayResult(MTOR005, null, condition);
+		treeTemp=DBUtils.load(MTOR005, null, "base", listNodeIds);
 		
 		//5.正式树和临时树的匹对修改节点的上下左右节点
 		JSONObject retobj=updateNodePosition(treeFormal,treeTemp,resourceArr);
@@ -788,7 +787,7 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor021(1);
 		node.setPid(pid);
 		node.setMtor006(orderNumberService.generateOrderNumber("NODE"));
-		return DBUtils.add(MTOR005, JsonUtil.getJson(node),"");
+		return (String) DBUtils.add(MTOR005, JsonUtil.getJson(node),"");
 	}
 	@Override
 	public String treeMaintaince(String classId, String rootId, String edmcNameEn) {
