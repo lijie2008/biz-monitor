@@ -250,7 +250,7 @@ public class MonitorServiceImpl implements MonitorService {
 	 * @return
 	 */
 	@Override
-	public String addResource(String nodeId,String[] resourceIds) {
+	public List<String> addResource(String nodeId,String[] resourceIds) {
 		// TODO Auto-generated method stub
 		Result result=new Result();
 		result.setRetCode(Result.RECODE_SUCCESS);
@@ -263,8 +263,8 @@ public class MonitorServiceImpl implements MonitorService {
 				params.add(param);
 			}
 		}
-		String resId=(String) DBUtils.add(MTOR019, params,"");
-		return resId;
+		List<String> list=(List<String>) DBUtils.add(MTOR019, params,"");
+		return list;
 	}
 	@Override
 	public Result saveTemp(String datas) {
@@ -298,6 +298,7 @@ public class MonitorServiceImpl implements MonitorService {
 					endDate=node.getString(MTOR012);
 					condition.addCondition(MTOR013, EQUAL, node.getString(ID), true);//当前节点的子节点
 					condition.addCondition(MTOR016, EQUAL, NULL, false);//最右侧节点
+					condition.addCondition(MTOR021, LT, ChangeType.INVALID.toString(), false);//过滤失效节点
 					nodeRight=DBUtils.getObjectResult(MTOR005,null,condition);
 					nodeDetail=setNodePosition(node.getString(ID), NULL, 
 							nodeRight!=null?nodeRight.getString(ID):NULL, 
@@ -569,13 +570,13 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor014(childNode);
 		node.setMtor015(leftNode);
 		node.setMtor016(rightNode);
-		node.setMtor021(1);
+		node.setMtor021(1);  
 		node.setMtor011(StringUtil.isNullOrEmpty(beginDate)?ToolUtil.getNowDateStr(YYYY_MM_DD):beginDate);
 		node.setMtor012(StringUtil.isNullOrEmpty(endDate)?MAXINVALIDDATE:endDate);
 		node.setPid(treeId);
 		logger.info("MonitorServiceImpl类的setNodePosition方法：==》节点编码生成前");
 		String orderNum=orderNumberService.generateOrderNumber("NODE");
-		node.setMtor006(orderNumberService.generateOrderNumber("NODE"));//orderNumberService.generateOrderNumber("NODE"));//"NODE00000");
+		node.setMtor006(orderNum);//orderNumberService.generateOrderNumber("NODE"));//"NODE00000");
 		logger.info("MonitorServiceImpl类的setNodePosition方法：==》节点编码生成后，节点编码为："+orderNum);
 		return node;
 	}
