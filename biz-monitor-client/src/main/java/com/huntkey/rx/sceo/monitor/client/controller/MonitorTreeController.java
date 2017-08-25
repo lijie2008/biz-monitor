@@ -72,4 +72,20 @@ public class MonitorTreeController {
                                     @RequestParam(value = "resourceValue") @NotBlank(message = "资源对象值不能为空") String resourceValue){
         return treeClient.searchResourceObj(resourceClassId,resourceValue);
     }
+    
+    /**
+     * 查询目标表所有的节点和资源信息
+     * @param edmcNameEn
+     * @param searchDate
+     * @param rootNodeId
+     * @param edmcId
+     * @return
+     */
+    @GetMapping("/trees/nodesAndResources")
+    public Result getMonitorTreeNodesAndResource(@RequestParam(value="edmcNameEn") @NotBlank(message = "类英文名不能为空") String edmcNameEn,
+                                      @RequestParam(value="searchDate") @NotBlank(message = "查询日期不能为空") String searchDate,
+                                      @RequestParam(value = "rootNodeId",required = false,defaultValue = "") String rootNodeId,
+                                      @RequestParam(value = "edmcId") @NotBlank(message = "监管类ID不能为空") String edmcId){
+        return treeClient.getMonitorTreeNodesAndResource(edmcNameEn,searchDate,rootNodeId,edmcId);
+    }
 }

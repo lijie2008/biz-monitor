@@ -67,4 +67,13 @@ public class MonitorTreeClientFallback implements MonitorTreeClient {
         result.setErrMsg("MonitorTreeClient searchResourceObj fallback");
         return result;
 	}
+
+    @Override
+    public Result getMonitorTreeNodesAndResource(String edmcNameEn, String searchDate,
+                                                 String rootNodeId, String edmcId) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("MonitorTreeClient searchResourceObj fallback");
+        return null;
+    }
 }

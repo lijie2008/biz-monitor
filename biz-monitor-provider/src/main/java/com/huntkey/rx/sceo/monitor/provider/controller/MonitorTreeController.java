@@ -42,6 +42,26 @@ public class MonitorTreeController {
     }
 
     /**
+     * 查询目标表所有的节点和资源信息
+     * @param edmcNameEn
+     * @param searchDate
+     * @param rootNodeId
+     * @param edmcId
+     * @return
+     */
+    @GetMapping("/trees/nodesAndResources")
+    public Result getMonitorTreeNodesAndResource(@RequestParam @NotBlank(message = "类英文名不能为空") String edmcNameEn,
+                                      @RequestParam @NotBlank(message = "查询日期不能为空") String searchDate,
+                                      @RequestParam(required = false,defaultValue = "") String rootNodeId,
+                                      @RequestParam @NotBlank(message = "监管类ID不能为空") String edmcId){
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(monitorTreeService.getMonitorTreeNodesAndResource(edmcNameEn,searchDate,rootNodeId,edmcId));
+        return result;
+    }
+    
+    
+    /**
      * 查询监管树类列表，并根据查询条件统计监管类下监管树的数量
      * @param treeName
      * @param beginTime

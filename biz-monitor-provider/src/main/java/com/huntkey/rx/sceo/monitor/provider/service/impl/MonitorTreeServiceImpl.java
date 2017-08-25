@@ -1,5 +1,14 @@
 package com.huntkey.rx.sceo.monitor.provider.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
@@ -7,23 +16,16 @@ import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
+import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
-import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
-
 import com.huntkey.rx.sceo.serviceCenter.common.emun.OperatorType;
 import com.huntkey.rx.sceo.serviceCenter.common.emun.SortType;
 import com.huntkey.rx.sceo.serviceCenter.common.model.ConditionNode;
 import com.huntkey.rx.sceo.serviceCenter.common.model.PagenationNode;
 import com.huntkey.rx.sceo.serviceCenter.common.model.SearchParam;
 import com.huntkey.rx.sceo.serviceCenter.common.model.SortNode;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * Created by zhaomj on 2017/8/9.
@@ -329,4 +331,23 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             throw new ServiceException(resourcesResult.getErrMsg());
         }
 	}
+
+    @Override
+    public JSONArray getMonitorTreeNodesAndResource(String edmcNameEn, String searchDate,
+                                                    String rootNodeId, String edmcId) {
+        
+        JSONArray allNode = getMonitorTreeNodes(edmcNameEn,searchDate,rootNodeId);
+        
+        if(allNode == null || allNode.isEmpty())
+            return allNode;
+        
+        List<String> ids = new ArrayList<String>();
+        
+        for(int i = 0; i < allNode.size(); i++)
+            ids.add(allNode.getJSONObject(i).getString(Constant.ID));
+        
+        allNode.addAll(getNodeResources(null,ids,edmcId));
+        
+        return allNode;
+    }
 }
