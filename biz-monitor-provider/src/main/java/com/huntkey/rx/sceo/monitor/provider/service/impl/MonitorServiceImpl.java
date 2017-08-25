@@ -122,19 +122,23 @@ public class MonitorServiceImpl implements MonitorService {
 		JSONObject nodeJson=queryNode(condition);
 		if(nodeJson!=null && !nodeJson.isEmpty()){
 			//查询员工表并且做左连
+			//根据类ID查询出资源表
+			JSONObject jsonCharacter=DBUtils.getCharacterAndFormat("6f913ed266e211e7b2e4005056bc4879");
 			JSONObject staffObj=null;
 			if(nodeJson.containsKey(MTOR009) && !StringUtil.isNullOrEmpty(nodeJson.getString(MTOR009))){
 				condition.addCondition(ID, EQUAL, nodeJson.getString(MTOR009), true);//主管人
-				staffObj=DBUtils.getObjectResult(STAFF, new String[]{STAF002}, condition);
+				staffObj=DBUtils.getObjectResult(STAFF, null, condition);
 				if(staffObj!=null){
-					nodeJson.put("majorStaff", staffObj.getString(STAF002));
+					staffObj=convert(jsonCharacter, staffObj);
+					nodeJson.put("majorStaff", staffObj.getString("text"));
 				}
 			}
 			if(nodeJson.containsKey(MTOR010) && !StringUtil.isNullOrEmpty(nodeJson.getString(MTOR010))){
 				condition.addCondition(ID, EQUAL, nodeJson.getString(MTOR010), true);//协管人
-				staffObj=DBUtils.getObjectResult(STAFF, new String[]{STAF002}, condition);
+				staffObj=DBUtils.getObjectResult(STAFF, null, condition);
 				if(staffObj!=null){
-					nodeJson.put("assistStaff", staffObj.getString(STAF002));
+					staffObj=convert(jsonCharacter, staffObj);
+					nodeJson.put("assistStaff", staffObj.getString("text"));
 				}
 			}
 			
@@ -184,6 +188,23 @@ public class MonitorServiceImpl implements MonitorService {
 		}
 		return resourceArr;
 	}
+	//转换单个对象
+	private JSONObject convert(JSONObject characterObj,JSONObject resourcesObj) {
+		// TODO Auto-generated method stub
+		if(characterObj==null)
+			return null;
+		JSONArray characterArray = characterObj.getJSONArray("character");
+        String format = characterObj.getString("format");
+        String[] resourceFields = new String[characterArray.size()];
+        characterArray.toArray(resourceFields);
+        String edmObjName = format.toLowerCase();
+        for (String fieldName : resourceFields){
+            edmObjName = edmObjName.replace(fieldName, resourcesObj.getString(fieldName));
+            resourcesObj.put("text",edmObjName);
+        }
+        return resourcesObj;
+	}
+	//转化资源数组对象
 	private JSONArray convert(JSONObject characterObj,JSONArray resourcesObjs) {
 		// TODO Auto-generated method stub
 		if(JsonUtil.isNullOrEmpty(resourcesObjs))
@@ -576,7 +597,7 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setPid(treeId);
 		logger.info("MonitorServiceImpl类的setNodePosition方法：==》节点编码生成前");
 		String orderNum=orderNumberService.generateOrderNumber("NODE");
-		node.setMtor006(orderNum);//orderNumberService.generateOrderNumber("NODE"));//"NODE00000");
+		node.setMtor006(orderNum);
 		logger.info("MonitorServiceImpl类的setNodePosition方法：==》节点编码生成后，节点编码为："+orderNum);
 		return node;
 	}
@@ -643,7 +664,7 @@ public class MonitorServiceImpl implements MonitorService {
 	private String createTemp(String classId,int changeType,String rootId){
 		//1.生成监管类临时单
 		JSONObject jsonTemp=new JSONObject();
-		jsonTemp.put(MTOR001,orderNumberService.generateOrderNumber("LS"));//orderNumberService.generateOrderNumber("LS"));
+		jsonTemp.put(MTOR001,orderNumberService.generateOrderNumber("LS"));
 		jsonTemp.put(MTOR002, changeType);
 		jsonTemp.put(MTOR003, classId);
 		jsonTemp.put(MTOR004, rootId);
@@ -786,7 +807,8 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor007(INITNODENAME);
 		node.setMtor011(StringUtil.isNullOrEmpty(beginDate)?
 				ToolUtil.getNowDateStr(YYYY_MM_DD):beginDate);
-		node.setMtor012(StringUtil.isNullOrEmpty(endDate)?MAXINVALIDDATE:endDate);
+		endDate= StringUtil.isNullOrEmpty(endDate)?MAXINVALIDDATE:endDate;
+		node.setMtor012(endDate);
 		node.setMtor013(NULL);
 		node.setMtor014(NULL);
 		node.setMtor015(NULL);
