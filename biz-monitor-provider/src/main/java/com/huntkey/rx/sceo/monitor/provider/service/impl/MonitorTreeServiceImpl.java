@@ -2,7 +2,6 @@ package com.huntkey.rx.sceo.monitor.provider.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -333,21 +332,24 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 	}
 
     @Override
-    public JSONArray getMonitorTreeNodesAndResource(String edmcNameEn, String searchDate,
+    public JSONObject getMonitorTreeNodesAndResource(String edmcNameEn, String searchDate,
                                                     String rootNodeId, String edmcId) {
+        
+        JSONObject obj = new JSONObject();
         
         JSONArray allNode = getMonitorTreeNodes(edmcNameEn,searchDate,rootNodeId);
         
+        obj.put("nodes", allNode);
+        
         if(allNode == null || allNode.isEmpty())
-            return allNode;
+            return obj;
         
         List<String> ids = new ArrayList<String>();
-        
         for(int i = 0; i < allNode.size(); i++)
             ids.add(allNode.getJSONObject(i).getString(Constant.ID));
         
-        allNode.addAll(getNodeResources(null,ids,edmcId));
+        obj.put("resources", getNodeResources(null,ids,edmcId));
         
-        return allNode;
+        return obj;
     }
 }

@@ -1,11 +1,11 @@
 package com.huntkey.rx.sceo.monitor.provider.service;
 
 
+import java.util.List;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
-
-import java.util.List;
 
 /**
  * Created by zhaomj on 2017/8/9.
@@ -51,6 +51,6 @@ public interface MonitorTreeService {
     
     JSONArray searchResourceObj(String resourceClassId,String resourceValue);
 
-    JSONArray getMonitorTreeNodesAndResource(String edmcNameEn, String searchDate, String rootNodeId,
+    JSONObject getMonitorTreeNodesAndResource(String edmcNameEn, String searchDate, String rootNodeId,
                                           String edmcId);
 }
