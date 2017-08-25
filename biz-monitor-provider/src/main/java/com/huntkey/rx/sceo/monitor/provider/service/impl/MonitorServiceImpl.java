@@ -649,7 +649,7 @@ public class MonitorServiceImpl implements MonitorService {
 				addRootNode(tempId,beginDate,endDate);
 				break;
 			case 2://提示界面复制
-				copyTree(edmcNameEn,rootId,tempId,ChangeType.ADD.getValue());
+				copyTree(edmcNameEn,rootId,tempId,ChangeType.ADD.getValue(),beginDate,endDate);
 				break;	
 		}
 		return tempId;
@@ -679,7 +679,7 @@ public class MonitorServiceImpl implements MonitorService {
 	 * @param changeType 变更类型
 	 */
 	@SuppressWarnings("unchecked")
-	private void copyTree(String edmcNameEn,String rootId,String tempId,int changeType) {
+	private void copyTree(String edmcNameEn,String rootId,String tempId,int changeType,String beginDate,String endDate) {
 		// TODO Auto-generated method stub
 		String nowDate=ToolUtil.getNowDateStr(YYYY_MM_DD);
 		JSONArray resourceArr=new JSONArray();
@@ -703,29 +703,36 @@ public class MonitorServiceImpl implements MonitorService {
 		if(res.getRetCode()==Result.RECODE_SUCCESS ){
 			if(!JsonUtil.isEmpity(res.getData())){
 				treeArr=JsonUtil.listToJsonArray((List)res.getData());
-				treeFormal=JsonUtil.mergeJsonArray(treeFormal,treeArr);
-				if(!JsonUtil.isNullOrEmpty(treeArr)){
-					treeArr=JsonUtil.removeAttr(treeArr, ID);//去除ID后进行新增
-					treeArr=ToolUtil.formal2Temp(treeArr,ToolUtil.treeConvert());//转换成临时树的字段
-					//添加PID项
-					Map<String, Object> map=new HashMap<String, Object>();
-					map.put(PID, tempId);
-					map.put(MTOR021, changeType);
-					treeArr=JsonUtil.addAttr(treeArr, map);
-					listNodeIds=(List<String>) DBUtils.add(MTOR005, treeArr,"");//新增节点信息
-				}
+				treeFormal=JsonUtil.mergeJsonArray(treeFormal,treeArr);  
 			}
 		}
+		treeArr.add(root);
+		treeArr=JsonUtil.removeAttr(treeArr, ID);//去除ID后进行新增
+		treeArr=ToolUtil.formal2Temp(treeArr,ToolUtil.treeConvert());//转换成临时树的字段
+		//添加PID项
+		Map<String, Object> map=new HashMap<String, Object>();
+		map.put(PID, tempId);
+		map.put(MTOR021, changeType);
+		if(changeType==ChangeType.ADD.getValue()){
+			map.put(MTOR011, beginDate);
+			map.put(MTOR012, endDate);
+		}
+		treeArr=JsonUtil.addAttr(treeArr, map);
+		listNodeIds=(List<String>) DBUtils.add(MTOR005, treeArr,"");//新增节点信息
 		//4.查询资源
 		LoopTO loop=new LoopTO(edmcNameEn+".moni015", PID, ID, null, null);
 		resourceArr=DBUtils.loopQuery(loop, treeFormal);
 		
-		//4.新增根节点
-		root=ToolUtil.formal2Temp(root,ToolUtil.treeConvert());
-		root.remove(ID);
-		root.put(PID, tempId);
-		root.put(MTOR021,changeType);
-		listNodeIds.add((String)DBUtils.add(MTOR005, root,""));
+//		//4.新增根节点
+//		root=ToolUtil.formal2Temp(root,ToolUtil.treeConvert());
+//		root.remove(ID);
+//		root.put(PID, tempId);
+//		root.put(MTOR021,changeType);
+//		if(changeType==ChangeType.UPDATE.getValue()){
+//			root.put(MTOR011, beginDate);
+//			root.put(MTOR012, endDate);
+//		}
+//		listNodeIds.add((String)DBUtils.add(MTOR005, root,""));
 		//3.查询出所有新增的节点
 		treeTemp=DBUtils.load(MTOR005, null, "base", listNodeIds);
 		
@@ -832,7 +839,7 @@ public class MonitorServiceImpl implements MonitorService {
 		}
 		//如果没有临时单
 		String tempId=createTemp(classId,ChangeType.UPDATE.getValue(),rootId);
-		copyTree(edmcNameEn.toLowerCase(),rootId,tempId,ChangeType.UPDATE.getValue());
+		copyTree(edmcNameEn.toLowerCase(),rootId,tempId,ChangeType.UPDATE.getValue(),null,null);
 		
 		return tempId;
 	}
