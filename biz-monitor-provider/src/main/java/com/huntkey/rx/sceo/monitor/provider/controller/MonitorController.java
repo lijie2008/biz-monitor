@@ -82,7 +82,6 @@ public class MonitorController {
 
     /**
      * 保存节点详情
-     *
      * @param nodeId 节点ID
      * @return
      */

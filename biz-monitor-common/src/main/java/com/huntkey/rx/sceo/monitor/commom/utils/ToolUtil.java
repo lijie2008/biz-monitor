@@ -10,8 +10,7 @@ import java.util.Map.Entry;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.string.StringUtil;
-import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
-import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
+import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 
 public class ToolUtil {
     /**
@@ -29,8 +28,7 @@ public class ToolUtil {
 				datetime=(Date) sdf.parse(dateStr);
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
-				ApplicationException.throwCodeMesg(ErrorMessage._60010.getCode(),
-						ErrorMessage._60010.getMsg());
+				throw new ServiceException("传入日期格式错误！");
 			}
 	    	formatDateStr= sdf.format(datetime);
     	}

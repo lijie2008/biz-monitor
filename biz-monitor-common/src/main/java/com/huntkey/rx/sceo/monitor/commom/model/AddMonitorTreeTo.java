@@ -3,6 +3,10 @@ package com.huntkey.rx.sceo.monitor.commom.model;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.Range;
 
+import com.huntkey.rx.commons.utils.string.StringUtil;
+import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
+import com.huntkey.rx.sceo.monitor.commom.utils.ToolUtil;
+
 public class AddMonitorTreeTo {
 	@Range(min=1,max=2)
 	int type; 
@@ -23,12 +27,18 @@ public class AddMonitorTreeTo {
 		return beginDate;
 	}
 	public void setBeginDate(String beginDate) {
+		beginDate=ToolUtil.formatDateStr(beginDate, Constant.YYYY_MM_DD);
 		this.beginDate = beginDate;
 	}
 	public String getEndDate() {
 		return endDate;
 	}
 	public void setEndDate(String endDate) {
+		if(StringUtil.isNullOrEmpty(endDate)){
+			endDate=Constant.MAXINVALIDDATE;
+    	}else{
+    		endDate=ToolUtil.formatDateStr(endDate, Constant.YYYY_MM_DD);
+    	}
 		this.endDate = endDate;
 	}
 	public String getClassId() {
