@@ -196,7 +196,7 @@ public class NodeTo implements Serializable{
     	if(StringUtil.isNullOrEmpty(mtor012)){
     		mtor012=Constant.MAXINVALIDDATE;
     	}else{
-    		mtor012=ToolUtil.formatDateStr(mtor011, Constant.YYYY_MM_DD);
+    		mtor012=ToolUtil.formatDateStr(mtor012, Constant.YYYY_MM_DD);
     	}
         this.mtor012 = mtor012;
     }
