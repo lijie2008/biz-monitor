@@ -346,25 +346,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         for(int i = 0; i < allNode.size(); i++)
             ids.add(allNode.getJSONObject(i).getString(Constant.ID));
         
-        JSONArray resources = getNodeResources(null,ids,edmcId);
-        
-        if(resources == null || resources.isEmpty())
-            return allNode;
-        
-//        for(int i = 0; i < resources.size(); i++){
-//            System.out.println("i : " + i);
-//            for(int j = 0; j < allNode.size(); j++){
-//                if(allNode.getJSONObject(j).getString(Constant.ID).equals(resources.getJSONObject(i).getString("nodeId"))){
-//                    JSONArray moni015 = allNode.getJSONObject(j).getJSONArray("moni015") == null ? new JSONArray() : allNode.getJSONObject(j).getJSONArray("moni015");
-//                    moni015.add(resources.getJSONObject(i));
-//                    allNode.getJSONObject(j).put("moni015", moni015);
-//                    System.out.println("j : " + j  + ", 当前节点 详情 " + allNode.getJSONObject(j));
-//                    break;
-//                }
-//            }
-//        }
-        
-        allNode.addAll(resources);
+        allNode.addAll(getNodeResources(null,ids,edmcId));
         
         return allNode;
     }
