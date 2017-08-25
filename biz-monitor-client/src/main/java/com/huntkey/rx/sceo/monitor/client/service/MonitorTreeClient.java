@@ -2,6 +2,8 @@ package com.huntkey.rx.sceo.monitor.client.service;
 
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.client.service.hystrix.MonitorTreeClientFallback;
+
+import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,4 +48,19 @@ public interface MonitorTreeClient {
     @RequestMapping("/monitors/search")
     Result searchResourceObj(@RequestParam(value = "resourceClassId") String resourceClassId,
     		@RequestParam(value = "resourceValue") String resourceValue);
+
+    
+    /**
+     * 查询目标表所有的节点和资源信息
+     * @param edmcNameEn
+     * @param searchDate
+     * @param rootNodeId
+     * @param edmcId
+     * @return
+     */
+    @RequestMapping("/monitors/trees/nodesAndResources")
+    Result getMonitorTreeNodesAndResource(@RequestParam(value="edmcNameEn") @NotBlank(message = "类英文名不能为空") String edmcNameEn,
+                                      @RequestParam(value="searchDate") @NotBlank(message = "查询日期不能为空") String searchDate,
+                                      @RequestParam(value = "rootNodeId",required = false,defaultValue = "") String rootNodeId,
+                                      @RequestParam(value = "edmcId") @NotBlank(message = "监管类ID不能为空") String edmcId);
 }

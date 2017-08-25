@@ -50,4 +50,7 @@ public interface MonitorTreeService {
     JSONArray getChileNodes(String nodeId ,String edmcNameEn);
     
     JSONArray searchResourceObj(String resourceClassId,String resourceValue);
+
+    JSONArray getMonitorTreeNodesAndResource(String edmcNameEn, String searchDate, String rootNodeId,
+                                          String edmcId);
 }
