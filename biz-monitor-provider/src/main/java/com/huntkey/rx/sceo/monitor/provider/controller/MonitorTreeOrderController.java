@@ -316,7 +316,7 @@ public class MonitorTreeOrderController {
         
         addTargetNode(nodes,edmName,type,rootNode,order);
         
-//        service.deleteOrder(orderId);
+        service.deleteOrder(orderId);
         
         return result;
     }
