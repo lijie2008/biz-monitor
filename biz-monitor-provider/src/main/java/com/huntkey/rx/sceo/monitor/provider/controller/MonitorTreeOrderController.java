@@ -16,10 +16,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.validation.constraints.Pattern;
+
 import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +37,7 @@ import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.constant.PersistanceConstant;
+import com.huntkey.rx.sceo.monitor.commom.constant.ValidBean;
 import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
@@ -60,6 +65,7 @@ import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
  */
 @RestController
 @RequestMapping("/nodes")
+@Validated
 public class MonitorTreeOrderController {
     
     private static final String MODUSER = "admin";
@@ -171,7 +177,7 @@ public class MonitorTreeOrderController {
      */
     @GetMapping("/checkDate")
     public Result checkNodeResource(@RequestParam @NotBlank(message = "节点ID不能为空") String nodeId,
-                                    @RequestParam @NotBlank(message = "生效日期不能为空") String startDate, 
+                                    @RequestParam @Pattern(regexp=ValidBean.DATE_REGX,message="日期格式不正确") String startDate, 
                                     @RequestParam @NotBlank(message = "失效日期不能为空") String endDate){
         
         Result result = new Result();
