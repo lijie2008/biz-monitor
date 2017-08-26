@@ -440,16 +440,15 @@ public class MonitorServiceImpl implements MonitorService {
 				}
 				Map<String, Object> map=new HashMap<String, Object>();
 				map.put(MTOR021, ChangeType.INVALID.getValue());
-				JsonUtil.addAttr(updateNodes, map);
-				DBUtils.update(MTOR005, addNodes,"");
+				updateNodes=JsonUtil.addAttr(updateNodes, map);
+				DBUtils.update(MTOR005, updateNodes,"");
 				clearNodeResource(updateNodes);
 			}else{//没有子节点只失效当前一个节点
 				if(type==0){
 					updateNodes=new JSONArray();
-					JSONObject json=new JSONObject();
-					json.put(ID, delNode.getString(ID));
-					json.put(MTOR021, ChangeType.INVALID.getValue());
-					DBUtils.update(MTOR005, json,"");
+					delNode.put(MTOR021, ChangeType.INVALID.getValue());
+					updateNodes.add(delNode);
+					DBUtils.update(MTOR005, updateNodes,"");
 					clearNodeResource(updateNodes);
 				}
 			}
