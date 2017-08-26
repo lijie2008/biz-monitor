@@ -349,7 +349,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         Result result = client.add(new FullInputArgument(mergeParam(edmName, nodes)).getJson());
         
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS)
-            ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
+            ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg()+result.getErrMsg());
         
         if(!JsonUtil.isEmpity(result.getData()))
             return (List<String>)result.getData();

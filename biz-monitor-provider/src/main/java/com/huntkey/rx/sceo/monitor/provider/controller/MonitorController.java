@@ -215,6 +215,7 @@ public class MonitorController {
      * @param edmcNameEn edm类型英文名  即监管树实体类表名
      * @return
      */
+    @Revoked(type=OperateType.INITIALIZE)
     @RequestMapping(value = "/treeMaintaince")
     public Result treeMaintaince(@RequestParam(value = "classId") String classId,
                                  @RequestParam(value = "rootId") String rootId,
