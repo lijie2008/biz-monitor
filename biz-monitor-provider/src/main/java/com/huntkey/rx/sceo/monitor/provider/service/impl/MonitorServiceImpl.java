@@ -191,7 +191,7 @@ public class MonitorServiceImpl implements MonitorService {
 	//转换单个对象
 	private JSONObject convert(JSONObject characterObj,JSONObject resourcesObj) {
 		// TODO Auto-generated method stub
-		if(characterObj==null)
+		if(characterObj==null||!characterObj.containsKey("character")||!characterObj.containsKey("format"))
 			return null;
 		JSONArray characterArray = characterObj.getJSONArray("character");
         String format = characterObj.getString("format");
