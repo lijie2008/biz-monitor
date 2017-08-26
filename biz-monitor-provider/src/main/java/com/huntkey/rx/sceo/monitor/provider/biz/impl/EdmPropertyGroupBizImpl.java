@@ -74,7 +74,7 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
         Map<String, Object> map = list.get(0);
         Object obj = map.get("edpg_property_group");//表中对应的分组字段
         if (obj != null) {
-            Integer edpgPropertyGroup = (Integer) obj;
+            Integer edpgPropertyGroup = Integer.valueOf((String) obj);
             //查询查询map
             paramMap.clear();
             //设置查询参数为 分组值
@@ -102,7 +102,11 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
 
                                 if (bool) {//是监管类的子孙类时  添加返回结果
                                     JSONObject jsonObj = new JSONObject();
+
+                                    jsonObj.put("edpgEdmcId", edpgEdmcId);
+
                                     jsonObj.put("edpgEdmpId", edpgEdmpId);
+
 
                                     //根据id查询edm类信息
                                     Result edmClassResult = modelerClient.queryEdmClassById(edpgEdmcId);
