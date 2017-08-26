@@ -441,7 +441,7 @@ public class MonitorServiceImpl implements MonitorService {
 				Map<String, Object> map=new HashMap<String, Object>();
 				map.put(MTOR021, ChangeType.INVALID.getValue());
 				JsonUtil.addAttr(updateNodes, map);
-				DBUtils.update(MTOR005, addNodes,"");
+				DBUtils.update(MTOR005, updateNodes,"");
 				clearNodeResource(updateNodes);
 			}else{//没有子节点只失效当前一个节点
 				if(type==0){
