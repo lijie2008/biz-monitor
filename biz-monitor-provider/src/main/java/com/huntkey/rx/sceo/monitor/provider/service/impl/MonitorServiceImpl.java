@@ -415,6 +415,7 @@ public class MonitorServiceImpl implements MonitorService {
 					updateNodes=JsonUtil.getJsonArrayByAttr(nodesClassify, "updateNodes");
 				}
 			}
+			
 			//新增节点做删除
 			if(!JsonUtil.isNullOrEmpty(addNodes)){
 				if(type==1){
@@ -423,9 +424,9 @@ public class MonitorServiceImpl implements MonitorService {
 				DBUtils.delete(MTOR005, addNodes);
 			}else{//没有子节点只删除当前一个节点
 				if(type==1){
-					JSONObject json=new JSONObject();
-					json.put(ID, delNode.getString(ID));
-					DBUtils.delete(MTOR005, json);
+					addNodes=new JSONArray();
+					addNodes.add(delNode);
+					DBUtils.delete(MTOR005, addNodes);
 				}
 			}
 			
@@ -438,12 +439,15 @@ public class MonitorServiceImpl implements MonitorService {
 				map.put(MTOR021, ChangeType.INVALID.getValue());
 				JsonUtil.addAttr(updateNodes, map);
 				DBUtils.update(MTOR005, addNodes,"");
+				clearNodeResource(updateNodes);
 			}else{//没有子节点只失效当前一个节点
 				if(type==0){
+					updateNodes=new JSONArray();
 					JSONObject json=new JSONObject();
 					json.put(ID, delNode.getString(ID));
 					json.put(MTOR021, ChangeType.INVALID.getValue());
 					DBUtils.update(MTOR005, json,"");
+					clearNodeResource(updateNodes);
 				}
 			}
 			
@@ -473,6 +477,18 @@ public class MonitorServiceImpl implements MonitorService {
 			
 		}
 		return nodeId;
+	}
+	/***
+	 * 删除节点时  删除节点下资源
+	 * fk
+	 */
+	private void clearNodeResource(JSONArray nodes){
+		//循环查询资源
+		LoopTO loop=new LoopTO(MTOR019, PID, ID, new String[]{ID}, null);
+		JSONArray resourceArr=DBUtils.loopQuery(loop, nodes);
+		if(!JsonUtil.isNullOrEmpty(resourceArr)){
+			DBUtils.delete(MTOR019, resourceArr);
+		}
 	}
 	//将节点分类为修改的和新增的
 	private JSONObject classifyNodes(JSONArray nodes) {
@@ -722,20 +738,8 @@ public class MonitorServiceImpl implements MonitorService {
 		//4.查询资源
 		LoopTO loop=new LoopTO(edmcNameEn+".moni015", PID, ID, null, null);
 		resourceArr=DBUtils.loopQuery(loop, treeFormal);
-		
-//		//4.新增根节点
-//		root=ToolUtil.formal2Temp(root,ToolUtil.treeConvert());
-//		root.remove(ID);
-//		root.put(PID, tempId);
-//		root.put(MTOR021,changeType);
-//		if(changeType==ChangeType.UPDATE.getValue()){
-//			root.put(MTOR011, beginDate);
-//			root.put(MTOR012, endDate);
-//		}
-//		listNodeIds.add((String)DBUtils.add(MTOR005, root,""));
 		//3.查询出所有新增的节点
 		treeTemp=DBUtils.load(MTOR005, null, "base", listNodeIds);
-		
 		//5.正式树和临时树的匹对修改节点的上下左右节点
 		JSONObject retobj=updateNodePosition(treeFormal,treeTemp,resourceArr);
 		if(retobj!=null){
