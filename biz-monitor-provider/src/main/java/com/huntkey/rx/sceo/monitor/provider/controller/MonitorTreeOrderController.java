@@ -177,8 +177,8 @@ public class MonitorTreeOrderController {
      */
     @GetMapping("/checkDate")
     public Result checkNodeResource(@RequestParam @NotBlank(message = "节点ID不能为空") String nodeId,
-                                    @RequestParam @Pattern(regexp=ValidBean.DATE_REGX,message="日期格式不正确") String startDate, 
-                                    @RequestParam @NotBlank(message = "失效日期不能为空") String endDate){
+                                    @RequestParam @NotBlank(message = "生效日期不能为空") @Pattern(regexp=ValidBean.DATE_REGX,message="生效日期格式不正确") String startDate, 
+                                    @RequestParam @NotBlank(message = "失效日期不能为空") @Pattern(regexp=ValidBean.DATE_REGX,message="失效日期格式不正确") String endDate){
         
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
