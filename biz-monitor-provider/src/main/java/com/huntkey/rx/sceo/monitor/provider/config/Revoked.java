@@ -37,5 +37,7 @@ public @interface Revoked {
     OperateType type() default OperateType.INITIALIZE;
     
     String key() default "";
+    
+    String character() default "";
 }
 

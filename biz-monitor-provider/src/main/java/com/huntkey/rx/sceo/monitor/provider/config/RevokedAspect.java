@@ -77,7 +77,11 @@ public class RevokedAspect {
                 return;
             case NODE: 
                 
-                String orderId = getNode(key).getPid();
+                String orderId = null;
+                if(JsonUtil.isEmpity(revoked.character()))
+                    orderId = getNode(key).getPid();
+                else
+                    orderId = key;
                 
                 logger.info("服务开始前, 节点型操作， 取出表单 单号 ： " + orderId);
                 

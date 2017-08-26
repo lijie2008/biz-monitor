@@ -242,7 +242,7 @@ public class MonitorTreeOrderController {
      * @param orderId 临时单Id
      * @return
      */
-    @Revoked(type=OperateType.NODE)
+    @Revoked(type=OperateType.NODE,character="orderId")
     @GetMapping("/other")
     public Result addOtherNode(@RequestParam @NotBlank(message="临时单ID不能为空") @Revoked String orderId){
        

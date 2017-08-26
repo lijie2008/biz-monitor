@@ -437,10 +437,11 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         List<NodeTo> treeNodes = queryTreeNode(orderId);
         
-        logger.info("所有节点的个数: " + treeNodes.size() + ", 查询所有的节点： " + JsonUtil.getJsonArrayString(treeNodes));
         
         if(JsonUtil.isEmpity(treeNodes))
             return null;
+        
+        logger.info("所有节点的个数: " + treeNodes.size() + ", 查询所有的节点： " + JsonUtil.getJsonArrayString(treeNodes));
         
         // 资源信息
         List<ResourceTo> allResource = queryTreeNodeUsingResource(orderId, null, null, null);
