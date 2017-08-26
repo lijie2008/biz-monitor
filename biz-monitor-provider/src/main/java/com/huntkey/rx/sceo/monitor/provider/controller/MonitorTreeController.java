@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.Pattern;
 import java.util.List;
 
 /**
@@ -71,7 +72,7 @@ public class MonitorTreeController {
     @GetMapping
     public Result getMonitors(@RequestParam(required = false) String treeName,
                               @RequestParam(required = false) String beginTime,
-                              @RequestParam(required = false) String endTime){
+                              @RequestParam(required = false) @Pattern(regexp ="[0-9]{4}-[0-9]{2}-[0-9]{2}",message = "日期格式不正确")String endTime){
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(monitorTreeService.getEntityByVersionAndEnglishName(treeName,beginTime,endTime));
