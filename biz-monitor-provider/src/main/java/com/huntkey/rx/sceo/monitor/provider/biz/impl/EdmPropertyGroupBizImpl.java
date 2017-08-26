@@ -102,7 +102,11 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
 
                                 if (bool) {//是监管类的子孙类时  添加返回结果
                                     JSONObject jsonObj = new JSONObject();
+
+                                    jsonObj.put("edpgEdmcId", edpgEdmcId);
+
                                     jsonObj.put("edpgEdmpId", edpgEdmpId);
+
 
                                     //根据id查询edm类信息
                                     Result edmClassResult = modelerClient.queryEdmClassById(edpgEdmcId);
