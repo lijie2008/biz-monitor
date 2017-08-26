@@ -1,6 +1,5 @@
 package com.huntkey.rx.sceo.monitor.provider.service.impl;
 
-import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,9 +124,6 @@ public class MonitorServiceImpl implements MonitorService {
 			//查询员工表并且做左连
 			//根据类ID查询出资源表
 			JSONObject jsonCharacter=DBUtils.getCharacterAndFormat("6f913ed266e211e7b2e4005056bc4879");
-			if(jsonCharacter.isEmpty()||!jsonCharacter.containsKey("character")||jsonCharacter.containsKey("format")){
-				throw new ServiceException("未发现“员工类”的显示特征值！请前往modeler设置！");
-			}
 			JSONObject staffObj=null;
 			if(nodeJson.containsKey(MTOR009) && !StringUtil.isNullOrEmpty(nodeJson.getString(MTOR009))){
 				condition.addCondition(ID, EQUAL, nodeJson.getString(MTOR009), true);//主管人
@@ -171,9 +167,6 @@ public class MonitorServiceImpl implements MonitorService {
 			resourceClassId=resourceObj.getString(ID);
 			//查询moderler特征表
 			jsonCharacter=DBUtils.getCharacterAndFormat(resourceClassId);
-			if(jsonCharacter.isEmpty()||!jsonCharacter.containsKey("character")||jsonCharacter.containsKey("format")){
-				throw new ServiceException("未发现从属资源类的显示特征值！请前往modeler设置！");
-			}
 		}else{
 			ApplicationException.throwCodeMesg(ErrorMessage._60012.getCode(), 
 					ErrorMessage._60012.getMsg());
@@ -217,6 +210,9 @@ public class MonitorServiceImpl implements MonitorService {
 		if(JsonUtil.isNullOrEmpty(resourcesObjs))
 			return null;
 		JSONArray characterArray = characterObj.getJSONArray("character");
+		if(characterArray.size()==0){
+			return null;
+		}
 		JSONArray resources = new JSONArray();
         String format = characterObj.getString("format");
         String[] resourceFields = new String[characterArray.size()];
