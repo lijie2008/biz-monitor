@@ -2,20 +2,24 @@ package com.huntkey.rx.sceo.monitor.client.controller;
 
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.client.service.MonitorClient;
+import com.huntkey.rx.sceo.monitor.commom.constant.ValidBean;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 /**
  * Created by zhaomj on 2017/8/11.
  */
 @RestController
+@Validated
 @RequestMapping("/v1/monitors")
 public class MonitorController {
     @Autowired
@@ -30,7 +34,7 @@ public class MonitorController {
      */
     @RequestMapping(value = "/tempTree")
     public Result tempTree(@RequestParam(value = "tempId") @NotBlank(message = "监管树临时单ID不能为空") String tempId,
-                           @RequestParam(value = "validDate", required = false) String validDate) {
+                           @RequestParam(value = "validDate", required = false) @Pattern(regexp=ValidBean.DATE_REGX,message="日期格式不正确") String validDate) {
         return monitorClient.tempTree(tempId, validDate);
     }
 
