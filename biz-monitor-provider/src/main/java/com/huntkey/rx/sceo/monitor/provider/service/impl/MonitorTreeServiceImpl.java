@@ -128,7 +128,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 
         //ORM暂不支持or查询，先只根据失效时间过滤
         if (!StringUtil.isNullOrEmpty(endTime)) {
-            requestParams.addCondition(new ConditionNode("moni005",OperatorType.LessEquals,endTime));
+            requestParams.addCondition(new ConditionNode("moni004",OperatorType.LessEquals,endTime));
+            requestParams.addCondition(new ConditionNode("moni005",OperatorType.GreaterEquals,endTime));
         }
 
         Result treesResult = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
