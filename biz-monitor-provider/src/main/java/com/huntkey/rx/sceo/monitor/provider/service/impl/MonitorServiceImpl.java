@@ -21,7 +21,6 @@ import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.Condition;
-import com.huntkey.rx.sceo.monitor.commom.model.InputArgument;
 import com.huntkey.rx.sceo.monitor.commom.model.JoinTO;
 import com.huntkey.rx.sceo.monitor.commom.model.LoopTO;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
@@ -444,7 +443,7 @@ public class MonitorServiceImpl implements MonitorService {
 				DBUtils.update(MTOR005, updateNodes,"");
 				clearNodeResource(updateNodes);
 			}else{//没有子节点只失效当前一个节点
-				if(type==0){
+				if(type==0){  
 					updateNodes=new JSONArray();
 					delNode.put(MTOR021, ChangeType.INVALID.getValue());
 					updateNodes.add(delNode);
@@ -723,6 +722,8 @@ public class MonitorServiceImpl implements MonitorService {
 				treeArr=JsonUtil.listToJsonArray((List)res.getData());
 				treeFormal=JsonUtil.mergeJsonArray(treeFormal,treeArr);  
 			}
+		}else{
+			logger.info("MonitorServiceImpl类的copyTree方法,查询根节点下所有子节点失败："+res.getErrMsg());
 		}
 		treeArr.add(root);
 		treeArr=JsonUtil.removeAttr(treeArr, ID);//去除ID后进行新增
