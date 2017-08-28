@@ -554,6 +554,7 @@ public class MonitorServiceImpl implements MonitorService {
 	//递归查询子节点
 	private JSONArray getChildNode(String nodeId){
 		JSONArray allNodes=new JSONArray();
+		JSONArray childrenNodes=new JSONArray();
 		Condition condition=new Condition();
 		condition.addCondition(MTOR013, EQUAL, nodeId, true);
 		condition.addCondition(MTOR021, LT, ChangeType.INVALID.toString(), false);
@@ -564,8 +565,8 @@ public class MonitorServiceImpl implements MonitorService {
 				if(json!=null){
 					allNodes.add(json);//添加本节点
 					if(StringUtil.isNullOrEmpty(json.getString(MTOR014))){
-						nodes=getChildNode(json.getString(ID));
-						allNodes=JsonUtil.mergeJsonArray(allNodes,nodes);
+						childrenNodes=getChildNode(json.getString(ID));
+						allNodes=JsonUtil.mergeJsonArray(allNodes,childrenNodes);
 					}
 				}
 			}
