@@ -35,7 +35,7 @@ import com.huntkey.rx.sceo.monitor.provider.service.PeriodService;
  */
 @Service("periodService")
 public class PeriodServiceImpl implements PeriodService {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(PeriodServiceImpl.class);
 
     @Autowired
@@ -53,7 +53,8 @@ public class PeriodServiceImpl implements PeriodService {
     @Override
     public JSONObject queryPeriod(String id, String year, String type, String beginTime,
                                   String endTime) {
-        LOG.info("查询周期类开始,id:{},year:{},type:{},beginTime:{},endTime:{}",new Object [] {id,year,type,beginTime,endTime});
+        LOG.info("查询周期类开始,id:{},year:{},type:{},beginTime:{},endTime:{}",
+                new Object[] { id, year, type, beginTime, endTime });
         long time = System.currentTimeMillis();
 
         Result result = new Result();
@@ -64,13 +65,14 @@ public class PeriodServiceImpl implements PeriodService {
 
         //处理查询结果 拼接财年显示内容    peid001+"F"+peid005 的格式拼接
         if (result.getData() != null && result.getRetCode() == Result.RECODE_SUCCESS) {
-            JSONObject jsonObj =  JsonUtil.getJson(result.getData());
+            JSONObject jsonObj = JsonUtil.getJson(result.getData());
             JSONArray jsonArray = jsonObj.getJSONArray(ServiceCenterConstant.DATA_SET);
             if (jsonArray != null && !jsonArray.isEmpty()) {
                 StringBuilder sb = new StringBuilder();
                 for (Object obj : jsonArray) {
                     JSONObject jo = JsonUtil.getJson(obj);
-                    sb.append(jo.getString(StatisticsConstant.PEID001)).append(StatisticsConstant.SYMBOL_F);
+                    sb.append(jo.getString(StatisticsConstant.PEID001))
+                            .append(StatisticsConstant.SYMBOL_F);
                     String peid005 = jo.getString(StatisticsConstant.PEID005);
                     if (StringUtils.isNotBlank(peid005)) {
                         if (peid005.length() == 1) {
@@ -83,11 +85,12 @@ public class PeriodServiceImpl implements PeriodService {
                     sb.delete(0, sb.length());
                 }
             }
-            LOG.info("查询周期类信息结束,结果:{},用时:{}",JsonUtil.getJsonString(jsonObj),System.currentTimeMillis()-time);
+            LOG.info("查询周期类信息结束,结果:{},用时:{}", JsonUtil.getJsonString(jsonObj),
+                    System.currentTimeMillis() - time);
 
             return jsonObj;
-        }else{
-            LOG.error("orm查询出错，参数：{}",queryString);
+        } else {
+            LOG.error("orm查询出错，参数：{},errMsg:{}", queryString,result.getErrMsg());
             throw new ServiceException(result.getErrMsg());
         }
     }
@@ -149,8 +152,9 @@ public class PeriodServiceImpl implements PeriodService {
         order.put(ServiceCenterConstant.SORT, ServiceCenterConstant.SORT_ASC);
         orderBy.add(order);
 
-        if(conditions.size()>0)
+        if (conditions.size() > 0) {
             search.put(ServiceCenterConstant.CONDITIONS, conditions);
+        }
         search.put(ServiceCenterConstant.ORDER_BY, orderBy);
 
         //edm类名称

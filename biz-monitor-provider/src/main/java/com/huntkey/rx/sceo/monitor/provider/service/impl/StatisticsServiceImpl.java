@@ -74,6 +74,7 @@ public class StatisticsServiceImpl implements StatisticsService {
             LOG.info("查询统计类信息结束,结果:{},用时:{}",JsonUtil.getJsonString(obj),System.currentTimeMillis()-time);
             return obj;
         } else {
+            LOG.error("查询统计类信息错误,errMsg:{}",result.getErrMsg());
             throw new ServiceException(result.getErrMsg());
         }
     }
