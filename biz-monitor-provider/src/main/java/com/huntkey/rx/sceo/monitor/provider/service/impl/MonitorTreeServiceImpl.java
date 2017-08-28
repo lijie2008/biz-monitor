@@ -1,6 +1,7 @@
 package com.huntkey.rx.sceo.monitor.provider.service.impl;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -10,9 +11,11 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.huntkey.rx.commons.utils.datetime.DateUtil;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
+import com.huntkey.rx.sceo.monitor.commom.constant.DateConstant;
 import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
@@ -276,27 +279,21 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     public JSONArray getChileNodes(String nodeId ,String edmcNameEn){
         
         if(StringUtils.isNotBlank(nodeId)){
-          //查询条件
-            JSONObject json = new JSONObject();
-            JSONObject search = new JSONObject();
-            JSONArray conditions = new JSONArray();
-
+            
+            SearchParam requestParams = new SearchParam(edmcNameEn);
             //父节点id
             if (StringUtils.isNotBlank(nodeId)) {
-                JSONObject condition1 = new JSONObject();
-                condition1.put(ServiceCenterConstant.ATTR, "moni006");
-                condition1.put(ServiceCenterConstant.OPERATOR, ServiceCenterConstant.SYMBOL_EQUAL);
-                condition1.put(ServiceCenterConstant.VALUE, nodeId);
-                conditions.add(condition1);
+                requestParams.addCondition(new ConditionNode("moni006",OperatorType.Equals,nodeId));
             }
-
-            search.put(ServiceCenterConstant.CONDITIONS, conditions);
-
-            //edm类名称
-            json.put(ServiceCenterConstant.EDM_NAME, edmcNameEn);
-            json.put(ServiceCenterConstant.SEARCH, search);
             
-            Result result = serviceCenterClient.queryServiceCenter(json.toJSONString());
+            Calendar cl = Calendar.getInstance();
+            String currentDate = DateUtil.parseFormatDate(cl.getTime(), DateConstant.FORMATE_YYYY_MM_DD_HH_MM_SS);
+            //生效时间
+            requestParams.addCondition(new ConditionNode("moni004",OperatorType.GreaterEquals,currentDate));
+            //失效时间
+            requestParams.addCondition(new ConditionNode("moni005",OperatorType.LessEquals,currentDate));
+            
+            Result result = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
             
             if(result != null && result.getRetCode()==Result.RECODE_SUCCESS){
                 if(result.getData()==null){

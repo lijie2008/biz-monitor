@@ -105,11 +105,6 @@ public interface StatisticsConstant {
     public String QUERY_TYPE_1 = "1";
     
     /**
-     * EDM_NAME:周期类 edm 名称
-     */
-    public String EDM_NAME = "period";
-    
-    /**
      * PEID001:周期类字段 财年
      */
     public String PEID001 = "peid001";
