@@ -72,7 +72,8 @@ public class ToolUtil {
     	json.put("moni002", "mtor007");
     	json.put("moni003", "mtor008");
     	json.put("moni004", "mtor011");
-    	
+    	json.put("moni019", "mtor009");
+    	json.put("moni020", "mtor010");    	
     	json.put("moni005", "mtor012");
     	json.put("moni006", "mtor013");
     	json.put("moni007", "mtor014");
