@@ -15,14 +15,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
-import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.StatisticsService;
+import com.huntkey.rx.sceo.serviceCenter.common.emun.OperatorType;
+import com.huntkey.rx.sceo.serviceCenter.common.model.ConditionNode;
+import com.huntkey.rx.sceo.serviceCenter.common.model.SearchParam;
 
 /**
  * ClassName:StatisticsServiceImpl
@@ -83,50 +84,26 @@ public class StatisticsServiceImpl implements StatisticsService {
                                   String attributeId) {
 
         //查询条件
-        JSONObject json = new JSONObject();
-        JSONObject search = new JSONObject();
-        JSONArray conditions = new JSONArray();
+        SearchParam requestParams = new SearchParam(EDM_NAME);
 
         //查询条件1 所性监管类
         if (StringUtils.isNotBlank(monitorClass)) {
-            JSONObject condition1 = new JSONObject();
-            condition1.put(ServiceCenterConstant.ATTR, STAT001);
-            condition1.put(ServiceCenterConstant.OPERATOR, ServiceCenterConstant.SYMBOL_EQUAL);
-            condition1.put(ServiceCenterConstant.VALUE, monitorClass);
-            conditions.add(condition1);
+            requestParams.addCondition(new ConditionNode(STAT001, OperatorType.Equals, monitorClass));
         }
         //查询条件2 节点id
         if (StringUtils.isNotBlank(monitorId)) {
-            JSONObject condition2 = new JSONObject();
-            condition2.put(ServiceCenterConstant.ATTR, STAT002);
-            condition2.put(ServiceCenterConstant.OPERATOR, ServiceCenterConstant.SYMBOL_EQUAL);
-            condition2.put(ServiceCenterConstant.VALUE, monitorId);
-            conditions.add(condition2);
+            requestParams.addCondition(new ConditionNode(STAT002, OperatorType.Equals, monitorId));
         }
         //查询条件3 周期点id
         if (StringUtils.isNotBlank(periodId)) {
-            JSONObject condition3 = new JSONObject();
-            condition3.put(ServiceCenterConstant.ATTR, STAT013);
-            condition3.put(ServiceCenterConstant.OPERATOR, ServiceCenterConstant.SYMBOL_EQUAL);
-            condition3.put(ServiceCenterConstant.VALUE, periodId);
-            conditions.add(condition3);
+            requestParams.addCondition(new ConditionNode(STAT013, OperatorType.Equals, periodId));
         }
         //查询条件4 属性id
         if (StringUtils.isNotBlank(attributeId)) {
-            JSONObject condition4 = new JSONObject();
-            condition4.put(ServiceCenterConstant.ATTR, STAT003);
-            condition4.put(ServiceCenterConstant.OPERATOR, ServiceCenterConstant.SYMBOL_EQUAL);
-            condition4.put(ServiceCenterConstant.VALUE, attributeId);
-            conditions.add(condition4);
+            requestParams.addCondition(new ConditionNode(STAT003, OperatorType.Equals, attributeId));
         }
 
-        search.put(ServiceCenterConstant.CONDITIONS, conditions);
-
-        //edm类名称
-        json.put(ServiceCenterConstant.EDM_NAME, EDM_NAME);
-        json.put(ServiceCenterConstant.SEARCH, search);
-
-        return json.toJSONString();
+        return requestParams.toJSONString();
 
     }
 

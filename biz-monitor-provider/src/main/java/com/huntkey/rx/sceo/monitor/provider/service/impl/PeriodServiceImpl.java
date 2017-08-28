@@ -24,6 +24,11 @@ import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.PeriodService;
+import com.huntkey.rx.sceo.serviceCenter.common.emun.OperatorType;
+import com.huntkey.rx.sceo.serviceCenter.common.emun.SortType;
+import com.huntkey.rx.sceo.serviceCenter.common.model.ConditionNode;
+import com.huntkey.rx.sceo.serviceCenter.common.model.SearchParam;
+import com.huntkey.rx.sceo.serviceCenter.common.model.SortNode;
 
 /**
  * ClassName:PeriodServiceImpl
@@ -37,6 +42,11 @@ import com.huntkey.rx.sceo.monitor.provider.service.PeriodService;
 public class PeriodServiceImpl implements PeriodService {
 
     private static final Logger LOG = LoggerFactory.getLogger(PeriodServiceImpl.class);
+    
+    /**
+     * EDM_NAME:周期类 edm 名称
+     */
+    private String EDM_NAME = "period";
 
     @Autowired
     ServiceCenterClient serviceCenterClient;
@@ -99,69 +109,34 @@ public class PeriodServiceImpl implements PeriodService {
                                   String endTime) {
 
         //查询条件
-        JSONObject json = new JSONObject();
-        JSONObject search = new JSONObject();
-        JSONArray conditions = new JSONArray();
-        JSONArray orderBy = new JSONArray();
+        SearchParam requestParams = new SearchParam(EDM_NAME);
 
         //查询条件1
         if (StringUtils.isNotBlank(id)) {
-            JSONObject condition0 = new JSONObject();
-            condition0.put(ServiceCenterConstant.ATTR, StatisticsConstant.ID);
-            condition0.put(ServiceCenterConstant.OPERATOR, ServiceCenterConstant.SYMBOL_EQUAL);
-            condition0.put(ServiceCenterConstant.VALUE, id);
+            requestParams.addCondition(new ConditionNode(StatisticsConstant.ID, OperatorType.Equals, id));
         }
 
         //查询条件2
         if (StringUtils.isNotBlank(year)) {
-            JSONObject condition1 = new JSONObject();
-            condition1.put(ServiceCenterConstant.ATTR, StatisticsConstant.PEID001);
-            condition1.put(ServiceCenterConstant.OPERATOR, ServiceCenterConstant.SYMBOL_EQUAL);
-            condition1.put(ServiceCenterConstant.VALUE, year);
-            conditions.add(condition1);
+            requestParams.addCondition(new ConditionNode(StatisticsConstant.PEID001, OperatorType.Equals, year));
         }
         //查询条件3
         if (StringUtils.isNotBlank(type)) {
-            JSONObject condition2 = new JSONObject();
-            condition2.put(ServiceCenterConstant.ATTR, StatisticsConstant.PEID002);
-            condition2.put(ServiceCenterConstant.OPERATOR, ServiceCenterConstant.SYMBOL_EQUAL);
-            condition2.put(ServiceCenterConstant.VALUE, type);
-            conditions.add(condition2);
+            requestParams.addCondition(new ConditionNode(StatisticsConstant.PEID002, OperatorType.Equals, type));
         }
 
         //查询条件4
         if (StringUtils.isNotBlank(beginTime)) {
-            JSONObject condition3 = new JSONObject();
-            condition3.put(ServiceCenterConstant.ATTR, StatisticsConstant.PEID003);
-            condition3.put(ServiceCenterConstant.OPERATOR, ServiceCenterConstant.SYMBOL_EQUAL);
-            condition3.put(ServiceCenterConstant.VALUE, beginTime);
-            conditions.add(condition3);
+            requestParams.addCondition(new ConditionNode(StatisticsConstant.PEID003, OperatorType.Equals, beginTime));
         }
 
         //查询条件5
         if (StringUtils.isNotBlank(endTime)) {
-            JSONObject condition4 = new JSONObject();
-            condition4.put(ServiceCenterConstant.ATTR, StatisticsConstant.PEID004);
-            condition4.put(ServiceCenterConstant.OPERATOR, ServiceCenterConstant.SYMBOL_EQUAL);
-            condition4.put(ServiceCenterConstant.VALUE, endTime);
-            conditions.add(condition4);
+            requestParams.addCondition(new ConditionNode(StatisticsConstant.PEID004, OperatorType.Equals, endTime));
         }
+        requestParams.addSortParam(new SortNode(StatisticsConstant.PEID005, SortType.ASC));
 
-        JSONObject order = new JSONObject();
-        order.put(ServiceCenterConstant.ATTR, StatisticsConstant.PEID005);
-        order.put(ServiceCenterConstant.SORT, ServiceCenterConstant.SORT_ASC);
-        orderBy.add(order);
-
-        if (conditions.size() > 0) {
-            search.put(ServiceCenterConstant.CONDITIONS, conditions);
-        }
-        search.put(ServiceCenterConstant.ORDER_BY, orderBy);
-
-        //edm类名称
-        json.put(ServiceCenterConstant.EDM_NAME, StatisticsConstant.EDM_NAME);
-        json.put(ServiceCenterConstant.SEARCH, search);
-
-        return json.toJSONString();
+        return requestParams.toJSONString();
 
     }
 
