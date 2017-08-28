@@ -554,23 +554,19 @@ public class MonitorServiceImpl implements MonitorService {
 	//递归查询子节点
 	private JSONArray getChildNode(String nodeId){
 		JSONArray allNodes=new JSONArray();
-		JSONArray childrenNodes=new JSONArray();
 		Condition condition=new Condition();
 		condition.addCondition(MTOR013, EQUAL, nodeId, true);
 		condition.addCondition(MTOR021, LT, ChangeType.INVALID.toString(), false);
 		JSONArray nodes=queryNodes(condition);
-		while(!JsonUtil.isNullOrEmpty(nodes)){
-			for(Object obj:nodes){
-				JSONObject json=JsonUtil.getJson(obj);
-				if(json!=null){
-					allNodes.add(json);//添加本节点
-					if(StringUtil.isNullOrEmpty(json.getString(MTOR014))){
-						childrenNodes=getChildNode(json.getString(ID));
-						allNodes=JsonUtil.mergeJsonArray(allNodes,childrenNodes);
-					}
-				}
-			}
-		}
+		
+		for (int i = 0; i < nodes.size(); i++) {
+            JSONObject levelNode = nodes.getJSONObject(i);
+            String levelNodeId = levelNode.getString("id");
+            allNodes.add(levelNode);
+            if(!"".equals(levelNode.getString(MTOR014))){
+            	getChildNode(levelNodeId);
+            }
+        }
 		return allNodes;
 	}
 	
