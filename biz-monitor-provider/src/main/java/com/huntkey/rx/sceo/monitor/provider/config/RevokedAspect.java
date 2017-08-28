@@ -38,7 +38,6 @@ import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
-import com.huntkey.rx.sceo.monitor.provider.controller.MonitorTreeOrderController;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
 import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
 
@@ -55,7 +54,7 @@ public class RevokedAspect {
     
     private static final Map<String,Object> originalMap = new ConcurrentHashMap<String, Object>();
     
-    private static final Logger logger = LoggerFactory.getLogger(MonitorTreeOrderController.class);
+    private static final Logger logger = LoggerFactory.getLogger(RevokedAspect.class);
     
     @Autowired 
     private RedisService redisService;
