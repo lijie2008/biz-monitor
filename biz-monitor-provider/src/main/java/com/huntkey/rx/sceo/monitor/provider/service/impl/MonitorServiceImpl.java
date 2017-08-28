@@ -558,13 +558,14 @@ public class MonitorServiceImpl implements MonitorService {
 		condition.addCondition(MTOR013, EQUAL, nodeId, true);
 		condition.addCondition(MTOR021, LT, ChangeType.INVALID.toString(), false);
 		JSONArray nodes=queryNodes(condition);
-		
+		JSONArray childrenNodes=new JSONArray();
 		for (int i = 0; i < nodes.size(); i++) {
             JSONObject levelNode = nodes.getJSONObject(i);
             String levelNodeId = levelNode.getString("id");
             allNodes.add(levelNode);
             if(!"".equals(levelNode.getString(MTOR014))){
-            	getChildNode(levelNodeId);
+            	childrenNodes=getChildNode(levelNodeId);
+            	allNodes=JsonUtil.mergeJsonArray(allNodes,childrenNodes);
             }
         }
 		return allNodes;
