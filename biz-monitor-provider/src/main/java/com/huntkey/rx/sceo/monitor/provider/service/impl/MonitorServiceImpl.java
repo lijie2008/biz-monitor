@@ -4,6 +4,7 @@ import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClien
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.interceptor.CacheOperationInvoker.ThrowableWrapper;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
@@ -19,6 +20,7 @@ import java.util.Map;
 import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
+import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.Condition;
 import com.huntkey.rx.sceo.monitor.commom.model.JoinTO;
@@ -122,7 +124,7 @@ public class MonitorServiceImpl implements MonitorService {
 		if(nodeJson!=null && !nodeJson.isEmpty()){
 			//查询员工表并且做左连
 			//根据类ID查询出资源表
-			JSONObject jsonCharacter=DBUtils.getCharacterAndFormat("6f913ed266e211e7b2e4005056bc4879");
+			JSONObject jsonCharacter=DBUtils.getCharacterAndFormat(STAFFCLASSID);
 			JSONObject staffObj=null;
 			if(nodeJson.containsKey(MTOR009) && !StringUtil.isNullOrEmpty(nodeJson.getString(MTOR009))){
 				condition.addCondition(ID, EQUAL, nodeJson.getString(MTOR009), true);//主管人
@@ -191,8 +193,12 @@ public class MonitorServiceImpl implements MonitorService {
 	private JSONObject convert(JSONObject characterObj,JSONObject resourcesObj) {
 		// TODO Auto-generated method stub
 		if(characterObj==null)
-			return null;
+			return resourcesObj;
 		JSONArray characterArray = characterObj.getJSONArray("character");
+		if(characterArray.size()==0){
+			logger.info("未设置资源表特征值");
+			return resourcesObj;
+		}
         String format = characterObj.getString("format");
         String[] resourceFields = new String[characterArray.size()];
         characterArray.toArray(resourceFields);
@@ -206,11 +212,13 @@ public class MonitorServiceImpl implements MonitorService {
 	//转化资源数组对象
 	private JSONArray convert(JSONObject characterObj,JSONArray resourcesObjs) {
 		// TODO Auto-generated method stub
-		if(JsonUtil.isNullOrEmpty(resourcesObjs))
-			return null;
+		if(characterObj==null)
+			return resourcesObjs;
+		
 		JSONArray characterArray = characterObj.getJSONArray("character");
 		if(characterArray.size()==0){
-			return null;
+			logger.info("未设置资源表特征值");
+			return resourcesObjs;
 		}
 		JSONArray resources = new JSONArray();
         String format = characterObj.getString("format");
@@ -286,6 +294,7 @@ public class MonitorServiceImpl implements MonitorService {
 				params.add(param);
 			}
 		}
+		@SuppressWarnings("unchecked")
 		List<String> list=(List<String>) DBUtils.add(MTOR019, params,"");
 		return list;
 	}
@@ -614,7 +623,7 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setPid(treeId);
 		logger.info("MonitorServiceImpl类的setNodePosition方法：==》节点编码生成前");
 		String orderNum=orderNumberService.generateOrderNumber("NODE");
-		node.setMtor006(orderNum);
+		node.setMtor006(StringUtil.isNullOrEmpty(orderNum)?"NODE"+System.currentTimeMillis():orderNum);
 		logger.info("MonitorServiceImpl类的setNodePosition方法：==》节点编码生成后，节点编码为："+orderNum);
 		return node;
 	}
@@ -681,7 +690,8 @@ public class MonitorServiceImpl implements MonitorService {
 	private String createTemp(String classId,int changeType,String rootId){
 		//1.生成监管类临时单
 		JSONObject jsonTemp=new JSONObject();
-		jsonTemp.put(MTOR001,orderNumberService.generateOrderNumber("LS"));
+		String tempNum=orderNumberService.generateOrderNumber("LS");
+		jsonTemp.put(MTOR001,StringUtil.isNullOrEmpty(tempNum)?"LS"+System.currentTimeMillis():tempNum);
 		jsonTemp.put(MTOR002, changeType);
 		jsonTemp.put(MTOR003, classId);
 		jsonTemp.put(MTOR004, rootId);
@@ -695,7 +705,7 @@ public class MonitorServiceImpl implements MonitorService {
 	 * @param tempId 临时单ID
 	 * @param changeType 变更类型
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void copyTree(String edmcNameEn,String rootId,String tempId,int changeType,String beginDate,String endDate) {
 		// TODO Auto-generated method stub
 		String nowDate=ToolUtil.getNowDateStr(YYYY_MM_DD);
@@ -829,7 +839,8 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor016(NULL);
 		node.setMtor021(1);
 		node.setPid(pid);
-		node.setMtor006(orderNumberService.generateOrderNumber("NODE"));
+		String nodeNum=orderNumberService.generateOrderNumber("NODE");
+		node.setMtor006(StringUtil.isNullOrEmpty(nodeNum)?"NODE"+System.currentTimeMillis():nodeNum);
 		return (String) DBUtils.add(MTOR005, JsonUtil.getJson(node),"");
 	}
 	@Override

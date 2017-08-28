@@ -158,5 +158,7 @@ public interface Constant {
     String INITNODENAME="未命名节点";//初始化节点名称
     
     String MAXINVALIDDATE="9999-12-31";//最大失效日期
+    
+    String STAFFCLASSID="6f913ed266e211e7b2e4005056bc4879";
 }
 
