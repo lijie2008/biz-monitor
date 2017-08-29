@@ -314,7 +314,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 
             Calendar cl = Calendar.getInstance();
             String currentDate = DateUtil.parseFormatDate(cl.getTime(),
-                    DateConstant.FORMATE_YYYY_MM_DD_HH_MM_SS);
+                    DateConstant.FORMATE_YYYY_MM_DD);
             //生效时间
             requestParams.addCondition(
                     new ConditionNode("moni004", OperatorType.GreaterEquals, currentDate));
