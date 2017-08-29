@@ -355,9 +355,10 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                 JSONArray childrenArray = new JSONArray((List<Object>) resourcesResult.getData());
                 return childrenArray;
             } else {
-                return null;
+            	return null;
             }
         } else {
+        	LOG.info(resourcesResult.getErrMsg());
             throw new ServiceException(resourcesResult.getErrMsg());
         }
     }
