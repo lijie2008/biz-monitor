@@ -225,7 +225,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
 
         if (StringUtils.isNotBlank(treeNodeId) && StringUtils.isNotBlank(edmcNameEn)) {
             JSONArray jsonArray = monitorTreeService.getChileNodes(treeNodeId, edmcNameEn);
-            LOG.info("查询子节点参数,treeNodeId:{},edmcNameEn:{},结果jsonArray:{}",treeNodeId,edmcNameEn,jsonArray.toJSONString());
+            LOG.info("查询子节点结果jsonArray:{}",jsonArray.toJSONString());
             return jsonArray;
         }
 
