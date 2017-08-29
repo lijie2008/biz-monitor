@@ -138,6 +138,8 @@ public class StatisticsBizImpl implements StatisticsBiz {
     @Override
     public Result queryStatistics(JSONObject json) {
 
+        LOG.info("查询参数:{}", json.toJSONString());
+
         Result result = new Result();
 
         if (json == null || json.isEmpty()) {
@@ -154,7 +156,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
         }
 
         String edmcNameEn = json.getString(StatisticsConstant.EDMC_NAME_EN);
-        if (StringUtils.isBlank(monitorId)) {
+        if (StringUtils.isBlank(edmcNameEn)) {
             result.setRetCode(Result.RECODE_ERROR);
             result.setErrMsg("所属监管类英文名不可为空..");
             return result;
@@ -222,7 +224,9 @@ public class StatisticsBizImpl implements StatisticsBiz {
     private JSONArray getChileNodes(String treeNodeId, String edmcNameEn) {
 
         if (StringUtils.isNotBlank(treeNodeId) && StringUtils.isNotBlank(edmcNameEn)) {
-            return monitorTreeService.getChileNodes(treeNodeId, edmcNameEn);
+            JSONArray jsonArray = monitorTreeService.getChileNodes(treeNodeId, edmcNameEn);
+            LOG.info("查询子节点参数,treeNodeId:{},edmcNameEn:{},结果jsonArray:{}",treeNodeId,edmcNameEn,jsonArray.toJSONString());
+            return jsonArray;
         }
 
         return null;
