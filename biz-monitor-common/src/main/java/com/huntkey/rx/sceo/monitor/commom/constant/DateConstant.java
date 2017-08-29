@@ -22,5 +22,10 @@ public interface DateConstant {
      * FORMATE_YYYY_MM_DD:日期格式化格式
      */
     String FORMATE_YYYY_MM_DD = "yyyy-MM-dd";
+    
+    /**
+     * FORMATE_YYYY_MM_DD:日期格式化格式
+     */
+    String FORMATE_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
 }
 

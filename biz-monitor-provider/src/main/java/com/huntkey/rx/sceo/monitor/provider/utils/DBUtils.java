@@ -2,8 +2,6 @@ package com.huntkey.rx.sceo.monitor.provider.utils;
 
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 
-import net.minidev.json.JSONUtil;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +17,7 @@ import java.util.List;
 
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
+import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.model.Condition;
 import com.huntkey.rx.sceo.monitor.commom.model.InputArgument;
 import com.huntkey.rx.sceo.monitor.commom.model.LoopTO;
@@ -86,7 +85,7 @@ public class DBUtils {
 	 * @param param 查询参数
 	 * @return JSONObject
 	 */
-	public  JSONArray load(String edmName,String[] columns, String type,List ids) {
+	public  JSONArray load(String edmName,String[] columns, String type,List<String> ids) {
 		//设置查询参数
 		InputArgument inputArgument=new InputArgument();
 		inputArgument.setEdmName(edmName);
@@ -239,8 +238,7 @@ public class DBUtils {
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
             String msg = result != null ? result.getErrMsg():null;
             logger.info(msg);
-            ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), 
-            		ErrorMessage._60007.getMsg());
+			throw new ServiceException("调用 Modeler 类特征值显示格式查询接口失败！");
         }
         JSONObject json=JsonUtil.getJson(result.getData());
         return json;

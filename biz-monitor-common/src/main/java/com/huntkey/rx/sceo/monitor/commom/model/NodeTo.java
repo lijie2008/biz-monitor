@@ -42,6 +42,7 @@ public class NodeTo implements Serializable{
     /**
      * 节点编号
      */
+    @NotBlank(message="节点编号不能为空")
     private String mtor006;
     
     /**
