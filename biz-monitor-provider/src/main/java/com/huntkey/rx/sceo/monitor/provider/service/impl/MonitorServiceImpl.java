@@ -19,6 +19,7 @@ import java.util.Map;
 import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
+import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.Condition;
 import com.huntkey.rx.sceo.monitor.commom.model.JoinTO;
@@ -237,13 +238,21 @@ public class MonitorServiceImpl implements MonitorService {
 	@Override
 	public String saveNodeDetail(NodeTo nodeDetail) {
 		// TODO Auto-generated method stub
-		String retStr=nodeDetail.getId();
-		if(StringUtil.isNullOrEmpty(retStr)){
-			retStr=(String) DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
-		}else{//修改
-			DBUtils.update(MTOR005, JsonUtil.getJson(nodeDetail),"");
+		String nodeId=nodeDetail.getId();
+		String endDate=nodeDetail.getMtor012();
+		if(StringUtil.isNullOrEmpty(nodeId)){
+			logger.info("不存在当前信息！");
+			throw new ServiceException("不存在当前信息！");
 		}
-		return retStr;
+		DBUtils.update(MTOR005, JsonUtil.getJson(nodeDetail),"");
+		//修改下级节点失效日期
+		//1.根据根节点ID 临时单下级节点信息
+		JSONArray childrenNodes=getChildNode(nodeId);
+		Map<String, Object> map=new HashMap<String, Object>();
+		map.put(MTOR012, endDate);
+		childrenNodes=JsonUtil.addAttr(childrenNodes,map);
+		DBUtils.update(MTOR005, childrenNodes, "");
+		return nodeId;
 	}
 	/**
 	 * 删除节点资源
