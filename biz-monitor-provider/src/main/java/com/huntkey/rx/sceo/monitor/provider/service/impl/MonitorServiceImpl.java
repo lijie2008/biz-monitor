@@ -4,7 +4,6 @@ import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClien
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.interceptor.CacheOperationInvoker.ThrowableWrapper;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
@@ -20,7 +19,6 @@ import java.util.Map;
 import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
-import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.Condition;
 import com.huntkey.rx.sceo.monitor.commom.model.JoinTO;
@@ -78,7 +76,8 @@ public class MonitorServiceImpl implements MonitorService {
 					if(StringUtil.isNullOrEmpty(json.getString(MTOR012))){
 						nodeArrayNew.add(json);
 					}
-					else if(JsonUtil.compareDate(validDate,json.getString(MTOR012))){
+					else if(JsonUtil.compareDate(validDate,json.getString(MTOR012))
+							&& !JsonUtil.compareDate(validDate,json.getString(MTOR011))){
 						nodeArrayNew.add(json);
 					}
 				}
@@ -706,7 +705,6 @@ public class MonitorServiceImpl implements MonitorService {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void copyTree(String edmcNameEn,String rootId,String tempId,int changeType,String beginDate,String endDate) {
 		// TODO Auto-generated method stub
-		String nowDate=ToolUtil.getNowDateStr(YYYY_MM_DD);
 		JSONArray resourceArr=new JSONArray();
 		JSONArray treeFormal=new JSONArray();//正式树
 		JSONArray treeTemp=new JSONArray();//临时树
@@ -724,7 +722,7 @@ public class MonitorServiceImpl implements MonitorService {
 		}
 		List<String> listNodeIds=new ArrayList<String>();
 		//2.根据根节点ID 查询正式树表的所有节点
-		Result res= serviceCenterClient.getOrderMonitorTreeNodes(edmcNameEn,nowDate , rootId);
+		Result res= serviceCenterClient.getOrderMonitorTreeNodes(edmcNameEn,"" , rootId);
 		if(res.getRetCode()==Result.RECODE_SUCCESS ){
 			if(!JsonUtil.isEmpity(res.getData())){
 				treeArr=JsonUtil.listToJsonArray((List)res.getData());
