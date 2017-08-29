@@ -517,20 +517,20 @@ public class StatisticsBizImpl implements StatisticsBiz {
     private String getPeriodId(String beginTime, String endTime) {
 
         //查询返回结果
-        JSONObject todayJson = periodService.queryPeriod(null, null, null, beginTime, endTime);
+        JSONObject dayJson = periodService.queryPeriod(null, null, null, beginTime, endTime);
 
-        if (todayJson == null) {
+        if (dayJson == null) {
             return null;
         }
 
         //周期类结果集
-        JSONArray todayArray = todayJson.getJSONArray(ServiceCenterConstant.DATA_SET);
+        JSONArray dayArray = dayJson.getJSONArray(ServiceCenterConstant.DATA_SET);
 
-        if (todayArray.isEmpty()) {
+        if (dayArray.isEmpty()) {
             return null;
         }
 
-        JSONObject period = JsonUtil.getJson(todayArray.get(0));
+        JSONObject period = JsonUtil.getJson(dayArray.get(0));
         return period.getString(StatisticsConstant.ID);
 
     }
