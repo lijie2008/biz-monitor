@@ -22,7 +22,6 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -187,7 +186,27 @@ public class MonitorTreeOrderController {
         
         if(JsonUtil.isEmpity(node) || JsonUtil.isEmpity(node.getPid()))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"节点" + ErrorMessage._60005.getMsg());
-    
+       
+       // 校验当前节点时间区间不能超过上级节点时间区间
+       if(!JsonUtil.isEmpity(node.getMtor013())){
+           
+           NodeTo upNode = service.queryNode(node.getMtor013());
+           
+           if(JsonUtil.isEmpity(upNode))
+               ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"上级节点" + ErrorMessage._60005.getMsg());
+           
+           Date upStartDate = Date.valueOf(upNode.getMtor011());
+           Date upEndDate = Date.valueOf(upNode.getMtor012());
+           
+           Date nowStartDate = Date.valueOf(startDate);
+           Date nowEndDate = Date.valueOf(endDate);
+           
+           if(upStartDate.after(nowStartDate) ||  nowEndDate.after(upEndDate)){
+               result.setData(false);
+               return result;
+           }
+       }
+           
        List<ResourceTo> nodeResources = service.queryResource(nodeId);
        
        if(JsonUtil.isEmpity(nodeResources)){
