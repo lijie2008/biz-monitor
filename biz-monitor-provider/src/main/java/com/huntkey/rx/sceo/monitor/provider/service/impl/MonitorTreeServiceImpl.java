@@ -317,10 +317,10 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                     DateConstant.FORMATE_YYYY_MM_DD);
             //生效时间
             requestParams.addCondition(
-                    new ConditionNode("moni004", OperatorType.GreaterEquals, currentDate));
+                    new ConditionNode("moni004", OperatorType.LessEquals, currentDate));
             //失效时间
             requestParams.addCondition(
-                    new ConditionNode("moni005", OperatorType.LessEquals, currentDate));
+                    new ConditionNode("moni005", OperatorType.GreaterEquals, currentDate));
 
             LOG.info("查询json:{}", requestParams.toJSONString());
 
