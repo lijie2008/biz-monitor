@@ -55,12 +55,20 @@ public class MonitorServiceImpl implements MonitorService {
 		//组装查询条件
 		condition.addCondition(PID, EQUAL, tempId, true);
 		condition.addCondition(MTOR021, LT, ChangeType.INVALID.toString(), false);
+		if(StringUtil.isNullOrEmpty(validDate)){
+			validDate=ToolUtil.getNowDateStr(YYYY_MM_DD);
+			condition.addCondition(MTOR012, GT, validDate, false);
+		}else{
+			condition.addCondition(MTOR011, LTE, validDate, false);
+			condition.addCondition(MTOR012, GT, validDate, false);
+		}
+		
 		//查询节点集合表
 		JSONArray nodeArray=DBUtils.getArrayResult(MTOR005,null,condition);
 		
-		validDate=StringUtil.isNullOrEmpty(validDate)?ToolUtil.getNowDateStr(YYYY_MM_DD):validDate;
+//		validDate=StringUtil.isNullOrEmpty(validDate)?ToolUtil.getNowDateStr(YYYY_MM_DD):validDate;
 		//过滤出未失效节点
-		nodeArray=getValidNode(nodeArray,validDate);
+//		nodeArray=getValidNode(nodeArray,validDate);
 		if(JsonUtil.isNullOrEmpty(nodeArray)){
 			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),
 					ErrorMessage._60003.getMsg()); 
@@ -75,11 +83,17 @@ public class MonitorServiceImpl implements MonitorService {
 				JSONObject json=JsonUtil.getJson(obj);
 				if(json!=null){
 					if(StringUtil.isNullOrEmpty(json.getString(MTOR012))){
-						nodeArrayNew.add(json);
+						json.put(MTOR012, MAXINVALIDDATE);
 					}
-					else if(JsonUtil.compareDate(validDate,json.getString(MTOR012))
-							&& !JsonUtil.compareDate(validDate,json.getString(MTOR011))){
-						nodeArrayNew.add(json);
+					if(StringUtil.isNullOrEmpty(validDate)){//时间传空时  
+						if(JsonUtil.compareDate(validDate,json.getString(MTOR012))){
+							nodeArrayNew.add(json);
+						}
+					}else{
+						if(JsonUtil.compareDate(validDate,json.getString(MTOR012))
+								&& !JsonUtil.compareDate(validDate,json.getString(MTOR011))){
+							nodeArrayNew.add(json);
+						}
 					}
 				}
 			}
