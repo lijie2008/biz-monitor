@@ -65,40 +65,11 @@ public class MonitorServiceImpl implements MonitorService {
 		
 		//查询节点集合表
 		JSONArray nodeArray=DBUtils.getArrayResult(MTOR005,null,condition);
-		
-//		validDate=StringUtil.isNullOrEmpty(validDate)?ToolUtil.getNowDateStr(YYYY_MM_DD):validDate;
-		//过滤出未失效节点
-//		nodeArray=getValidNode(nodeArray,validDate);
 		if(JsonUtil.isNullOrEmpty(nodeArray)){
 			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),
 					ErrorMessage._60003.getMsg()); 
 		}
 		return nodeArray;
-	}
-	private JSONArray getValidNode(JSONArray nodeArray, String validDate) {
-		// TODO Auto-generated method stub
-		JSONArray nodeArrayNew=new JSONArray();
-		if(!JsonUtil.isNullOrEmpty(nodeArray)){
-			for(Object obj:nodeArray){
-				JSONObject json=JsonUtil.getJson(obj);
-				if(json!=null){
-					if(StringUtil.isNullOrEmpty(json.getString(MTOR012))){
-						json.put(MTOR012, MAXINVALIDDATE);
-					}
-					if(StringUtil.isNullOrEmpty(validDate)){//时间传空时  
-						if(JsonUtil.compareDate(validDate,json.getString(MTOR012))){
-							nodeArrayNew.add(json);
-						}
-					}else{
-						if(JsonUtil.compareDate(validDate,json.getString(MTOR012))
-								&& !JsonUtil.compareDate(validDate,json.getString(MTOR011))){
-							nodeArrayNew.add(json);
-						}
-					}
-				}
-			}
-		}
-		return nodeArrayNew;
 	}
 	/**
 	 * 监管树临时单预览 是否需要包含资源
@@ -262,10 +233,12 @@ public class MonitorServiceImpl implements MonitorService {
 		//修改下级节点失效日期
 		//1.根据根节点ID 临时单下级节点信息
 		JSONArray childrenNodes=getChildNode(nodeId);
-		Map<String, Object> map=new HashMap<String, Object>();
-		map.put(MTOR012, endDate);
-		childrenNodes=JsonUtil.addAttr(childrenNodes,map);
-		DBUtils.update(MTOR005, childrenNodes, "");
+		if(JsonUtil.isNullOrEmpty(childrenNodes)){
+			Map<String, Object> map=new HashMap<String, Object>();
+			map.put(MTOR012, endDate);
+			childrenNodes=JsonUtil.addAttr(childrenNodes,map);
+			DBUtils.update(MTOR005, childrenNodes, "");
+		}
 		return nodeId;
 	}
 	/**
