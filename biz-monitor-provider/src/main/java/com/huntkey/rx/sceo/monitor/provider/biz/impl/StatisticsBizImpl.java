@@ -320,8 +320,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
             if (lastMonthValue == 0) {
                 attrValJson.put("monthLinkRelativeRatio", 0);
             } else {
-                Double monthLinkRelativeRatio = monthValue.doubleValue()
-                        / lastMonthValue.doubleValue();
+                Double monthLinkRelativeRatio = monthValue / lastMonthValue;
                 attrValJson.put("monthLinkRelativeRatio", monthLinkRelativeRatio * 100);
             }
 
@@ -329,8 +328,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
             if (lastYearCurrentMonthValue == 0) {
                 attrValJson.put("monthLearOnYear", 0);
             } else {
-                Double monthLearOnYear = monthValue.doubleValue()
-                        / lastYearCurrentMonthValue.doubleValue();
+                Double monthLearOnYear = monthValue / lastYearCurrentMonthValue;
                 attrValJson.put("monthLearOnYear", monthLearOnYear * 100);
             }
 
@@ -338,15 +336,13 @@ public class StatisticsBizImpl implements StatisticsBiz {
             Double queryMonthValue = getAttrCumulativeValue(queryMonthJson, attrId);
             attrValJson.put("queryMonthValue", queryMonthValue);
             //去年同财月累计值
-            Double lastYearQueryMonthValue = getAttrCumulativeValue(lastYearQueryMonthJson,
-                    attrId);
+            Double lastYearQueryMonthValue = getAttrCumulativeValue(lastYearQueryMonthJson, attrId);
 
             //财月累计值环比
             if (lastYearQueryMonthValue == 0) {
                 attrValJson.put("queryMonthLinkRelativeRatio", 0);
             } else {
-                Double queryMonthLinkRelativeRatio = queryMonthValue.doubleValue()
-                        / lastYearQueryMonthValue.doubleValue();
+                Double queryMonthLinkRelativeRatio = queryMonthValue / lastYearQueryMonthValue;
                 attrValJson.put("queryMonthLinkRelativeRatio", queryMonthLinkRelativeRatio * 100);
             }
 
