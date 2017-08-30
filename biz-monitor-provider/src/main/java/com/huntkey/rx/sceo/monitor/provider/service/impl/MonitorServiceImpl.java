@@ -233,7 +233,7 @@ public class MonitorServiceImpl implements MonitorService {
 		//修改下级节点失效日期
 		//1.根据根节点ID 临时单下级节点信息
 		JSONArray childrenNodes=getChildNode(nodeId);
-		if(JsonUtil.isNullOrEmpty(childrenNodes)){
+		if(!JsonUtil.isNullOrEmpty(childrenNodes)){
 			Map<String, Object> map=new HashMap<String, Object>();
 			map.put(MTOR012, endDate);
 			childrenNodes=JsonUtil.addAttr(childrenNodes,map);

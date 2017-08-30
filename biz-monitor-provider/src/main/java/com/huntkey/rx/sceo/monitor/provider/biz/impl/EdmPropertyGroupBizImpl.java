@@ -74,7 +74,7 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
         Map<String, Object> map = list.get(0);
         Object obj = map.get("edpg_property_group");//表中对应的分组字段
         if (obj != null) {
-            Integer edpgPropertyGroup = Integer.valueOf((String) obj);
+            String edpgPropertyGroup = (String) obj;
             //查询查询map
             paramMap.clear();
             //设置查询参数为 分组值
