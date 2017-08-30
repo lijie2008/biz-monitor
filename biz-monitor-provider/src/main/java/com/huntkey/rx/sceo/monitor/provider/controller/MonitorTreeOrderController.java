@@ -209,7 +209,7 @@ public class MonitorTreeOrderController {
            
            
            if(upStartDate.after(nowStartDate) ||  nowEndDate.after(upEndDate)){
-               result.setErrMsg("本节点时间区间必须在根节点时间区间以内");
+               result.setErrMsg("本节点时间区间必须在上级节点时间区间以内");
                result.setData(false);
                return result;
            }
