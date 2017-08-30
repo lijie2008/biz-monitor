@@ -21,7 +21,6 @@ import com.huntkey.rx.sceo.monitor.commom.constant.DateConstant;
 import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
-import com.huntkey.rx.sceo.monitor.provider.biz.impl.StatisticsBizImpl;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
@@ -135,6 +134,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         String characters[] = new String[] { "moni001", "moni002", "moni004", "moni005" };
 
         requestParams.addColumns(characters);
+
+        requestParams.addSortParam(new SortNode("moni005",SortType.ASC));
 
         requestParams.addCondition(new ConditionNode("moni006", OperatorType.Equals, ""));
 
@@ -354,9 +355,10 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                 JSONArray childrenArray = new JSONArray((List<Object>) resourcesResult.getData());
                 return childrenArray;
             } else {
-                return null;
+            	return null;
             }
         } else {
+        	LOG.info(resourcesResult.getErrMsg());
             throw new ServiceException(resourcesResult.getErrMsg());
         }
     }

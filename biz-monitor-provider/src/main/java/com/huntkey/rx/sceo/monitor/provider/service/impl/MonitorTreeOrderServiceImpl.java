@@ -471,7 +471,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         List<NodeTo> treeNodes = queryTreeNode(orderId);
         
-        
         if(JsonUtil.isEmpity(treeNodes))
             return null;
         

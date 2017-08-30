@@ -22,7 +22,6 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -187,7 +186,28 @@ public class MonitorTreeOrderController {
         
         if(JsonUtil.isEmpity(node) || JsonUtil.isEmpity(node.getPid()))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"节点" + ErrorMessage._60005.getMsg());
-    
+       
+       // 校验当前节点时间区间不能超过上级节点时间区间
+       if(!JsonUtil.isEmpity(node.getMtor013())){
+           
+           NodeTo upNode = service.queryNode(node.getMtor013());
+           
+           if(JsonUtil.isEmpity(upNode))
+               ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"上级节点" + ErrorMessage._60005.getMsg());
+           
+           Date upStartDate = Date.valueOf(upNode.getMtor011());
+           Date upEndDate = Date.valueOf(upNode.getMtor012());
+           
+           Date nowStartDate = Date.valueOf(startDate);
+           Date nowEndDate = Date.valueOf(endDate);
+           
+           if(upStartDate.after(nowStartDate) ||  nowEndDate.after(upEndDate)){
+               result.setErrMsg("本节点时间区间必须在根节点时间区间以内");
+               result.setData(false);
+               return result;
+           }
+       }
+           
        List<ResourceTo> nodeResources = service.queryResource(nodeId);
        
        if(JsonUtil.isEmpity(nodeResources)){
@@ -205,10 +225,12 @@ public class MonitorTreeOrderController {
         
        Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
        
-        if(nodeResources.stream().anyMatch(re -> usedResourceIds.contains(re.getMtor020())))
+        if(nodeResources.stream().anyMatch(re -> usedResourceIds.contains(re.getMtor020()))){
+            result.setErrMsg("当前时间区间内,本节点在的资源被其他节点占用");            
             result.setData(false);
-        else
+        }else{
             result.setData(true);
+        }
         
         return result;
     }
