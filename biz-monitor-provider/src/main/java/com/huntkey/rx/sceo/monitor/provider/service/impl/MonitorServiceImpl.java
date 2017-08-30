@@ -225,6 +225,7 @@ public class MonitorServiceImpl implements MonitorService {
 		// TODO Auto-generated method stub
 		String nodeId=nodeDetail.getId();
 		String endDate=nodeDetail.getMtor012();
+		String beginDate=nodeDetail.getMtor011();
 		if(StringUtil.isNullOrEmpty(nodeId)){
 			logger.info("不存在当前信息！");
 			throw new ServiceException("不存在当前信息！");
@@ -235,6 +236,7 @@ public class MonitorServiceImpl implements MonitorService {
 		JSONArray childrenNodes=getChildNode(nodeId);
 		if(!JsonUtil.isNullOrEmpty(childrenNodes)){
 			Map<String, Object> map=new HashMap<String, Object>();
+			map.put(MTOR011, beginDate);
 			map.put(MTOR012, endDate);
 			childrenNodes=JsonUtil.addAttr(childrenNodes,map);
 			DBUtils.update(MTOR005, childrenNodes, "");
