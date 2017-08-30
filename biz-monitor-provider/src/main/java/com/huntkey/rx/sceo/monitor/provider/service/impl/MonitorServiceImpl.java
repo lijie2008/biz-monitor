@@ -4,7 +4,6 @@ import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClien
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.interceptor.CacheOperationInvoker.ThrowableWrapper;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
@@ -56,35 +55,21 @@ public class MonitorServiceImpl implements MonitorService {
 		//组装查询条件
 		condition.addCondition(PID, EQUAL, tempId, true);
 		condition.addCondition(MTOR021, LT, ChangeType.INVALID.toString(), false);
+		if(StringUtil.isNullOrEmpty(validDate)){
+			validDate=ToolUtil.getNowDateStr(YYYY_MM_DD);
+			condition.addCondition(MTOR012, GT, validDate, false);
+		}else{
+			condition.addCondition(MTOR011, LTE, validDate, false);
+			condition.addCondition(MTOR012, GT, validDate, false);
+		}
+		
 		//查询节点集合表
 		JSONArray nodeArray=DBUtils.getArrayResult(MTOR005,null,condition);
-		
-		validDate=StringUtil.isNullOrEmpty(validDate)?ToolUtil.getNowDateStr(YYYY_MM_DD):validDate;
-		//过滤出未失效节点
-		nodeArray=getValidNode(nodeArray,validDate);
 		if(JsonUtil.isNullOrEmpty(nodeArray)){
 			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),
 					ErrorMessage._60003.getMsg()); 
 		}
 		return nodeArray;
-	}
-	private JSONArray getValidNode(JSONArray nodeArray, String validDate) {
-		// TODO Auto-generated method stub
-		JSONArray nodeArrayNew=new JSONArray();
-		if(!JsonUtil.isNullOrEmpty(nodeArray)){
-			for(Object obj:nodeArray){
-				JSONObject json=JsonUtil.getJson(obj);
-				if(json!=null){
-					if(StringUtil.isNullOrEmpty(json.getString(MTOR012))){
-						nodeArrayNew.add(json);
-					}
-					else if(JsonUtil.compareDate(validDate,json.getString(MTOR012))){
-						nodeArrayNew.add(json);
-					}
-				}
-			}
-		}
-		return nodeArrayNew;
 	}
 	/**
 	 * 监管树临时单预览 是否需要包含资源
@@ -238,13 +223,23 @@ public class MonitorServiceImpl implements MonitorService {
 	@Override
 	public String saveNodeDetail(NodeTo nodeDetail) {
 		// TODO Auto-generated method stub
-		String retStr=nodeDetail.getId();
-		if(StringUtil.isNullOrEmpty(retStr)){
-			retStr=(String) DBUtils.add(MTOR005, JsonUtil.getJson(nodeDetail),"");
-		}else{//修改
-			DBUtils.update(MTOR005, JsonUtil.getJson(nodeDetail),"");
+		String nodeId=nodeDetail.getId();
+		String endDate=nodeDetail.getMtor012();
+		if(StringUtil.isNullOrEmpty(nodeId)){
+			logger.info("不存在当前信息！");
+			throw new ServiceException("不存在当前信息！");
 		}
-		return retStr;
+		DBUtils.update(MTOR005, JsonUtil.getJson(nodeDetail),"");
+		//修改下级节点失效日期
+		//1.根据根节点ID 临时单下级节点信息
+		JSONArray childrenNodes=getChildNode(nodeId);
+		if(JsonUtil.isNullOrEmpty(childrenNodes)){
+			Map<String, Object> map=new HashMap<String, Object>();
+			map.put(MTOR012, endDate);
+			childrenNodes=JsonUtil.addAttr(childrenNodes,map);
+			DBUtils.update(MTOR005, childrenNodes, "");
+		}
+		return nodeId;
 	}
 	/**
 	 * 删除节点资源
@@ -706,7 +701,6 @@ public class MonitorServiceImpl implements MonitorService {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void copyTree(String edmcNameEn,String rootId,String tempId,int changeType,String beginDate,String endDate) {
 		// TODO Auto-generated method stub
-		String nowDate=ToolUtil.getNowDateStr(YYYY_MM_DD);
 		JSONArray resourceArr=new JSONArray();
 		JSONArray treeFormal=new JSONArray();//正式树
 		JSONArray treeTemp=new JSONArray();//临时树
@@ -724,7 +718,7 @@ public class MonitorServiceImpl implements MonitorService {
 		}
 		List<String> listNodeIds=new ArrayList<String>();
 		//2.根据根节点ID 查询正式树表的所有节点
-		Result res= serviceCenterClient.getOrderMonitorTreeNodes(edmcNameEn,nowDate , rootId);
+		Result res= serviceCenterClient.getOrderMonitorTreeNodes(edmcNameEn,"" , rootId);
 		if(res.getRetCode()==Result.RECODE_SUCCESS ){
 			if(!JsonUtil.isEmpity(res.getData())){
 				treeArr=JsonUtil.listToJsonArray((List)res.getData());
