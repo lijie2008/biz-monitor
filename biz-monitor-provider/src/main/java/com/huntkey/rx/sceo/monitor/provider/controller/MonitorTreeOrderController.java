@@ -182,6 +182,15 @@ public class MonitorTreeOrderController {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
 
+        Date nowStartDate = Date.valueOf(startDate);
+        Date nowEndDate = Date.valueOf(endDate);
+        
+        if(nowStartDate.after(nowEndDate)){
+            result.setErrMsg("失效时间必须大于生效时间");
+            result.setData(false);
+            return result;
+        }
+            
         NodeTo node = service.queryNode(nodeId);
         
         if(JsonUtil.isEmpity(node) || JsonUtil.isEmpity(node.getPid()))
@@ -198,8 +207,6 @@ public class MonitorTreeOrderController {
            Date upStartDate = Date.valueOf(upNode.getMtor011());
            Date upEndDate = Date.valueOf(upNode.getMtor012());
            
-           Date nowStartDate = Date.valueOf(startDate);
-           Date nowEndDate = Date.valueOf(endDate);
            
            if(upStartDate.after(nowStartDate) ||  nowEndDate.after(upEndDate)){
                result.setErrMsg("本节点时间区间必须在根节点时间区间以内");
