@@ -202,6 +202,7 @@ public class MonitorTreeOrderController {
            Date nowEndDate = Date.valueOf(endDate);
            
            if(upStartDate.after(nowStartDate) ||  nowEndDate.after(upEndDate)){
+               result.setErrMsg("本节点时间区间必须在根节点时间区间以内");
                result.setData(false);
                return result;
            }
@@ -224,10 +225,12 @@ public class MonitorTreeOrderController {
         
        Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
        
-        if(nodeResources.stream().anyMatch(re -> usedResourceIds.contains(re.getMtor020())))
+        if(nodeResources.stream().anyMatch(re -> usedResourceIds.contains(re.getMtor020()))){
+            result.setErrMsg("当前时间区间内,本节点在的资源被其他节点占用");            
             result.setData(false);
-        else
+        }else{
             result.setData(true);
+        }
         
         return result;
     }
