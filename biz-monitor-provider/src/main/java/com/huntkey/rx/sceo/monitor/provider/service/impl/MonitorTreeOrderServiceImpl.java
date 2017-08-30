@@ -447,7 +447,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         search.put("type", "base");
         json.put("search", search);
         json.put(PersistanceConstant.EDMNAME, edmName);
-        logger.info("load 的参数信息： " + new FullInputArgument(json.toJSONString()).getJson());
         Result result = client.load(new FullInputArgument(json.toJSONString()).getJson());
         
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
@@ -473,8 +472,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         if(JsonUtil.isEmpity(treeNodes))
             return null;
-        
-        logger.info("所有节点的个数: " + treeNodes.size() + ", 查询所有的节点： " + JsonUtil.getJsonArrayString(treeNodes));
         
         // 资源信息
         List<ResourceTo> allResource = queryTreeNodeUsingResource(orderId, null, null, null);

@@ -86,8 +86,6 @@ public class RevokedAspect {
                 
                 List<NodeDetailTo> nodes = service.getAllNodesAndResource(orderId);
                 
-                logger.info("查询结果nodes 的大小 ：" + nodes.size() + ", 服务开始前, 节点型操作，查出所有的nodes信息 ： " + JsonUtil.listToJsonArray(nodes));
-                
                 originalMap.put(key, nodes);
                 break;
                 
@@ -116,7 +114,6 @@ public class RevokedAspect {
         String key = getKey(point,revoked.type());
         
         logger.info("服务完成后, 取出key值  ： " + key);
-        logger.info("服务完成后, 答应执行结果  result ： " + JsonUtil.getJsonString(result));
         
         Object value = null;
         
