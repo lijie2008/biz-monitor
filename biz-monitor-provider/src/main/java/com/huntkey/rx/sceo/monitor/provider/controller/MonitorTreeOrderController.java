@@ -185,13 +185,9 @@ public class MonitorTreeOrderController {
         Date nowStartDate = Date.valueOf(startDate);
         Date nowEndDate = Date.valueOf(endDate);
         
-        if(nowStartDate.after(nowEndDate)){
-            result.setErrMsg("失效时间必须大于生效时间");
-            result.setData(false);
-            result.setRetCode(ErrorMessage._60015.getCode());
-            return result;
-        }
-            
+        if(nowStartDate.after(nowEndDate))
+            ApplicationException.throwCodeMesg(ErrorMessage._60015.getCode(),ErrorMessage._60015.getMsg());
+        
         NodeTo node = service.queryNode(nodeId);
         
         if(JsonUtil.isEmpity(node) || JsonUtil.isEmpity(node.getPid()))
@@ -209,12 +205,9 @@ public class MonitorTreeOrderController {
            Date upEndDate = Date.valueOf(upNode.getMtor012());
            
            
-           if(upStartDate.after(nowStartDate) ||  nowEndDate.after(upEndDate)){
-               result.setErrMsg("本节点时间区间必须在上级节点时间区间以内");
-               result.setData(false);
-               result.setRetCode(ErrorMessage._60016.getCode());
-               return result;
-           }
+           if(upStartDate.after(nowStartDate) ||  nowEndDate.after(upEndDate))
+               ApplicationException.throwCodeMesg(ErrorMessage._60016.getCode(),ErrorMessage._60016.getMsg());
+           
        }
            
        List<ResourceTo> nodeResources = service.queryResource(nodeId);
@@ -234,13 +227,10 @@ public class MonitorTreeOrderController {
         
        Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
        
-        if(nodeResources.stream().anyMatch(re -> usedResourceIds.contains(re.getMtor020()))){
-            result.setErrMsg("当前时间区间内,本节点在的资源被其他节点占用");            
-            result.setData(false);
-            result.setRetCode(ErrorMessage._60017.getCode());
-        }else{
+        if(nodeResources.stream().anyMatch(re -> usedResourceIds.contains(re.getMtor020())))
+            ApplicationException.throwCodeMesg(ErrorMessage._60017.getCode(),ErrorMessage._60017.getMsg());
+        else
             result.setData(true);
-        }
         
         return result;
     }
