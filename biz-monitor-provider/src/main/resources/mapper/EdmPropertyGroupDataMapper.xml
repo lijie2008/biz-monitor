@@ -4,7 +4,7 @@
 
 	<select id="select" parameterType="java.util.Map" resultType="java.util.HashMap">
 		SELECT edpg_property_group,edpg_edmc_id,edpg_edmp_id FROM edm_property_group
-		WHERE 1=1 
+		WHERE is_del = 0  
     <if test="edpg_property_group != null">
       AND edpg_property_group = #{edpg_property_group} 
     </if>

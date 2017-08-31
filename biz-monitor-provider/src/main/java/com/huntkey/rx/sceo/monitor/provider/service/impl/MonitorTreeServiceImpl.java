@@ -321,7 +321,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                     new ConditionNode("moni004", OperatorType.LessEquals, currentDate));
             //失效时间
             requestParams.addCondition(
-                    new ConditionNode("moni005", OperatorType.GreaterEquals, currentDate));
+                    new ConditionNode("moni005", OperatorType.Greater, currentDate));
 
             LOG.info("查询json:{}", requestParams.toJSONString());
 
