@@ -188,7 +188,7 @@ public class MonitorTreeOrderController {
         if(nowStartDate.after(nowEndDate)){
             result.setErrMsg("失效时间必须大于生效时间");
             result.setData(false);
-            result.setErrMsg(ErrorMessage._60015.toString());
+            result.setRetCode(ErrorMessage._60015.getCode());
             return result;
         }
             
@@ -212,7 +212,7 @@ public class MonitorTreeOrderController {
            if(upStartDate.after(nowStartDate) ||  nowEndDate.after(upEndDate)){
                result.setErrMsg("本节点时间区间必须在上级节点时间区间以内");
                result.setData(false);
-               result.setErrMsg(ErrorMessage._60016.toString());
+               result.setRetCode(ErrorMessage._60016.getCode());
                return result;
            }
        }
@@ -237,7 +237,7 @@ public class MonitorTreeOrderController {
         if(nodeResources.stream().anyMatch(re -> usedResourceIds.contains(re.getMtor020()))){
             result.setErrMsg("当前时间区间内,本节点在的资源被其他节点占用");            
             result.setData(false);
-            result.setErrMsg(ErrorMessage._60017.toString());
+            result.setRetCode(ErrorMessage._60017.getCode());
         }else{
             result.setData(true);
         }
