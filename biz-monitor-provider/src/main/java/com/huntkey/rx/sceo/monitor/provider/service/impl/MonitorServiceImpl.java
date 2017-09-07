@@ -163,7 +163,7 @@ public class MonitorServiceImpl implements MonitorService {
 		condition.addCondition(PID, EQUAL, nodeId, true);
 		JSONArray resourceArr=DBUtils.getArrayResult(MTOR019, null, condition);
 		if(!JsonUtil.isNullOrEmpty(resourceArr)){
-			LoopTO loop=new LoopTO(resourceTab,ID,MTOR020,null,null);
+			LoopTO loop=new LoopTO(resourceTab,ID,MTOR020,null,null);  
 			//循环查询资源表
 			resources=DBUtils.loopQuery(loop, resourceArr);
 			//结果集中字段转换
@@ -234,14 +234,46 @@ public class MonitorServiceImpl implements MonitorService {
 		//修改下级节点失效日期
 		//1.根据根节点ID 临时单下级节点信息
 		JSONArray childrenNodes=getChildNode(nodeId);
+		childDateUpdate(beginDate,endDate,childrenNodes);
+		return nodeId;
+	}
+	//判断节点时间修改对子节点影响
+	private void childDateUpdate(String beginDate,String endDate,JSONArray childrenNodes){
+		//遍历子节点，判断父节点修改时间对子节点的影响
+		JSONObject json=null;
+		String childBeginDate=null;
+		String childEndDate=null;
 		if(!JsonUtil.isNullOrEmpty(childrenNodes)){
-			Map<String, Object> map=new HashMap<String, Object>();
-			map.put(MTOR011, beginDate);
-			map.put(MTOR012, endDate);
-			childrenNodes=JsonUtil.addAttr(childrenNodes,map);
+			for(Object obj:childrenNodes){
+				json=JsonUtil.getJson(obj); 
+				if(json!=null){
+					childBeginDate=json.getString(MTOR011);
+					childEndDate=json.getString(MTOR012);
+					//-->修改父节点的失效日期
+					//1.子节点失效日期大于父节点修改的失效日期  ==>子节点失效日期=父节点失效日期
+					if(JsonUtil.compareDate(endDate, childEndDate)){
+						json.put(MTOR012, endDate);
+					}
+					//2.修改的子节点失效日期小于等于子节点的生效日期==>子节点失效 
+					if(!JsonUtil.compareDate(childBeginDate,endDate)){
+						json.put(MTOR021, ChangeType.INVALID);
+						deleteNode(json.getString(ID), 0);
+					}
+					
+					//-->修改父节点的生效日期
+					//1.父节点生效日期>子节点生效日期时==>子节点生效日期=父节点生效日期
+					if(JsonUtil.compareDate(childBeginDate,beginDate)){
+						json.put(MTOR011, beginDate);
+					}
+					//2.如果父节点的生效日期大于等于子节点失效日期==>子节点失效
+					if(!JsonUtil.compareDate(beginDate,childEndDate)){
+						json.put(MTOR021, ChangeType.INVALID);
+						deleteNode(json.getString(ID), 0);
+					}
+				}
+			}
 			DBUtils.update(MTOR005, childrenNodes, "");
 		}
-		return nodeId;
 	}
 	/**
 	 * 删除节点资源
@@ -795,7 +827,6 @@ public class MonitorServiceImpl implements MonitorService {
 									tempStr=tempStr.replace(oldChar,newChar);//将旧ID替换成新的节点ID
 								}
 								if(!StringUtil.isNullOrEmpty(resourceStr)){
-									
 									resourceStr=resourceStr.replace(oldChar,
 											newChar);//将旧ID替换成新的节点ID
 								}
