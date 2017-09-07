@@ -72,7 +72,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         ConditionParam cnd = new ConditionParam(Constant.ID, "=", nodeId); 
         
-        cnds.add(cnd);  
+        cnds.add(cnd);
         
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR005A,null, cnds, null, null));
         
