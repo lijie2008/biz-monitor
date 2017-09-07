@@ -805,32 +805,20 @@ public class MonitorServiceImpl implements MonitorService {
 	 */
 	private JSONObject updateNodePosition(JSONArray treeFormal,JSONArray treeTemp,JSONArray resourceArr) {
 		// TODO Auto-generated method stub
-		String tempStr="";
-		String resourceStr="";
+		Map<String, String> map=new HashMap<String, String>();//新旧id关系维护  key==》是旧的节点ID  value==》新的节点ID
+		JSONArray treeTempClone=null;
 		if(!JsonUtil.isNullOrEmpty(treeFormal) && !JsonUtil.isNullOrEmpty(treeTemp)){
-			tempStr=JsonUtil.getJsonArrayString(treeTemp);//获取jsonArray字符串
-			resourceStr=JsonUtil.getJsonArrayString(resourceArr);//获取jsonArray字符串
-			JSONObject jsonFormal=null;
-			JSONObject jsonTemp=null;
-			for(Object objFormal:treeFormal){
-				jsonFormal=JsonUtil.getJson(objFormal);
-				if(jsonFormal!=null){
-					for(int i=0;i<treeTemp.size();i++){
-						jsonTemp=treeTemp.getJSONObject(i);
-						if(jsonTemp!=null){
-							if(StringUtil.isEqual(jsonFormal.getString("moni001"),
-								jsonTemp.getString("mtor006"))){//如果编号相等
-								String oldChar=jsonFormal.getString(ID);
-								String newChar=jsonTemp.getString(ID);
-								if(!StringUtil.isNullOrEmpty(tempStr)){
-									
-									tempStr=tempStr.replace(oldChar,newChar);//将旧ID替换成新的节点ID
-								}
-								if(!StringUtil.isNullOrEmpty(resourceStr)){
-									resourceStr=resourceStr.replace(oldChar,
-											newChar);//将旧ID替换成新的节点ID
-								}
-								treeTemp.remove(jsonTemp);
+			treeTempClone=(JSONArray) treeTemp.clone();
+			for(Object objFormal:treeFormal){//遍历正式树
+				JSONObject nodeFormal=JsonUtil.getJson(objFormal);
+				if(nodeFormal!=null){
+					for(Object objTemp:treeTemp){//遍历临时树
+						JSONObject nodeTemp=JsonUtil.getJson(objTemp);
+						if(nodeTemp!=null){//匹配正式树和临时树的节点编号
+							if(StringUtil.isEqual(nodeFormal.getString("moni001"),
+									nodeTemp.getString("mtor006"))){//如果编号相等  则记录新旧ID
+								map.put(nodeFormal.getString(ID), nodeTemp.getString(ID));
+								treeTemp.remove(nodeTemp);
 								break;
 							}
 						}
@@ -838,15 +826,84 @@ public class MonitorServiceImpl implements MonitorService {
 				}
 			}
 		}
+		//修改临时树的节点关系
+		if(treeTempClone!=null){
+			String pNode,cNode,lNode,rNode;
+			String pNodeOld,cNodeOld,lNodeOld,rNodeOld;
+			for(Object temp:treeTempClone){//遍历临时树  根据新旧ID关系变更
+				JSONObject tempNode=JsonUtil.getJson(temp);
+				if(tempNode!=null){
+					pNodeOld=tempNode.getString(MTOR013);
+					pNode=map.get(pNodeOld);
+					cNodeOld=tempNode.getString(MTOR014);
+					cNode=map.get(cNodeOld);
+					lNodeOld=tempNode.getString(MTOR015);
+					lNode=map.get(lNodeOld);
+					rNodeOld=tempNode.getString(MTOR016);
+					rNode=map.get(rNodeOld);
+					tempNode.put(MTOR013, StringUtil.isNullOrEmpty(pNode)?pNodeOld:pNode);
+					tempNode.put(MTOR014, StringUtil.isNullOrEmpty(cNode)?cNodeOld:cNode);
+					tempNode.put(MTOR015, StringUtil.isNullOrEmpty(lNode)?lNodeOld:lNode);
+					tempNode.put(MTOR016, StringUtil.isNullOrEmpty(rNode)?rNodeOld:rNode);
+				}
+			}
+		}
+		
+		//修改资源的pid
+		if(resourceArr!=null){
+			String pidOld,pidNew;
+			for(Object resourceObj:resourceArr){//资源关系表  根据新旧ID关系变更PID
+				JSONObject resource=JsonUtil.getJson(resourceObj);
+				if(resource!=null){
+					pidOld=resource.getString(PID);
+					pidNew=map.get(pidOld);
+					resource.put(PID, StringUtil.isNullOrEmpty(pidNew)?pidOld:pidNew);
+				}
+			}
+		}
+		
+//		String tempStr="";
+//		String resourceStr="";
+//		if(!JsonUtil.isNullOrEmpty(treeFormal) && !JsonUtil.isNullOrEmpty(treeTemp)){
+//			tempStr=JsonUtil.getJsonArrayString(treeTemp);//获取jsonArray字符串
+//			resourceStr=JsonUtil.getJsonArrayString(resourceArr);//获取jsonArray字符串
+//			JSONObject jsonFormal=null;
+//			JSONObject jsonTemp=null;
+//			for(Object objFormal:treeFormal){
+//				jsonFormal=JsonUtil.getJson(objFormal);
+//				if(jsonFormal!=null){
+//					for(int i=0;i<treeTemp.size();i++){
+//						jsonTemp=treeTemp.getJSONObject(i);
+//						if(jsonTemp!=null){
+//							if(StringUtil.isEqual(jsonFormal.getString("moni001"),
+//								jsonTemp.getString("mtor006"))){//如果编号相等
+//								String oldChar=jsonFormal.getString(ID);
+//								String newChar=jsonTemp.getString(ID);
+//								if(!StringUtil.isNullOrEmpty(tempStr)){
+//									
+//									tempStr=tempStr.replace(oldChar,newChar);//将旧ID替换成新的节点ID
+//								}
+//								if(!StringUtil.isNullOrEmpty(resourceStr)){
+//									resourceStr=resourceStr.replace(oldChar,
+//											newChar);//将旧ID替换成新的节点ID
+//								}
+//								treeTemp.remove(jsonTemp);
+//								break;
+//							}
+//						}  
+//					}
+//				}
+//			}
+//		}
 		JSONObject retObj=new JSONObject();
-		retObj.put("treeTemp", JsonUtil.getJsonArray(tempStr));
-		retObj.put("resource", JsonUtil.getJsonArray(resourceStr));
+		retObj.put("treeTemp", treeTempClone);
+		retObj.put("resource", resourceArr);
 		return retObj;
 	}
 	/**
 	 * 新增根节点
 	 * @param pid 临时单ID
-	 * @param beginDate 生效日期
+	 * @param beginDate 生效日期  
 	 * @param endDate 失效日期
 	 * @return
 	 */
@@ -871,7 +928,7 @@ public class MonitorServiceImpl implements MonitorService {
 	@Override
 	public String treeMaintaince(String classId, String rootId, String edmcNameEn) {
 		// TODO Auto-generated method stub
-		//先根据根节点查询是否存在临时树\
+		//先根据根节点查询是否存在临时树
 		Condition condition=new Condition();
 		condition.addCondition(MTOR004, EQUAL, rootId, true);
 		JSONObject ret=DBUtils.getObjectResult(MONITORTREEORDER, null, condition);
