@@ -549,7 +549,7 @@ public class MonitorServiceImpl implements MonitorService {
 	}
 	
 	//递归查询子节点
-	private JSONArray getChildNode(String nodeId){
+	public JSONArray getChildNode(String nodeId){
 		JSONArray allNodes=new JSONArray();
 		Condition condition=new Condition();
 		condition.addCondition(MTOR013, EQUAL, nodeId, true);

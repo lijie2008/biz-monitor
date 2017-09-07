@@ -116,6 +116,11 @@ public class NodeTo implements Serializable{
     private String mtor022;
     
     /**
+     * 变更节点id
+     */
+    private String mtor023;
+    
+    /**
      * 创建人
      */
     private String adduser;
@@ -279,6 +284,14 @@ public class NodeTo implements Serializable{
 
     public void setModuser(String moduser) {
         this.moduser = moduser;
+    }
+
+    public String getMtor023() {
+        return mtor023;
+    }
+
+    public void setMtor023(String mtor023) {
+        this.mtor023 = mtor023;
     }
     
 }

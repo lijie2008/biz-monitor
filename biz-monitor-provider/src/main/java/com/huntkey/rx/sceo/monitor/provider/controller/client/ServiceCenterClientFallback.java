@@ -9,12 +9,11 @@
 
 package com.huntkey.rx.sceo.monitor.provider.controller.client;
 
-import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 
 import com.huntkey.rx.commons.utils.rest.Result;
-
-import java.util.List;
 
 /**
  * ClassName:ServiceCenterClientFallback
@@ -101,23 +100,7 @@ public class ServiceCenterClientFallback implements ServiceCenterClient{
     }
 
     @Override
-    public Result queryTreeNodeResource(String orderId, String startDate, String endDate, String excNodeId) {
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("hbase client update fallback");
-        return result;
-    }
-
-    @Override
-    public Result updateTargetNode(String edmName, TargetNodeTo node) {
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("hbase client update fallback");
-        return result;
-    }
-
-    @Override
-    public Result getTargetAllChildNode(String edmName, String nodeId, String endDate) {
+    public Result queryTreeNodeResource(String orderId, String startDate, String endDate, String excNodeId, Boolean invalid) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("hbase client update fallback");

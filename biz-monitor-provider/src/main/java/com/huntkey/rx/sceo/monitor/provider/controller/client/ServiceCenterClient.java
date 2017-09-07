@@ -93,14 +93,7 @@ public interface ServiceCenterClient {
 
     @RequestMapping(value= "/monitor/queryTreeNodeResource", method = RequestMethod.GET)
     Result queryTreeNodeResource(@RequestParam(value="orderId") String orderId,@RequestParam(value="startDate",defaultValue="") String startDate,
-                                 @RequestParam(value="endDate",defaultValue="") String endDate, @RequestParam(value="excNodeId",defaultValue="") String excNodeId);
-
-    @RequestMapping(value= "/monitor/updateTargetNode", method = RequestMethod.POST)
-    Result updateTargetNode(@RequestParam(value="edmName") String edmName, @RequestBody TargetNodeTo node);
-
-    @RequestMapping(value= "/monitor/getTargetAllChildNode", method = RequestMethod.GET)
-    Result getTargetAllChildNode(@RequestParam(value="edmName") String edmName,
-                                 @RequestParam(value="nodeId") String nodeId,@RequestParam(value="endDate",defaultValue = "") String endDate);
+                                 @RequestParam(value="endDate",defaultValue="") String endDate, @RequestParam(value="excNodeId",defaultValue="") String excNodeId, Boolean invalid);
 
     @RequestMapping(value= "/servicecenter/business/monitors/trees/nodes", method = RequestMethod.GET)
     Result getOrderMonitorTreeNodes(@RequestParam(value = "edmcNameEn") String edmcNameEn,

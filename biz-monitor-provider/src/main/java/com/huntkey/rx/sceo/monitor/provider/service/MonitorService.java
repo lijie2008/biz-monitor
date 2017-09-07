@@ -35,4 +35,6 @@ public interface MonitorService {
 	String addMonitorTree(AddMonitorTreeTo addMonitorTreeTo);
 	//监管树维护
 	String treeMaintaince(String classId,String rootId,String edmcNameEn);
+	// 获取临时单中当前节点所有子节点
+	JSONArray getChildNode(String nodeId);
 }

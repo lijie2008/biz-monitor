@@ -10,6 +10,7 @@
 package com.huntkey.rx.sceo.monitor.provider.service.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,7 +41,6 @@ import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.PagenationParam;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.commom.model.SortParam;
-import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.MonitorTreeOrderController;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
@@ -56,6 +56,8 @@ import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
  */
 @Component
 public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
+    
+    private static final Logger logger = LoggerFactory.getLogger(MonitorTreeOrderController.class);
     
     @Autowired
     private ServiceCenterClient client;
@@ -95,9 +97,13 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
 
     @Override
     public List<ResourceTo> queryResource(String nodeId) {
+        
         List<ConditionParam> cnds = new ArrayList<ConditionParam>();
+        
         ConditionParam cnd = new ConditionParam(Constant.PID, "=", nodeId); 
+        
         cnds.add(cnd);
+        
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR019B,null, cnds, null, null));
         
         Result result = client.find(input.getJson());
@@ -146,9 +152,9 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     
     @Override
     public List<ResourceTo> queryTreeNodeUsingResource(String orderId, String startDate, 
-                                                       String endDate, String excNodeId) {
+                                                       String endDate, String excNodeId, Boolean invalid) {
         
-        Result result = client.queryTreeNodeResource(orderId, startDate, endDate,excNodeId);
+        Result result = client.queryTreeNodeResource(orderId, startDate, endDate,excNodeId, invalid);
         
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
             logger.info("queryTreeNodeUsingResource 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
@@ -272,10 +278,13 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     public List<NodeTo> queryTreeNode(String orderId) {
         
         List<ConditionParam> cnds = new ArrayList<ConditionParam>();
+        
         ConditionParam cnd = new ConditionParam(PersistanceConstant.PID,"=",orderId);
+        
         cnds.add(cnd);
         
         FullInputArgument input = new FullInputArgument(queryParam(PersistanceConstant.MTOR_MTOR005A, null,cnds, null, null));
+        
         Result result = client.find(input.getJson());
         
         logger.info("查询所有的节点信息queryTreeNode ： " + JsonUtil.getJsonString(result));
@@ -287,8 +296,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         if(!JsonUtil.isEmpity(result.getData())){
             JSONArray dataset = JsonUtil.getJson(result.getData()).getJSONArray(PersistanceConstant.DATASET);
-            
-            logger.info("dataset 大小 ：" + dataset.size() + "查询的结果集信息queryTreeNode  result ： " + JsonUtil.getJsonString(dataset));
             
             if(!JsonUtil.isEmpity(dataset))
                 return JsonUtil.getList(dataset, NodeTo.class);
@@ -311,28 +318,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         if(!JsonUtil.isEmpity(result.getData()))
             return JsonUtil.isEmpity(JsonUtil.getJson(result.getData())) ? null : JsonUtil.getJson(result.getData()).getString("edmcNameEn");
         return null;
-    }
-
-    @Override
-    public void updateTargetNode(String edmName, TargetNodeTo node) {
-        
-        Result result = client.updateTargetNode(edmName, node);
-        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info("updateTargetNode 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
-            ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
-        }
-    }
-
-    @Override
-    public JSONArray getTargetAllChildNode(String edmName, String nodeId, String endDate) {
-        
-        Result result = client.getTargetAllChildNode(edmName, nodeId, endDate);
-        if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info("getTargetAllChildNode 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
-            ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
-        }
-        
-        return JsonUtil.getJsonArray(JsonUtil.getJsonString(result.getData()));
     }
 
     @Override
@@ -364,8 +349,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         json.put(PersistanceConstant.EDMNAME, edmName);
         return json.toJSONString();
     }
-    
-    private static final Logger logger = LoggerFactory.getLogger(MonitorTreeOrderController.class);
     
     @SuppressWarnings("unchecked")
     @Override
@@ -474,7 +457,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             return null;
         
         // 资源信息
-        List<ResourceTo> allResource = queryTreeNodeUsingResource(orderId, null, null, null);
+        List<ResourceTo> allResource = queryTreeNodeUsingResource(orderId, null, null, null,false);
         
         Map<String, List<ResourceTo>> groupResource = JsonUtil.isEmpity(allResource) ? new HashMap<>():
             allResource.stream().collect(Collectors.groupingBy(ResourceTo::getPid));
@@ -491,6 +474,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
 
     @Override
     public void deleteOrder(String orderId) {
+        
         JSONArray arry = new JSONArray();
         JSONObject obj = new JSONObject();
         obj.put(PersistanceConstant.ID, orderId);
@@ -539,7 +523,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         if(JsonUtil.isEmpity(resources))
             return null;
         
-        List<ResourceTo> usedResources = queryTreeNodeUsingResource(orderId, null, null,null);
+        List<ResourceTo> usedResources = queryTreeNodeUsingResource(orderId, null, null,null,true);
         
         if(JsonUtil.isEmpity(usedResources))
             return JsonUtil.listToJsonArray(resources);
@@ -548,6 +532,40 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
        
        return resources.stream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> queryTargetResource(String edmName, List<String> ids) {
+        
+        List<String> tids = new ArrayList<String>();
+        
+        ids.stream().forEach(s->{
+            
+            List<ConditionParam> cnds = new ArrayList<ConditionParam>();
+            
+            ConditionParam cnd = new ConditionParam(Constant.PID, "=", s); 
+            
+            cnds.add(cnd);
+            
+            FullInputArgument input = new FullInputArgument(queryParam(edmName,Arrays.asList(new String[]{Constant.ID}), cnds, null, null));
+            
+            Result result = client.find(input.getJson());
+            
+            if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
+                logger.info("queryResource 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
+                ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
+            }
+            
+            if(!JsonUtil.isEmpity(result.getData())){
+                JSONArray dataset = JsonUtil.getJson(result.getData()).getJSONArray(PersistanceConstant.DATASET);
+                if(!JsonUtil.isEmpity(dataset))
+                    dataset.stream().forEach(d->{
+                        tids.add(((JSONObject)d).getString(Constant.ID));
+                    });
+            }
+        });
+        
+        return tids;
     }
 }
 
