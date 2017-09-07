@@ -34,7 +34,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
-import com.huntkey.rx.sceo.monitor.commom.constant.PersistanceConstant;
 import com.huntkey.rx.sceo.monitor.commom.constant.ValidBean;
 import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
@@ -109,7 +108,7 @@ public class MonitorTreeOrderController {
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"表单、节点" + ErrorMessage._60005.getMsg());
         
         String mtor003 = order.getMtor003();
-        EdmClassTo edmClass = service.getEdmClass(mtor003, PersistanceConstant.EDMPCODE);
+        EdmClassTo edmClass = service.getEdmClass(mtor003, Constant.EDMPCODE);
         
         if(JsonUtil.isEmpity(edmClass) || JsonUtil.isEmpity(edmClass.getEdmcNameEn()))
             ApplicationException.throwCodeMesg(ErrorMessage._60008.getCode(),ErrorMessage._60008.getMsg());
@@ -127,7 +126,7 @@ public class MonitorTreeOrderController {
             datas = resources;
         else{
             Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
-            datas = resources.stream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
+            datas = resources.stream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(Constant.ID)))
                     .collect(Collectors.toList());
         }
         
@@ -148,7 +147,7 @@ public class MonitorTreeOrderController {
             
             data.stream().forEach(s->{
                 JSONObject obj = new JSONObject();
-                obj.put(PersistanceConstant.ID, ((JSONObject)s).get(PersistanceConstant.ID));
+                obj.put(Constant.ID, ((JSONObject)s).get(Constant.ID));
                 obj.put("text", format.format((JSONObject)s));
                 re.add(obj);
             });   
@@ -400,7 +399,7 @@ public class MonitorTreeOrderController {
                 NodeDetailTo to = JSON.parseObject(JSON.toJSONString(re.getObj()), NodeDetailTo.class);
                 to.setModuser(MODUSER);
                 
-                service.updateNodeAndResource(PersistanceConstant.MTOR_MTOR005A,to);
+                service.updateNodeAndResource(Constant.MTOR005,to);
                 
                 re.setObj(to.getId());
                 break;
@@ -463,12 +462,10 @@ public class MonitorTreeOrderController {
         // 清除原数据
         List<NodeTo> n_nodes = service.queryTreeNode(orderId);
         
-        if(JsonUtil.isEmpity(n_nodes))
-            ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(), ErrorMessage._60003.getMsg());
-        
-        List<String> nodeIds = n_nodes.stream().map(NodeTo::getId).collect(Collectors.toList());
-        
-        service.batchDeleteResource(PersistanceConstant.MTOR_MTOR005A, nodeIds);
+        if(!JsonUtil.isEmpity(n_nodes)){
+            List<String> nodeIds = n_nodes.stream().map(NodeTo::getId).collect(Collectors.toList());
+            service.batchDeleteResource(Constant.MTOR005, nodeIds);
+        }
         
         // 新增redis中保存的数据
         List<NodeDetailTo> nodes = (List<NodeDetailTo>) data;
@@ -496,22 +493,21 @@ public class MonitorTreeOrderController {
             }
          });
         
-        List<String> ids = service.batchAdd(PersistanceConstant.MTOR_MTOR005A, JSON.parseArray(JSON.toJSONString(nodes_c)));
+        List<String> ids = service.batchAdd(Constant.MTOR005, JSON.parseArray(JSON.toJSONString(nodes_c)));
         
         if(ids.isEmpty())
             ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),"新增节点信息失败" + ErrorMessage._60003.getMsg());
         
-        List<NodeDetailTo> allNodes = service.load(PersistanceConstant.MTOR_MTOR005A, ids);
+        List<NodeDetailTo> allNodes = service.load(Constant.MTOR005, ids);
         
         if(JsonUtil.isEmpity(allNodes))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"临时单数据节点" + ErrorMessage._60005.getMsg());
         
         JSONArray ar = new JSONArray();
-        logger.info("旧数据 ： " +  JsonUtil.listToJsonArray(nodes).toJSONString() + "新数据： " + JsonUtil.listToJsonArray(allNodes).toJSONString());
         allNodes.stream().forEach(s->{
             NodeDetailTo no = nodes.stream().filter(n->s.getMtor006().equals(n.getMtor006())).findFirst().get();
             JSONObject obj = new JSONObject();
-            obj.put(PersistanceConstant.ID, s.getId());
+            obj.put(Constant.ID, s.getId());
             obj.put("mtor013", getId(nodes,allNodes,no.getMtor013()));
             obj.put("mtor014", getId(nodes,allNodes,no.getMtor014()));
             obj.put("mtor015", getId(nodes,allNodes,no.getMtor015()));
@@ -525,7 +521,7 @@ public class MonitorTreeOrderController {
             s.setModuser(MODUSER);
         });
         
-        service.batchUpdate(PersistanceConstant.MTOR_MTOR005A, ar);
+        service.batchUpdate(Constant.MTOR005, ar);
         
         return allNodes;
     }
@@ -584,7 +580,7 @@ public class MonitorTreeOrderController {
         targetAllNode.stream().forEach(s->{
             NodeDetailTo no = nodes.stream().filter(n->s.getMtor006().equals(n.getMtor006())).findFirst().get();
             JSONObject obj = new JSONObject();
-            obj.put(PersistanceConstant.ID, s.getId());
+            obj.put(Constant.ID, s.getId());
             obj.put("moni006", getId(nodes,targetAllNode,no.getMtor013()));
             obj.put("moni007", getId(nodes,targetAllNode,no.getMtor014()));
             obj.put("moni008", getId(nodes,targetAllNode,no.getMtor015()));
@@ -725,7 +721,7 @@ public class MonitorTreeOrderController {
         targetAllNode.stream().forEach(s->{
             NodeDetailTo no = nodes.stream().filter(n->s.getMtor006().equals(n.getMtor006())).findFirst().get();
             JSONObject obj = new JSONObject();
-            obj.put(PersistanceConstant.ID, s.getId());
+            obj.put(Constant.ID, s.getId());
             obj.put("moni006", getId(nodes,targetAllNode,no.getMtor013()));
             obj.put("moni007", getId(nodes,targetAllNode,no.getMtor014()));
             obj.put("moni008", getId(nodes,targetAllNode,no.getMtor015()));

@@ -8,7 +8,8 @@
 
 package com.huntkey.rx.sceo.monitor.provider.controller.client;
 
-import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
+import java.util.List;
+
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,8 +17,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.huntkey.rx.commons.utils.rest.Result;
-
-import java.util.List;
 
 /**
  * ServiceCenterClient
@@ -91,9 +90,9 @@ public interface ServiceCenterClient {
     @RequestMapping(value= "/servicecenter/update", method = RequestMethod.POST)
     Result update(@RequestBody String datas);
 
-    @RequestMapping(value= "/monitor/queryTreeNodeResource", method = RequestMethod.GET)
+    @RequestMapping(value= "/servicecenter/business/monitors/usedResources", method = RequestMethod.GET)
     Result queryTreeNodeResource(@RequestParam(value="orderId") String orderId,@RequestParam(value="startDate",defaultValue="") String startDate,
-                                 @RequestParam(value="endDate",defaultValue="") String endDate, @RequestParam(value="excNodeId",defaultValue="") String excNodeId, Boolean invalid);
+                                 @RequestParam(value="endDate",defaultValue="") String endDate, @RequestParam(value="excNodeId",defaultValue="") String excNodeId, @RequestParam(value="invalid",defaultValue="false") Boolean invalid);
 
     @RequestMapping(value= "/servicecenter/business/monitors/trees/nodes", method = RequestMethod.GET)
     Result getOrderMonitorTreeNodes(@RequestParam(value = "edmcNameEn") String edmcNameEn,
