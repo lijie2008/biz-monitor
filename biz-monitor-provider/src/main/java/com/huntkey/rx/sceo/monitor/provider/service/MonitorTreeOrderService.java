@@ -66,9 +66,10 @@ public interface MonitorTreeOrderService {
      * @param startDate
      * @param endDate - 可为空 空代表最大的失效日期
      * @param excNodeId - 此id的资源不统计
+     * @param invalid - 是否跳过失效的节点
      * @return
      */
-    List<ResourceTo> queryTreeNodeUsingResource(String orderId, String startDate, String endDate,String excNodeId);
+    List<ResourceTo> queryTreeNodeUsingResource(String orderId, String startDate, String endDate,String excNodeId,Boolean invalid);
     
     /**
      * 
@@ -125,26 +126,6 @@ public interface MonitorTreeOrderService {
      * @return
      */
     String queryEdmClassName(String id);
-    
-    /**
-     * 
-     * updateTargetNode:(描述这个方法的作用)
-     * @author lijie
-     * @param edmName 目标表的edmName
-     * @param node 当前节点信息
-     */
-    void updateTargetNode(String edmName , TargetNodeTo node);
-    
-    /**
-     * 
-     * getTargetAllChildNode: 获取目标表当前节点下的所有子节点信息
-     * @author lijie
-     * @param edmName 目标类
-     * @param nodeId 上级节点id
-     * @param endDate 失效时间
-     * @return
-     */
-    JSONArray getTargetAllChildNode(String edmName, String nodeId,String endDate);
     
     /**
      * 
@@ -234,5 +215,15 @@ public interface MonitorTreeOrderService {
      * @return
      */
     List<Object> queryAvailableResource(String orderId);
+
+    /**
+     * 
+     * queryTargetResource:查询节点下的所有资源信息
+     * @author lijie
+     * @param edmName 
+     * @param ids
+     * @return
+     */
+    List<String> queryTargetResource(String edmName, List<String> ids);
 }
 

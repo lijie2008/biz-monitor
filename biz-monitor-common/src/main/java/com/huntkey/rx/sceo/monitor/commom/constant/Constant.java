@@ -160,5 +160,9 @@ public interface Constant {
     String MAXINVALIDDATE="9999-12-31";//最大失效日期
     
     String STAFFCLASSID="6f913ed266e211e7b2e4005056bc4879";
+    
+    String EDMPCODE = "moni012";
+    
+    String VALUE = "value";
 }
 

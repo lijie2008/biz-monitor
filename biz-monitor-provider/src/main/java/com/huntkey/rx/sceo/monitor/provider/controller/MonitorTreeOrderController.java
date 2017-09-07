@@ -33,9 +33,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
-import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
-import com.huntkey.rx.sceo.monitor.commom.constant.PersistanceConstant;
 import com.huntkey.rx.sceo.monitor.commom.constant.ValidBean;
 import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
@@ -49,6 +47,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
 import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
+import com.huntkey.rx.sceo.monitor.commom.model.TargetResourceTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.config.Revoked;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
@@ -109,7 +108,7 @@ public class MonitorTreeOrderController {
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"表单、节点" + ErrorMessage._60005.getMsg());
         
         String mtor003 = order.getMtor003();
-        EdmClassTo edmClass = service.getEdmClass(mtor003, PersistanceConstant.EDMPCODE);
+        EdmClassTo edmClass = service.getEdmClass(mtor003, Constant.EDMPCODE);
         
         if(JsonUtil.isEmpity(edmClass) || JsonUtil.isEmpity(edmClass.getEdmcNameEn()))
             ApplicationException.throwCodeMesg(ErrorMessage._60008.getCode(),ErrorMessage._60008.getMsg());
@@ -120,14 +119,14 @@ public class MonitorTreeOrderController {
         if(JsonUtil.isEmpity(resources))
             return result;
         
-        List<ResourceTo> usedResources = service.queryTreeNodeUsingResource(orderId, node.getMtor011(), node.getMtor012(),null);
+        List<ResourceTo> usedResources = service.queryTreeNodeUsingResource(orderId, node.getMtor011(), node.getMtor012(),null,true);
         
         List<Object> datas = null;
         if(JsonUtil.isEmpity(usedResources))
             datas = resources;
         else{
             Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
-            datas = resources.stream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(PersistanceConstant.ID)))
+            datas = resources.stream().filter(re -> !usedResourceIds.contains(((JSONObject)re).getString(Constant.ID)))
                     .collect(Collectors.toList());
         }
         
@@ -148,7 +147,7 @@ public class MonitorTreeOrderController {
             
             data.stream().forEach(s->{
                 JSONObject obj = new JSONObject();
-                obj.put(PersistanceConstant.ID, ((JSONObject)s).get(PersistanceConstant.ID));
+                obj.put(Constant.ID, ((JSONObject)s).get(Constant.ID));
                 obj.put("text", format.format((JSONObject)s));
                 re.add(obj);
             });   
@@ -212,26 +211,37 @@ public class MonitorTreeOrderController {
            
        List<ResourceTo> nodeResources = service.queryResource(nodeId);
        
-       if(JsonUtil.isEmpity(nodeResources)){
-           result.setData(true);
-           return result;
+       if(!JsonUtil.isEmpity(nodeResources)){
+           
+           List<ResourceTo> usedResources = service.queryTreeNodeUsingResource(node.getPid(), startDate, endDate, nodeId,true);
+           
+           if(!JsonUtil.isEmpity(usedResources)){
+               Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
+               if(nodeResources.stream().anyMatch(re -> usedResourceIds.contains(re.getMtor020())))
+                   ApplicationException.throwCodeMesg(ErrorMessage._60017.getCode(),ErrorMessage._60017.getMsg());
+           }
        }
-
-        
-        List<ResourceTo> usedResources = service.queryTreeNodeUsingResource(node.getPid(), startDate, endDate, nodeId);
-        
-        if(JsonUtil.isEmpity(usedResources)){
-            result.setData(true);
-            return result;
-        }
-        
-       Set<String> usedResourceIds = usedResources.stream().map(ResourceTo::getMtor020).collect(Collectors.toSet());
        
-        if(nodeResources.stream().anyMatch(re -> usedResourceIds.contains(re.getMtor020())))
-            ApplicationException.throwCodeMesg(ErrorMessage._60017.getCode(),ErrorMessage._60017.getMsg());
-        else
-            result.setData(true);
-        
+       // 修改的父节点是否会导致 子节点失效
+       List<NodeTo> child_nodes = JsonUtil.getList(mService.getChildNode(nodeId), NodeTo.class);
+       
+       result.setData(true);
+       
+       if(!JsonUtil.isEmpity(child_nodes)){
+           
+           child_nodes.stream().anyMatch(s->{
+               
+               Date cStartDate = Date.valueOf(s.getMtor011());
+               
+               Date cEndDate = Date.valueOf(s.getMtor012());
+               
+               if(!nowStartDate.before(cEndDate) || !nowEndDate.after(cStartDate)){
+                   result.setData(false);
+                   return true;
+               }
+               return false;
+           });
+       }
         return result;
     }
     
@@ -320,29 +330,30 @@ public class MonitorTreeOrderController {
         
         logger.info("查询临时单所有节点 和 对应资源信息 开始" + new Timestamp(System.currentTimeMillis()));
         
-        List<NodeDetailTo> treeNodes = service.getAllNodesAndResource(orderId);
+        List<NodeDetailTo> nodes = service.getAllNodesAndResource(orderId);
         
         logger.info("查询临时单所有节点 和 对应资源信息 结束" + new Timestamp(System.currentTimeMillis()));
         
-        if(JsonUtil.isEmpity(treeNodes))
+        if(JsonUtil.isEmpity(nodes))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"节点" + ErrorMessage._60005.getMsg());
         
-        List<NodeDetailTo> nodes = treeNodes.stream().filter(s->ChangeType.valueOf(s.getMtor021()) != ChangeType.INVALID)
-                .collect(Collectors.toList());
-
         ChangeType type = ChangeType.valueOf(order.getMtor002());
         
-        NodeDetailTo rootNode = null;
-        
-        if(type == ChangeType.UPDATE){
-            // 原节点数据生效日期全部置为当天 (除根节点)
-            nodes.stream().filter(s->!JsonUtil.isEmpity(s.getMtor013())).forEach(s->{
-                s.setMtor011(new Date(System.currentTimeMillis()).toString());
-            });
-            rootNode = updateTargetRootNode(nodes, order, edmName);
+        switch(type){
+            
+            case ADD:
+                
+                addTargetNode(nodes,edmName,order);
+                break;
+                
+            case UPDATE:
+                
+                updateTargetNode(nodes,edmName,order);
+                break;
+                
+            default:
+                ApplicationException.throwCodeMesg(ErrorMessage._60000.getCode(),"临时单变更类型" + ErrorMessage._60000.getMsg());
         }
-        
-        addTargetNode(nodes,edmName,type,rootNode,order);
         
         service.deleteOrder(orderId);
         
@@ -388,7 +399,7 @@ public class MonitorTreeOrderController {
                 NodeDetailTo to = JSON.parseObject(JSON.toJSONString(re.getObj()), NodeDetailTo.class);
                 to.setModuser(MODUSER);
                 
-                service.updateNodeAndResource(PersistanceConstant.MTOR_MTOR005A,to);
+                service.updateNodeAndResource(Constant.MTOR005,to);
                 
                 re.setObj(to.getId());
                 break;
@@ -451,12 +462,10 @@ public class MonitorTreeOrderController {
         // 清除原数据
         List<NodeTo> n_nodes = service.queryTreeNode(orderId);
         
-        if(JsonUtil.isEmpity(n_nodes))
-            ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(), ErrorMessage._60003.getMsg());
-        
-        List<String> nodeIds = n_nodes.stream().map(NodeTo::getId).collect(Collectors.toList());
-        
-        service.batchDeleteResource(PersistanceConstant.MTOR_MTOR005A, nodeIds);
+        if(!JsonUtil.isEmpity(n_nodes)){
+            List<String> nodeIds = n_nodes.stream().map(NodeTo::getId).collect(Collectors.toList());
+            service.batchDeleteResource(Constant.MTOR005, nodeIds);
+        }
         
         // 新增redis中保存的数据
         List<NodeDetailTo> nodes = (List<NodeDetailTo>) data;
@@ -484,22 +493,21 @@ public class MonitorTreeOrderController {
             }
          });
         
-        List<String> ids = service.batchAdd(PersistanceConstant.MTOR_MTOR005A, JSON.parseArray(JSON.toJSONString(nodes_c)));
+        List<String> ids = service.batchAdd(Constant.MTOR005, JSON.parseArray(JSON.toJSONString(nodes_c)));
         
         if(ids.isEmpty())
             ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),"新增节点信息失败" + ErrorMessage._60003.getMsg());
         
-        List<NodeDetailTo> allNodes = service.load(PersistanceConstant.MTOR_MTOR005A, ids);
+        List<NodeDetailTo> allNodes = service.load(Constant.MTOR005, ids);
         
         if(JsonUtil.isEmpity(allNodes))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"临时单数据节点" + ErrorMessage._60005.getMsg());
         
         JSONArray ar = new JSONArray();
-        logger.info("旧数据 ： " +  JsonUtil.listToJsonArray(nodes).toJSONString() + "新数据： " + JsonUtil.listToJsonArray(allNodes).toJSONString());
         allNodes.stream().forEach(s->{
             NodeDetailTo no = nodes.stream().filter(n->s.getMtor006().equals(n.getMtor006())).findFirst().get();
             JSONObject obj = new JSONObject();
-            obj.put(PersistanceConstant.ID, s.getId());
+            obj.put(Constant.ID, s.getId());
             obj.put("mtor013", getId(nodes,allNodes,no.getMtor013()));
             obj.put("mtor014", getId(nodes,allNodes,no.getMtor014()));
             obj.put("mtor015", getId(nodes,allNodes,no.getMtor015()));
@@ -513,7 +521,7 @@ public class MonitorTreeOrderController {
             s.setModuser(MODUSER);
         });
         
-        service.batchUpdate(PersistanceConstant.MTOR_MTOR005A, ar);
+        service.batchUpdate(Constant.MTOR005, ar);
         
         return allNodes;
     }
@@ -524,14 +532,10 @@ public class MonitorTreeOrderController {
      * @author lijie
      * @param nodes 所有节点信息 包括资源
      * @param edmName 目标类
-     * @param type 类型
-     * @param node 根节点信息
      * @param order 临时单信息
      */
-    private void addTargetNode(List<NodeDetailTo> nodes, String edmName, ChangeType type,
-                               NodeDetailTo node,MonitorTreeOrderTo order) {
+    private void addTargetNode(List<NodeDetailTo> nodes, String edmName, MonitorTreeOrderTo order) {
         
-        logger.info("更新 所有目标 节点 开始" + new Timestamp(System.currentTimeMillis()));
         // 新增子节点信息
         String orderId = order.getId();
         List<String> ids = null;
@@ -561,11 +565,6 @@ public class MonitorTreeOrderController {
         
         List<String> ids_list = ids == null ? new ArrayList<>(): ids;
         
-        if(type == ChangeType.UPDATE && !JsonUtil.isEmpity(node)){
-            nodes.add(node);
-            ids_list.add(order.getMtor004());
-        }
-        
         if(ids_list.isEmpty())
             ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),"新增节点信息失败" + ErrorMessage._60003.getMsg());
         
@@ -581,7 +580,7 @@ public class MonitorTreeOrderController {
         targetAllNode.stream().forEach(s->{
             NodeDetailTo no = nodes.stream().filter(n->s.getMtor006().equals(n.getMtor006())).findFirst().get();
             JSONObject obj = new JSONObject();
-            obj.put(PersistanceConstant.ID, s.getId());
+            obj.put(Constant.ID, s.getId());
             obj.put("moni006", getId(nodes,targetAllNode,no.getMtor013()));
             obj.put("moni007", getId(nodes,targetAllNode,no.getMtor014()));
             obj.put("moni008", getId(nodes,targetAllNode,no.getMtor015()));
@@ -590,85 +589,150 @@ public class MonitorTreeOrderController {
             ar.add(obj);
         });
         
-        logger.info("更新 所有目标 节点 上下级树关系开始" + new Timestamp(System.currentTimeMillis()));
-        logger.info("批量更新的数据信息：" + ar.toJSONString());
         service.batchUpdate(edmName, ar);
-        logger.info("更新 所有目标 节点 上下级树关系结束" + new Timestamp(System.currentTimeMillis()));
-        
     }
-
+    
     /**
      * 
-     * updateTargetRootNode:更新目标类根节点 和 目标表子节点信息
+     * updateTargetNode:入库 - 更新临时单节点信息
      * @author lijie
-     * @param order 临时单信息
-     * @param edmName 目标类名
-     * @param nodes
-     * @return
+     * @param nodes 所有节点信息
+     * @param edmName 目标类
+     * @param order 临时单ID 
      */
-    private NodeDetailTo updateTargetRootNode(List<NodeDetailTo> nodes, MonitorTreeOrderTo order, String edmName) {
+    private void updateTargetNode(List<NodeDetailTo> nodes, String edmName,
+                                  MonitorTreeOrderTo order) {
         
-        logger.info("更新 目标 根节点 开始" + new Timestamp(System.currentTimeMillis()));
-        
-        String orderId = order.getId();
-        
-        String targetRootNodeId = order.getMtor004();
-        
-        if(StringUtil.isNullOrEmpty(targetRootNodeId))
-            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"目标根节点" + ErrorMessage._60005.getMsg());
-        
-        // TODO null
-        NodeDetailTo node = nodes.stream().filter(s -> Constant.NULL.equals(s.getMtor013())).findFirst().get();
-        
-        TargetNodeTo targetNode = JsonUtil.getObject(JsonUtil.getJsonString(node), TargetNodeTo.class);
-        
-        targetNode.setMoni006(orderId);
-        targetNode.setMoni007(orderId);
-        targetNode.setMoni008(orderId);
-        targetNode.setMoni009(orderId);
-        targetNode.setId(targetRootNodeId);
-        targetNode.setModuser(MODUSER);
-        
-        if(!( targetNode.getMoni015() == null || targetNode.getMoni015().size() == 0 )){
-            targetNode.getMoni015().stream().forEach(s -> {
-                s.setId(null);
-                s.setPid(targetRootNodeId);
+        List<String> ids = new ArrayList<String>();
+        List<TargetNodeTo> addNodes = new ArrayList<TargetNodeTo>();
+        List<TargetNodeTo> updateNodes = new ArrayList<TargetNodeTo>();
+        List<TargetNodeTo> invalidNodes = new ArrayList<TargetNodeTo>();
+            
+        nodes.stream().forEach(s->{
+            
+            ChangeType type = ChangeType.valueOf(s.getMtor021());
+            
+            TargetNodeTo node = JsonUtil.getObject(JsonUtil.getJsonString(s), TargetNodeTo.class);
+            
+            node.setMoni006(order.getId());
+            node.setMoni007(order.getId());
+            node.setMoni008(order.getId());
+            node.setMoni009(order.getId());
+            if(!JsonUtil.isEmpity(node.getMoni015()))
+                node.getMoni015().stream().forEach(t->{
+                t.setId(null);
+                if(JsonUtil.isEmpity(node.getId()))
+                    t.setPid(null);
+                else
+                    t.setPid(node.getId());
+                t.setAdduser(ADDUSER);
             });
+          
+            switch(type){
+                
+                case ADD:
+                    node.setAdduser(ADDUSER);
+                    addNodes.add(node);
+                    break;
+                    
+                case UPDATE:
+                    node.setModuser(MODUSER);
+                    updateNodes.add(node);
+                    break;
+                    
+                case INVALID:
+                    node.setModuser(MODUSER);
+                    invalidNodes.add(node);
+                    break;
+                    
+                default:
+                    ApplicationException.throwCodeMesg(ErrorMessage._60000.getCode(),"临时单中节点属性集变更类型" + ErrorMessage._60000.getMsg());
+            }
+        });
+        
+        // 将三种情况的节点集合入库
+        if(!JsonUtil.isEmpity(addNodes))
+            ids.addAll(service.batchAdd(edmName, JSON.parseArray(JSONArray.toJSONString(addNodes))));
+        
+        if(!JsonUtil.isEmpity(updateNodes)){
+            
+            List<TargetResourceTo> resources = new ArrayList<TargetResourceTo>();
+            
+            List<String> uIds = new ArrayList<String>();
+            
+            updateNodes.stream().forEach(s->{
+                if(!JsonUtil.isEmpity(s.getMoni015()))
+                    resources.addAll(s.getMoni015());
+                uIds.add(s.getId());
+            });
+            
+            JSONArray uNodes = JsonUtil.removeAttr(JSON.parseArray(JSONArray.toJSONString(updateNodes)), "moni015");
+            
+            service.batchUpdate(edmName, uNodes);
+            
+            List<String> targetResourceIds = service.queryTargetResource(edmName+".moni015",uIds);
+            
+            if(!JsonUtil.isEmpity(targetResourceIds))
+                service.batchDeleteResource(edmName+".moni015", targetResourceIds);
+            
+            if(!JsonUtil.isEmpity(resources))
+                service.batchAdd(edmName+".moni015", JSON.parseArray(JSONArray.toJSONString(resources)));
+            
+            ids.addAll(uIds);
         }
         
-       service.updateTargetNode(edmName, targetNode);
-       
-       logger.info("更新 目标 根节点 结束" + new Timestamp(System.currentTimeMillis()));
-       
-       nodes.remove(node);
-       
-       logger.info("更新 目标所有 子节点开始" + new Timestamp(System.currentTimeMillis()));
-       // 更新其他子节点信息(失效日期大于当天的，全部置为当天)
-       JSONArray targetChildNodes = service.getTargetAllChildNode(edmName, targetRootNodeId, new Date(System.currentTimeMillis()).toString());
-       
-       if(JsonUtil.isEmpity(targetChildNodes))
-           return node;
-       
-       JSONArray ar = new JSONArray();
-       
-       targetChildNodes.stream().forEach(s->{
-           JSONObject obj = new JSONObject();
-           obj.put(PersistanceConstant.ID, ((JSONObject)s).get(PersistanceConstant.ID));
-           obj.put("moni005", new Date(System.currentTimeMillis()).toString());
-           Date start_date = Date.valueOf(((JSONObject)s).getString("moni004"));
-           if(!new Date(System.currentTimeMillis()).after(start_date))
-               obj.put("moni004", new Date(System.currentTimeMillis()).toString());
-           obj.put("moduser", MODUSER);
-           ar.add(obj);
-       });
-       
-       service.batchUpdate(edmName, ar);
-       
-       logger.info("更新 目标所有 子节点结束" + new Timestamp(System.currentTimeMillis()));
-       
-        return node;
+        if(!JsonUtil.isEmpity(invalidNodes)){
+            
+            List<NodeDetailTo> inNodes = service.load(edmName, invalidNodes.stream().map(TargetNodeTo::getId).collect(Collectors.toList()));
+            
+            if(!JsonUtil.isEmpity(inNodes)){
+                
+                JSONArray arry = new JSONArray();
+                
+                Date currentDate = new Date(System.currentTimeMillis());
+                
+                inNodes.stream().forEach(s->{
+                    
+                    Date sStartDate = Date.valueOf(s.getMtor011());
+                    
+                    Date sEndDate = Date.valueOf(s.getMtor012());
+                    
+                    if(!(sStartDate.after(currentDate) || sEndDate.before(currentDate))){
+                        JSONObject obj = new JSONObject();
+                        obj.put(Constant.ID,s.getId());
+                        obj.put("moni005",currentDate.toString());
+                        arry.add(obj);
+                    }
+                });
+                
+                if(!JsonUtil.isEmpity(arry))
+                    service.batchUpdate(edmName, arry);
+            }
+        }
+        
+        // 更新节点的上下左右关系
+        List<NodeDetailTo> targetAllNode = service.load(edmName, ids);
+        
+        if(JsonUtil.isEmpity(targetAllNode))
+            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"目标树节点" + ErrorMessage._60005.getMsg());
+        
+        JSONArray ar = new JSONArray();
+        
+        targetAllNode.stream().forEach(s->{
+            NodeDetailTo no = nodes.stream().filter(n->s.getMtor006().equals(n.getMtor006())).findFirst().get();
+            JSONObject obj = new JSONObject();
+            obj.put(Constant.ID, s.getId());
+            obj.put("moni006", getId(nodes,targetAllNode,no.getMtor013()));
+            obj.put("moni007", getId(nodes,targetAllNode,no.getMtor014()));
+            obj.put("moni008", getId(nodes,targetAllNode,no.getMtor015()));
+            obj.put("moni009", getId(nodes,targetAllNode,no.getMtor016()));
+            obj.put("moduser", MODUSER);
+            ar.add(obj);
+        });
+        
+        service.batchUpdate(edmName, ar);
     }
-
+    
     /**
      * 
      * getId: 查找id信息
@@ -682,9 +746,14 @@ public class MonitorTreeOrderController {
         if(JsonUtil.isEmpity(str) || !nodes.stream().anyMatch(h->h.getId().equals(str)))
             return Constant.NULL;
         
-        String code = nodes.stream().filter(h->h.getId().equals(str)).findFirst().get().getMtor006();
-        
-        return targetAllNode.stream().filter(q->q.getMtor006().equals(code)).findFirst().get().getId();
+        if(nodes.stream().anyMatch(h->h.getId().equals(str))){
+            String code = nodes.stream().filter(h->h.getId().equals(str)).findFirst().get().getMtor006();
+            if(JsonUtil.isEmpity(code))
+                return Constant.NULL;
+            if(targetAllNode.stream().anyMatch(q->q.getMtor006().equals(code)))
+                return targetAllNode.stream().filter(q->q.getMtor006().equals(code)).findFirst().get().getId();
+        }
+        return Constant.NULL;
     }
 
 }
