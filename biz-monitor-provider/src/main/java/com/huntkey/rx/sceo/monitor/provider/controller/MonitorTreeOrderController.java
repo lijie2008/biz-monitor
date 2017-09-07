@@ -535,48 +535,33 @@ public class MonitorTreeOrderController {
      * @param order 临时单信息
      */
     private void addTargetNode(List<NodeDetailTo> nodes, String edmName, MonitorTreeOrderTo order) {
-        
-        // 新增子节点信息
         String orderId = order.getId();
-        List<String> ids = null;
         List<TargetNodeTo> targetNodes = JSON.parseArray(JsonUtil.getJsonArrayString(nodes), TargetNodeTo.class);
-        
-        if(!(targetNodes == null || targetNodes.isEmpty())){
-            
-            targetNodes.stream().forEach(s->{
-                s.setMoni006(orderId);
-                s.setMoni007(orderId);
-                s.setMoni008(orderId);
-                s.setMoni009(orderId);
-                s.setId(null);
-                s.setAdduser(ADDUSER);
-                if(!JsonUtil.isEmpity(s.getMoni015()))
-                    s.getMoni015().stream().forEach(t->{
-                        t.setId(null);
-                        t.setPid(null);
-                        t.setAdduser(ADDUSER);
-                    });
-            });
-            
-            ids = service.batchAdd(edmName, JSON.parseArray(JSONArray.toJSONString(targetNodes)));
-            
-            logger.info("更新 所有目标 节点结束" + new Timestamp(System.currentTimeMillis()) + "数据：" + JsonUtil.listToJsonArray(ids));
-        }
-        
-        List<String> ids_list = ids == null ? new ArrayList<>(): ids;
-        
-        if(ids_list.isEmpty())
+        if(targetNodes == null || targetNodes.isEmpty())
+            return;
+        targetNodes.stream().forEach(s->{
+            s.setMoni006(orderId);
+            s.setMoni007(orderId);
+            s.setMoni008(orderId);
+            s.setMoni009(orderId);
+            s.setId(null);
+            s.setAdduser(ADDUSER);
+            if(!JsonUtil.isEmpity(s.getMoni015()))
+                s.getMoni015().stream().forEach(t->{
+                    t.setId(null);
+                    t.setPid(null);
+                    t.setAdduser(ADDUSER);
+                });
+        });
+        List<String> ids = service.batchAdd(edmName, JSON.parseArray(JSONArray.toJSONString(targetNodes)));
+        logger.info("更新 所有目标 节点结束" + new Timestamp(System.currentTimeMillis()) + "数据：" + JsonUtil.listToJsonArray(ids));
+        if(JsonUtil.isEmpity(ids))
             ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),"新增节点信息失败" + ErrorMessage._60003.getMsg());
-        
-        List<NodeDetailTo> targetAllNode = service.load(edmName, ids_list);
-        
+        List<NodeDetailTo> targetAllNode = service.load(edmName, ids);
         if(JsonUtil.isEmpity(targetAllNode))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"目标树节点" + ErrorMessage._60005.getMsg());
-        
         logger.info("查询目标节点数据 " + new Timestamp(System.currentTimeMillis()) +"大小： " + targetAllNode.size() +", 数据： "+JsonUtil.listToJsonArray(targetAllNode).toJSONString());
-        
         JSONArray ar = new JSONArray();
-        
         targetAllNode.stream().forEach(s->{
             NodeDetailTo no = nodes.stream().filter(n->s.getMtor006().equals(n.getMtor006())).findFirst().get();
             JSONObject obj = new JSONObject();
@@ -588,7 +573,6 @@ public class MonitorTreeOrderController {
             obj.put("moduser", MODUSER);
             ar.add(obj);
         });
-        
         service.batchUpdate(edmName, ar);
     }
     
@@ -609,11 +593,8 @@ public class MonitorTreeOrderController {
         List<TargetNodeTo> invalidNodes = new ArrayList<TargetNodeTo>();
             
         nodes.stream().forEach(s->{
-            
             ChangeType type = ChangeType.valueOf(s.getMtor021());
-            
             TargetNodeTo node = JsonUtil.getObject(JsonUtil.getJsonString(s), TargetNodeTo.class);
-            
             node.setMoni006(order.getId());
             node.setMoni007(order.getId());
             node.setMoni008(order.getId());
@@ -627,24 +608,19 @@ public class MonitorTreeOrderController {
                     t.setPid(node.getId());
                 t.setAdduser(ADDUSER);
             });
-          
             switch(type){
-                
                 case ADD:
                     node.setAdduser(ADDUSER);
                     addNodes.add(node);
                     break;
-                    
                 case UPDATE:
                     node.setModuser(MODUSER);
                     updateNodes.add(node);
                     break;
-                    
                 case INVALID:
                     node.setModuser(MODUSER);
                     invalidNodes.add(node);
                     break;
-                    
                 default:
                     ApplicationException.throwCodeMesg(ErrorMessage._60000.getCode(),"临时单中节点属性集变更类型" + ErrorMessage._60000.getMsg());
             }
@@ -655,48 +631,31 @@ public class MonitorTreeOrderController {
             ids.addAll(service.batchAdd(edmName, JSON.parseArray(JSONArray.toJSONString(addNodes))));
         
         if(!JsonUtil.isEmpity(updateNodes)){
-            
             List<TargetResourceTo> resources = new ArrayList<TargetResourceTo>();
-            
             List<String> uIds = new ArrayList<String>();
-            
             updateNodes.stream().forEach(s->{
                 if(!JsonUtil.isEmpity(s.getMoni015()))
                     resources.addAll(s.getMoni015());
                 uIds.add(s.getId());
             });
-            
             JSONArray uNodes = JsonUtil.removeAttr(JSON.parseArray(JSONArray.toJSONString(updateNodes)), "moni015");
-            
             service.batchUpdate(edmName, uNodes);
-            
             List<String> targetResourceIds = service.queryTargetResource(edmName+".moni015",uIds);
-            
             if(!JsonUtil.isEmpity(targetResourceIds))
                 service.batchDeleteResource(edmName+".moni015", targetResourceIds);
-            
             if(!JsonUtil.isEmpity(resources))
                 service.batchAdd(edmName+".moni015", JSON.parseArray(JSONArray.toJSONString(resources)));
-            
             ids.addAll(uIds);
         }
         
         if(!JsonUtil.isEmpity(invalidNodes)){
-            
             List<NodeDetailTo> inNodes = service.load(edmName, invalidNodes.stream().map(TargetNodeTo::getId).collect(Collectors.toList()));
-            
             if(!JsonUtil.isEmpity(inNodes)){
-                
                 JSONArray arry = new JSONArray();
-                
                 Date currentDate = new Date(System.currentTimeMillis());
-                
                 inNodes.stream().forEach(s->{
-                    
                     Date sStartDate = Date.valueOf(s.getMtor011());
-                    
                     Date sEndDate = Date.valueOf(s.getMtor012());
-                    
                     if(!(sStartDate.after(currentDate) || sEndDate.before(currentDate))){
                         JSONObject obj = new JSONObject();
                         obj.put(Constant.ID,s.getId());
@@ -704,7 +663,6 @@ public class MonitorTreeOrderController {
                         arry.add(obj);
                     }
                 });
-                
                 if(!JsonUtil.isEmpity(arry))
                     service.batchUpdate(edmName, arry);
             }
@@ -712,12 +670,9 @@ public class MonitorTreeOrderController {
         
         // 更新节点的上下左右关系
         List<NodeDetailTo> targetAllNode = service.load(edmName, ids);
-        
         if(JsonUtil.isEmpity(targetAllNode))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"目标树节点" + ErrorMessage._60005.getMsg());
-        
         JSONArray ar = new JSONArray();
-        
         targetAllNode.stream().forEach(s->{
             NodeDetailTo no = nodes.stream().filter(n->s.getMtor006().equals(n.getMtor006())).findFirst().get();
             JSONObject obj = new JSONObject();
@@ -729,7 +684,6 @@ public class MonitorTreeOrderController {
             obj.put("moduser", MODUSER);
             ar.add(obj);
         });
-        
         service.batchUpdate(edmName, ar);
     }
     
@@ -745,14 +699,11 @@ public class MonitorTreeOrderController {
         
         if(JsonUtil.isEmpity(str) || !nodes.stream().anyMatch(h->h.getId().equals(str)))
             return Constant.NULL;
-        
-        if(nodes.stream().anyMatch(h->h.getId().equals(str))){
-            String code = nodes.stream().filter(h->h.getId().equals(str)).findFirst().get().getMtor006();
-            if(JsonUtil.isEmpity(code))
-                return Constant.NULL;
-            if(targetAllNode.stream().anyMatch(q->q.getMtor006().equals(code)))
-                return targetAllNode.stream().filter(q->q.getMtor006().equals(code)).findFirst().get().getId();
-        }
+        String code = nodes.stream().filter(h->h.getId().equals(str)).findFirst().get().getMtor006();
+        if(JsonUtil.isEmpity(code))
+            return Constant.NULL;
+        if(targetAllNode.stream().anyMatch(q->q.getMtor006().equals(code)))
+            return targetAllNode.stream().filter(q->q.getMtor006().equals(code)).findFirst().get().getId();
         return Constant.NULL;
     }
 
