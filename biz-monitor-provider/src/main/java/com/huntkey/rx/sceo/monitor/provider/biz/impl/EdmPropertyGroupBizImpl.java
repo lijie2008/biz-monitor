@@ -53,49 +53,66 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
         if (jsonObject == null || jsonObject.isEmpty()) {
             result.setRetCode(Result.RECODE_ERROR);
             result.setErrMsg("查询条件不可为空");
+            return result;
         }
 
         Object edpgEdmcIdObj = jsonObject.get("edpg_edmc_id");//监管类id
         Object edpgEdmpIdObj = jsonObject.get("edpg_edmp_id");//监管属性id
 
         if (edpgEdmcIdObj != null && edpgEdmpIdObj != null) {
+
             //类id
             String edpgEdmcId = (String) edpgEdmcIdObj;
             //属性id
             String edpgEdmpId = (String) edpgEdmpIdObj;
 
-            JSONObject jsonObj = new JSONObject();
+            //根据类id判断是否为监管类的子孙节点
+            Result isChileNodeResult = modelerClient.checkIsChileNode(edmMonitorId, edpgEdmcId);
+            if (isChileNodeResult.getRetCode() == Result.RECODE_SUCCESS) {
+                
+                Boolean bool = (Boolean) isChileNodeResult.getData();
+                if (bool) {//是监管类的子孙类时  添加返回结果
 
-            jsonObj.put("edpgEdmcId", edpgEdmcId);
+                    JSONObject jsonObj = new JSONObject();
+                    jsonObj.put("edpgEdmcId", edpgEdmcId);
+                    jsonObj.put("edpgEdmpId", edpgEdmpId);
 
-            jsonObj.put("edpgEdmpId", edpgEdmpId);
+                    //根据id查询edm类信息
+                    Result edmClassResult = modelerClient.queryEdmClassById(edpgEdmcId);
+                    if (edmClassResult.getRetCode() == Result.RECODE_SUCCESS && edmClassResult.getData() != null) {
 
-            //根据id查询edm类信息
-            Result edmClassResult = modelerClient.queryEdmClassById(edpgEdmcId);
-            
-            if (edmClassResult.getRetCode() == Result.RECODE_SUCCESS
-                    && edmClassResult.getData() != null) {
-                JSONObject js = JsonUtil.getJson(edmClassResult.getData());
-                jsonObj.put("edmcNameEn", js.getString("edmcNameEn"));
-                String edmcShortName = js.getString("edmcShortName");
-                String tableName = getTableName(relate_feild, edmcShortName);
-                jsonObj.put("tableName", tableName);
+                        JSONObject js = JsonUtil.getJson(edmClassResult.getData());
+                        jsonObj.put("edmcNameEn", js.getString("edmcNameEn"));
+
+                        String edmcShortName = js.getString("edmcShortName");
+                        String tableName = getTableName(relate_feild, edmcShortName);
+                        jsonObj.put("tableName", tableName);
+                    }
+
+                    //根据属性id查询属性公式
+                    Result propertyFormulaResult = modelerClient.getPropertyFormula(edpgEdmpId);
+                    if (propertyFormulaResult.getRetCode() == Result.RECODE_SUCCESS) {
+                        jsonObj.put("formula", propertyFormulaResult.getData());
+                    }
+
+                    result.setData(jsonObj);
+                    result.setRetCode(Result.RECODE_SUCCESS);
+                } else {
+                    result.setErrMsg("传入参数非监管类id,edpgEdmcId:" + edpgEdmcId);
+                    result.setRetCode(Result.RECODE_ERROR);
+                }
+            }else{
+                result.setErrMsg("检验id是否为监管类子孙节点出错，" + isChileNodeResult.getErrMsg());
+                result.setRetCode(Result.RECODE_ERROR);
             }
 
-            //根据属性id查询属性公式
-            Result propertyFormulaResult = modelerClient.getPropertyFormula(edpgEdmpId);
-            if (propertyFormulaResult.getRetCode() == Result.RECODE_SUCCESS) {
-                jsonObj.put("formula", propertyFormulaResult.getData());
-            }
-
-            result.setData(jsonObj);
-            result.setRetCode(Result.RECODE_SUCCESS);
-
+        }else{
+            result.setErrMsg("监管类id，或属性id为null");
+            result.setRetCode(Result.RECODE_ERROR);
         }
 
         return result;
     }
-
 
     private String getTableName(String edmName, String shortName) {
         if (StringUtils.isBlank(edmName)) {
@@ -119,8 +136,7 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
         //        }
 
         // 有效性校验，1. 不用用'.'打头或者结尾， 2. 不能包含二个或以上连续的'.',
-        if (edmName.startsWith(dot_split) || edmName.endsWith(dot_split)
-                || edmName.contains("..")) {
+        if (edmName.startsWith(dot_split) || edmName.endsWith(dot_split) || edmName.contains("..")) {
             throw new IllegalArgumentException("参数edm名称'" + edmName + "'无效!");
         }
 
