@@ -244,7 +244,7 @@ public class MonitorServiceImpl implements MonitorService {
 		String childBeginDate=null;
 		String childEndDate=null;
 		if(!JsonUtil.isNullOrEmpty(childrenNodes)){
-			for(Object obj:childrenNodes){
+  			for(Object obj:childrenNodes){
 				json=JsonUtil.getJson(obj); 
 				if(json!=null){
 					childBeginDate=json.getString(MTOR011);
@@ -256,8 +256,7 @@ public class MonitorServiceImpl implements MonitorService {
 					}
 					//2.修改的子节点失效日期小于等于子节点的生效日期==>子节点失效 
 					if(!JsonUtil.compareDate(childBeginDate,endDate)){
-						json.put(MTOR021, ChangeType.INVALID);
-						deleteNode(json.getString(ID), 0);
+						invalidNode(json);
 					}
 					
 					//-->修改父节点的生效日期
@@ -267,14 +266,38 @@ public class MonitorServiceImpl implements MonitorService {
 					}
 					//2.如果父节点的生效日期大于等于子节点失效日期==>子节点失效
 					if(!JsonUtil.compareDate(beginDate,childEndDate)){
-						json.put(MTOR021, ChangeType.INVALID);
-						deleteNode(json.getString(ID), 0);
+						invalidNode(json);
 					}
 				}
 			}
 			DBUtils.update(MTOR005, childrenNodes, "");
 		}
 	}
+	
+	//失效单个节点 
+	private void invalidNode(JSONObject node){
+		if(node!=null){
+			if(StringUtil.isEqual(ChangeType.ADD.toString(), node.getString(MTOR021))){//新增的删除
+				DBUtils.delete(MTOR005, node);
+			}else if(StringUtil.isEqual(ChangeType.UPDATE.toString(), node.getString(MTOR021))){//修改的失效
+				node.put(MTOR021, ChangeType.INVALID.getValue());
+				node.put(MTOR013,"");
+				node.put(MTOR014,"");
+				node.put(MTOR015,"");
+				node.put(MTOR016,"");
+				DBUtils.update(MTOR005, node,"");
+				
+				//删除失效节点下面的资源
+				Condition condition=new Condition();
+				condition.addCondition(PID, EQUAL, node.getString(ID), true);
+				JSONArray resources=DBUtils.getArrayResult(MTOR019, null, condition);
+				if(!JsonUtil.isNullOrEmpty(resources)){
+					DBUtils.delete(MTOR019, resources);
+				}
+			}
+		}
+	}
+	
 	/**
 	 * 删除节点资源
 	 * @param nodeId 节点ID
@@ -477,6 +500,10 @@ public class MonitorServiceImpl implements MonitorService {
 				}
 				Map<String, Object> map=new HashMap<String, Object>();
 				map.put(MTOR021, ChangeType.INVALID.getValue());
+				map.put(MTOR013, "");
+				map.put(MTOR014, "");
+				map.put(MTOR015, "");
+				map.put(MTOR016, "");
 				updateNodes=JsonUtil.addAttr(updateNodes, map);
 				DBUtils.update(MTOR005, updateNodes,"");
 				clearNodeResource(updateNodes);
@@ -484,6 +511,10 @@ public class MonitorServiceImpl implements MonitorService {
 				if(type==0){  
 					updateNodes=new JSONArray();
 					delNode.put(MTOR021, ChangeType.INVALID.getValue());
+					delNode.put(MTOR013,"");
+					delNode.put(MTOR014,"");
+					delNode.put(MTOR015,"");
+					delNode.put(MTOR016,"");
 					updateNodes.add(delNode);
 					DBUtils.update(MTOR005, updateNodes,"");
 					clearNodeResource(updateNodes);
