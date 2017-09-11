@@ -849,6 +849,7 @@ public class MonitorServiceImpl implements MonitorService {
 							if(StringUtil.isEqual(nodeFormal.getString("moni001"),
 									nodeTemp.getString("mtor006"))){//如果编号相等  则记录新旧ID
 								map.put(nodeFormal.getString(ID), nodeTemp.getString(ID));
+								map.put(nodeTemp.getString(ID), nodeFormal.getString(ID));
 								treeTemp.remove(nodeTemp);
 								break;
 							}
@@ -859,11 +860,13 @@ public class MonitorServiceImpl implements MonitorService {
 		}
 		//修改临时树的节点关系
 		if(treeTempClone!=null){
-			String pNode,cNode,lNode,rNode;
-			String pNodeOld,cNodeOld,lNodeOld,rNodeOld;
+			String nodeId,pNode,cNode,lNode,rNode;
+			String nodeOldId,pNodeOld,cNodeOld,lNodeOld,rNodeOld;
 			for(Object temp:treeTempClone){//遍历临时树  根据新旧ID关系变更
 				JSONObject tempNode=JsonUtil.getJson(temp);
 				if(tempNode!=null){
+					nodeId=tempNode.getString(ID);
+					nodeOldId=map.get(nodeId);
 					pNodeOld=tempNode.getString(MTOR013);
 					pNode=map.get(pNodeOld);
 					cNodeOld=tempNode.getString(MTOR014);
@@ -876,6 +879,7 @@ public class MonitorServiceImpl implements MonitorService {
 					tempNode.put(MTOR014, StringUtil.isNullOrEmpty(cNode)?cNodeOld:cNode);
 					tempNode.put(MTOR015, StringUtil.isNullOrEmpty(lNode)?lNodeOld:lNode);
 					tempNode.put(MTOR016, StringUtil.isNullOrEmpty(rNode)?rNodeOld:rNode);
+					tempNode.put(MTOR023, StringUtil.isNullOrEmpty(nodeOldId)?nodeId:nodeOldId);
 				}
 			}
 		}
