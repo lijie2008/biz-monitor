@@ -681,10 +681,12 @@ public class MonitorTreeOrderController {
                         JSONObject obj = new JSONObject();
                         obj.put(Constant.ID,s.getId());
                         obj.put("moni005",currentDate.toString());
+                        obj.put("moduser", MODUSER);
                         arry.add(obj);
                     }
                 });
                 if(!JsonUtil.isEmpity(arry))
+                    
                     service.batchUpdate(edmName, arry);
             }
         }
