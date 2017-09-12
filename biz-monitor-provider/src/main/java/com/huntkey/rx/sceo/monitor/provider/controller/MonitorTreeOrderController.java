@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.Pattern;
@@ -459,13 +460,25 @@ public class MonitorTreeOrderController {
      */
     @SuppressWarnings("unchecked")
     private List<NodeDetailTo> createNewTree(Object data,String orderId) {
-        // 清除原数据
-        List<NodeTo> n_nodes = service.queryTreeNode(orderId);
         
-        if(!JsonUtil.isEmpity(n_nodes)){
-            List<String> nodeIds = n_nodes.stream().map(NodeTo::getId).collect(Collectors.toList());
-            service.batchDeleteResource(Constant.MTOR005, nodeIds);
-        }
+        final AtomicBoolean flag = new AtomicBoolean(true);
+        
+        new Thread(new Runnable() {
+            
+            @Override
+            public void run() {
+                // 清除原数据
+                List<NodeTo> n_nodes = service.queryTreeNode(orderId);
+                if(!JsonUtil.isEmpity(n_nodes)){
+                    List<String> nodeIds = n_nodes.stream().map(NodeTo::getId).collect(Collectors.toList());
+                    service.batchDeleteResource(Constant.MTOR005, nodeIds);
+                }
+                synchronized(flag){
+                    flag.set(false);
+                    flag.notifyAll();
+                }
+            }
+        }).start();
         
         // 新增redis中保存的数据
         List<NodeDetailTo> nodes = (List<NodeDetailTo>) data;
@@ -523,6 +536,14 @@ public class MonitorTreeOrderController {
         
         service.batchUpdate(Constant.MTOR005, ar);
         
+        synchronized(flag){
+            if(flag.get())
+                try {
+                    flag.wait(10000);
+                } catch (InterruptedException e) {
+                    ApplicationException.throwCause(e);
+                }
+        }
         return allNodes;
     }
     
