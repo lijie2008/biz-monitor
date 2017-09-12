@@ -250,27 +250,27 @@ public class MonitorServiceImpl implements MonitorService {
 					childBeginDate=json.getString(MTOR011);
 					childEndDate=json.getString(MTOR012);
 					//-->修改父节点的失效日期
-					//1.子节点失效日期大于父节点修改的失效日期  ==>子节点失效日期=父节点失效日期
-					if(JsonUtil.compareDate(endDate, childEndDate)){
-						json.put(MTOR012, endDate);
-					}
 					//2.修改的子节点失效日期小于等于子节点的生效日期==>子节点失效 
 					if(!JsonUtil.compareDate(childBeginDate,endDate)){
 						invalidNode(json);
 					}
-					
-					//-->修改父节点的生效日期
-					//1.父节点生效日期>子节点生效日期时==>子节点生效日期=父节点生效日期
-					if(JsonUtil.compareDate(childBeginDate,beginDate)){
-						json.put(MTOR011, beginDate);
+					else if(JsonUtil.compareDate(endDate, childEndDate)){//1.子节点失效日期大于父节点修改的失效日期  ==>子节点失效日期=父节点失效日期
+						json.put(MTOR012, endDate);
+						DBUtils.update(MTOR005, json, "");
 					}
+					//-->修改父节点的生效日期
 					//2.如果父节点的生效日期大于等于子节点失效日期==>子节点失效
 					if(!JsonUtil.compareDate(beginDate,childEndDate)){
 						invalidNode(json);
 					}
+					else if(JsonUtil.compareDate(childBeginDate,beginDate)){//1.父节点生效日期>子节点生效日期时==>子节点生效日期=父节点生效日期
+						json.put(MTOR011, beginDate);
+						DBUtils.update(MTOR005, json, "");
+					}
+					
 				}
 			}
-			DBUtils.update(MTOR005, childrenNodes, "");
+			
 		}
 	}
 	
@@ -680,9 +680,9 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor012(StringUtil.isNullOrEmpty(endDate)?MAXINVALIDDATE:endDate);
 		node.setPid(treeId);
 		logger.info("MonitorServiceImpl类的setNodePosition方法：==》节点编码生成前");
-		String orderNum=orderNumberService.generateOrderNumber("NODE");
-		node.setMtor006(StringUtil.isNullOrEmpty(orderNum)?"NODE"+System.currentTimeMillis():orderNum);
-		logger.info("MonitorServiceImpl类的setNodePosition方法：==》节点编码生成后，节点编码为："+orderNum);
+//		String orderNum=orderNumberService.generateOrderNumber("NODE");
+		node.setMtor006("NODE"+System.currentTimeMillis());
+//		logger.info("MonitorServiceImpl类的setNodePosition方法：==》节点编码生成后，节点编码为："+orderNum);
 		return node;
 	}
 	
@@ -956,8 +956,8 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor016(NULL);
 		node.setMtor021(1);
 		node.setPid(pid);
-		String nodeNum=orderNumberService.generateOrderNumber("NODE");
-		node.setMtor006(StringUtil.isNullOrEmpty(nodeNum)?"NODE"+System.currentTimeMillis():nodeNum);
+//		String nodeNum=orderNumberService.generateOrderNumber("NODE");
+		node.setMtor006("NODE"+System.currentTimeMillis());
 		return (String) DBUtils.add(MTOR005, JsonUtil.getJson(node),"");
 	}
 	@Override
