@@ -277,6 +277,7 @@ public class MonitorServiceImpl implements MonitorService {
 	//失效单个节点 
 	private void invalidNode(JSONObject node){
 		if(node!=null){
+			updateNodes(node);
 			if(StringUtil.isEqual(ChangeType.ADD.toString(), node.getString(MTOR021))){//新增的删除
 				DBUtils.delete(MTOR005, node);
 			}else if(StringUtil.isEqual(ChangeType.UPDATE.toString(), node.getString(MTOR021))){//修改的失效
@@ -459,9 +460,6 @@ public class MonitorServiceImpl implements MonitorService {
 		Condition condition=new Condition();
 		condition.addCondition(ID, EQUAL, nodeId, true);
 		JSONObject delNode=queryNode(condition);
-		String nodeParent=null;
-		String nodeLeft=null;
-		String nodeRight=null;
 		if(delNode!=null){
 			//1.递归查询删除的节点的子节点(包含子节点的子节点)
 			JSONArray nodes=getChildNode(nodeId);//结果集中只包含ID
@@ -478,6 +476,8 @@ public class MonitorServiceImpl implements MonitorService {
 					updateNodes=JsonUtil.getJsonArrayByAttr(nodesClassify, "updateNodes");
 				}
 			}
+			
+			updateNodes(delNode);
 			
 			//新增节点做删除
 			if(!JsonUtil.isNullOrEmpty(addNodes)){
@@ -520,34 +520,42 @@ public class MonitorServiceImpl implements MonitorService {
 					clearNodeResource(updateNodes);
 				}
 			}
-			
-			//2.得到删除节点之前的父节点 左、右节点信息
-			nodeParent=delNode.getString(MTOR013);
-			nodeLeft=delNode.getString(MTOR015);
-			nodeRight=delNode.getString(MTOR016);
-			//3.变更各节点信息
-			//a.如果删除的节点没有左右节点 
-			if(StringUtil.isNullOrEmpty(nodeLeft) && StringUtil.isNullOrEmpty(nodeRight)){
-				changeNodePosition(nodeParent, 2, NULL);//将父节点的子节点置空
-			}
-			//b.如果删除的节点没有左节点右有节点   
-			else if(StringUtil.isNullOrEmpty(nodeLeft) && !StringUtil.isNullOrEmpty(nodeRight)){
-				changeNodePosition(nodeParent, 2, nodeRight);//更改父节点的子节点为右节点
-				changeNodePosition(nodeRight, 3, NULL);//右节点的左节点置空
-			}
-			//c.如果删除的节点有左节点没有右节点  
-			else if(!StringUtil.isNullOrEmpty(nodeLeft) && StringUtil.isNullOrEmpty(nodeRight)){
-				changeNodePosition(nodeLeft, 4, NULL);//将左节点的右节点置空
-			}
-			//d.如果存在左右节点
-			else{
-				changeNodePosition(nodeLeft, 4, nodeRight);//将左节点的右节点变更成右节点
-				changeNodePosition(nodeRight, 3, nodeLeft);//将右节点的左节点变更成左节点
-			}
-			
 		}
 		return nodeId;
 	}
+	/**
+	 * 删除或者失效节点变更节点关系
+	 * @param delNode
+	 */
+	private void updateNodes(JSONObject delNode){
+		String nodeParent=null;
+		String nodeLeft=null;
+		String nodeRight=null;
+		//2.得到删除节点之前的父节点 左、右节点信息
+		nodeParent=delNode.getString(MTOR013);
+		nodeLeft=delNode.getString(MTOR015);
+		nodeRight=delNode.getString(MTOR016);
+		//3.变更各节点信息
+		//a.如果删除的节点没有左右节点 
+		if(StringUtil.isNullOrEmpty(nodeLeft) && StringUtil.isNullOrEmpty(nodeRight)){
+			changeNodePosition(nodeParent, 2, NULL);//将父节点的子节点置空
+		}
+		//b.如果删除的节点没有左节点右有节点   
+		else if(StringUtil.isNullOrEmpty(nodeLeft) && !StringUtil.isNullOrEmpty(nodeRight)){
+			changeNodePosition(nodeParent, 2, nodeRight);//更改父节点的子节点为右节点
+			changeNodePosition(nodeRight, 3, NULL);//右节点的左节点置空
+		}
+		//c.如果删除的节点有左节点没有右节点  
+		else if(!StringUtil.isNullOrEmpty(nodeLeft) && StringUtil.isNullOrEmpty(nodeRight)){
+			changeNodePosition(nodeLeft, 4, NULL);//将左节点的右节点置空
+		}
+		//d.如果存在左右节点
+		else{
+			changeNodePosition(nodeLeft, 4, nodeRight);//将左节点的右节点变更成右节点
+			changeNodePosition(nodeRight, 3, nodeLeft);//将右节点的左节点变更成左节点
+		}
+	}
+	
 	/***
 	 * 删除节点时  删除节点下资源
 	 * fk
