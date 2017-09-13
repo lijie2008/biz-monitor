@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.Pattern;
@@ -328,11 +329,11 @@ public class MonitorTreeOrderController {
         if(JsonUtil.isEmpity(edmName))
             ApplicationException.throwCodeMesg(ErrorMessage._60008.getCode(),ErrorMessage._60008.getMsg());
         
-        logger.info("查询临时单所有节点 和 对应资源信息 开始" + new Timestamp(System.currentTimeMillis()));
+        logger.debug("查询临时单所有节点 和 对应资源信息 开始" + new Timestamp(System.currentTimeMillis()));
         
         List<NodeDetailTo> nodes = service.getAllNodesAndResource(orderId);
         
-        logger.info("查询临时单所有节点 和 对应资源信息 结束" + new Timestamp(System.currentTimeMillis()));
+        logger.debug("查询临时单所有节点 和 对应资源信息 结束" + new Timestamp(System.currentTimeMillis()));
         
         if(JsonUtil.isEmpity(nodes))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"节点" + ErrorMessage._60005.getMsg());
@@ -459,13 +460,25 @@ public class MonitorTreeOrderController {
      */
     @SuppressWarnings("unchecked")
     private List<NodeDetailTo> createNewTree(Object data,String orderId) {
-        // 清除原数据
-        List<NodeTo> n_nodes = service.queryTreeNode(orderId);
         
-        if(!JsonUtil.isEmpity(n_nodes)){
-            List<String> nodeIds = n_nodes.stream().map(NodeTo::getId).collect(Collectors.toList());
-            service.batchDeleteResource(Constant.MTOR005, nodeIds);
-        }
+        final AtomicBoolean flag = new AtomicBoolean(true);
+        
+        new Thread(new Runnable() {
+            
+            @Override
+            public void run() {
+                // 清除原数据
+                List<NodeTo> n_nodes = service.queryTreeNode(orderId);
+                if(!JsonUtil.isEmpity(n_nodes)){
+                    List<String> nodeIds = n_nodes.stream().map(NodeTo::getId).collect(Collectors.toList());
+                    service.batchDeleteResource(Constant.MTOR005, nodeIds);
+                }
+                synchronized(flag){
+                    flag.set(false);
+                    flag.notifyAll();
+                }
+            }
+        }).start();
         
         // 新增redis中保存的数据
         List<NodeDetailTo> nodes = (List<NodeDetailTo>) data;
@@ -523,6 +536,14 @@ public class MonitorTreeOrderController {
         
         service.batchUpdate(Constant.MTOR005, ar);
         
+        synchronized(flag){
+            if(flag.get())
+                try {
+                    flag.wait(10000);
+                } catch (InterruptedException e) {
+                    ApplicationException.throwCause(e);
+                }
+        }
         return allNodes;
     }
     
@@ -554,13 +575,13 @@ public class MonitorTreeOrderController {
                 });
         });
         List<String> ids = service.batchAdd(edmName, JSON.parseArray(JSONArray.toJSONString(targetNodes)));
-        logger.info("更新 所有目标 节点结束" + new Timestamp(System.currentTimeMillis()) + "数据：" + JsonUtil.listToJsonArray(ids));
+        logger.debug("更新 所有目标 节点结束" + new Timestamp(System.currentTimeMillis()) + "数据：" + JsonUtil.listToJsonArray(ids));
         if(JsonUtil.isEmpity(ids))
             ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),"新增节点信息失败" + ErrorMessage._60003.getMsg());
         List<NodeDetailTo> targetAllNode = service.load(edmName, ids);
         if(JsonUtil.isEmpity(targetAllNode))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"目标树节点" + ErrorMessage._60005.getMsg());
-        logger.info("查询目标节点数据 " + new Timestamp(System.currentTimeMillis()) +"大小： " + targetAllNode.size() +", 数据： "+JsonUtil.listToJsonArray(targetAllNode).toJSONString());
+        logger.debug("查询目标节点数据 " + new Timestamp(System.currentTimeMillis()) +"大小： " + targetAllNode.size() +", 数据： "+JsonUtil.listToJsonArray(targetAllNode).toJSONString());
         JSONArray ar = new JSONArray();
         targetAllNode.stream().forEach(s->{
             NodeDetailTo no = nodes.stream().filter(n->s.getMtor006().equals(n.getMtor006())).findFirst().get();
@@ -660,10 +681,12 @@ public class MonitorTreeOrderController {
                         JSONObject obj = new JSONObject();
                         obj.put(Constant.ID,s.getId());
                         obj.put("moni005",currentDate.toString());
+                        obj.put("moduser", MODUSER);
                         arry.add(obj);
                     }
                 });
                 if(!JsonUtil.isEmpity(arry))
+                    
                     service.batchUpdate(edmName, arry);
             }
         }

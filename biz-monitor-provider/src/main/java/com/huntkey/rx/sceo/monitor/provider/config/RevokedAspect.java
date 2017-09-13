@@ -68,7 +68,7 @@ public class RevokedAspect {
         
         String key = getKey(point,revoked.type());
         
-        logger.info("服务开始前, 取出 key 值  ： " + key);
+        logger.debug("服务开始前, 取出 key 值  ： " + key);
         
         switch(revoked.type()){
             
@@ -82,7 +82,7 @@ public class RevokedAspect {
                 else
                     orderId = key;
                 
-                logger.info("服务开始前, 节点型操作， 取出表单 单号 ： " + orderId);
+                logger.debug("服务开始前, 节点型操作， 取出表单 单号 ： " + orderId);
                 
                 List<NodeDetailTo> nodes = service.getAllNodesAndResource(orderId);
                 
@@ -113,7 +113,7 @@ public class RevokedAspect {
         
         String key = getKey(point,revoked.type());
         
-        logger.info("服务完成后, 取出key值  ： " + key);
+        logger.debug("服务完成后, 取出key值  ： " + key);
         
         Object value = null;
         
@@ -125,7 +125,7 @@ public class RevokedAspect {
         
         value = (revoked.type() == OperateType.INITIALIZE || JsonUtil.isEmpity(key))? null : originalMap.get(key);
         
-        logger.info("服务完成后, 取出Map里面的值  ： " + JsonUtil.getJsonString(value));
+        logger.debug("服务完成后, 取出Map里面的值  ： " + JsonUtil.getJsonString(value));
         
         String orderId = null;
         
@@ -148,11 +148,11 @@ public class RevokedAspect {
                 
                 JSONArray arry = JSON.parseArray(JSONArray.toJSONString(value));
                 
-                logger.info("服务完成后, 节点型操作arry值 ： " + JsonUtil.getJsonArrayString(arry));
+                logger.debug("服务完成后, 节点型操作arry值 ： " + JsonUtil.getJsonArrayString(arry));
                 
                 orderId = JsonUtil.isEmpity(arry) ? null : arry.getJSONObject(0).getString(Constant.PID);
                 
-                logger.info("服务完成后, 取出orderId ： " + orderId);
+                logger.debug("服务完成后, 取出orderId ： " + orderId);
                 break;
                 
             case DETAIL:

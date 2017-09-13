@@ -71,7 +71,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         param.addCondition(new ConditionNode(Constant.ID, OperatorType.Equals, nodeId));
         Result result = client.find(JSON.toJSONString(param.build()));
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info("queryNode 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug("queryNode 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         }
         if(!JsonUtil.isEmpity(result.getData())){
@@ -88,7 +88,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         param.addCondition(new ConditionNode(Constant.PID, OperatorType.Equals, nodeId));
         Result result = client.find(JSON.toJSONString(param.build()));
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info("queryResource 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug("queryResource 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         }
         if(!JsonUtil.isEmpity(result.getData())){
@@ -105,7 +105,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         param.addCondition(new ConditionNode(Constant.ID, OperatorType.Equals, orderId));
         Result result = client.find(JSON.toJSONString(param.build()));
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info("queryOrder 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug("queryOrder 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         }
         if(!JsonUtil.isEmpity(result.getData())){
@@ -121,7 +121,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                                                        String endDate, String excNodeId, Boolean invalid) {
         Result result = client.queryTreeNodeResource(orderId, startDate, endDate,excNodeId, invalid);
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info("queryTreeNodeUsingResource 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug("queryTreeNodeUsingResource 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         }
         List<ResourceTo> data = JSON.parseArray(JsonUtil.getJsonArrayString(result.getData()), ResourceTo.class);
@@ -136,7 +136,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(), ErrorMessage._60004.getMsg());
         Result result = edmClient.getEdmcNameEn(classId, edmpCode);
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info(" getEdmClass 调用EDM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug(" getEdmClass 调用EDM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), ErrorMessage._60007.getMsg());
         }
         if(!JsonUtil.isEmpity(result.getData())){
@@ -153,7 +153,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         SearchParam param = new SearchParam(edmName);
         Result result = client.find(JSON.toJSONString(param.build()));
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info("getAllResource 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug("getAllResource 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         }
         if(!JsonUtil.isEmpity(result.getData()))
@@ -168,7 +168,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         param.addCondition(new ConditionNode(Constant.MTOR013, OperatorType.Equals, Constant.NULL));
         Result result = client.find(JSON.toJSONString(param.build()));
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info(" queryRootNode 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug(" queryRootNode 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         }
         if(!JsonUtil.isEmpity(result.getData())){
@@ -187,7 +187,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         param.addCondition(new ConditionNode(Constant.MTOR016, OperatorType.Equals, Constant.NULL));
         Result result = client.find(JSON.toJSONString(param.build()));
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info("queryRootChildrenNode 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug("queryRootChildrenNode 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         }
         if(!JsonUtil.isEmpity(result.getData())){
@@ -203,9 +203,9 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         SearchParam param = new SearchParam(Constant.MTOR005);
         param.addCondition(new ConditionNode(Constant.PID, OperatorType.Equals, orderId));
         Result result = client.find(JSON.toJSONString(param.build()));
-        logger.info("查询所有的节点信息queryTreeNode ： " + JsonUtil.getJsonString(result));
+        logger.debug("查询所有的节点信息queryTreeNode ： " + JsonUtil.getJsonString(result));
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info(" queryTreeNode 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug(" queryTreeNode 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         }
         if(!JsonUtil.isEmpity(result.getData())){
@@ -222,7 +222,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(), ErrorMessage._60004.getMsg());
         Result result = edmClient.queryEdmClassById(id);
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info("queryEdmClassName 调用EDM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug("queryEdmClassName 调用EDM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), ErrorMessage._60007.getMsg());
         }
         if(!JsonUtil.isEmpity(result.getData()))
@@ -236,7 +236,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         param.addAllData(nodes);
         Result result = client.update(JSON.toJSONString(param.build()));
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info("batchUpdate 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug("batchUpdate 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         }
     }
@@ -244,12 +244,12 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     @SuppressWarnings("unchecked")
     @Override
     public List<String> batchAdd(String edmName, JSONArray nodes) {
-        logger.info("新增的数据为：" + nodes.toJSONString());
+        logger.debug("新增的数据为：" + nodes.toJSONString());
         MergeParam param = new MergeParam(edmName);
         param.addAllData(nodes);
         Result result = client.add(JSON.toJSONString(param.build()));
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info("batchAdd 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug("batchAdd 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg()+result.getErrMsg());
         }
         if(!JsonUtil.isEmpity(result.getData()))
@@ -288,7 +288,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         });
         Result result = client.delete(JSON.toJSONString(param.build()));
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info("batchDeleteResource 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug("batchDeleteResource 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         }
     }
@@ -301,7 +301,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         param.addData(obj);
         Result result = client.update(JSON.toJSONString(param.build()));
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info(" updateNode 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug(" updateNode 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         }
     }
@@ -313,7 +313,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         param.addIDs(ids);
         Result result = client.load(JSON.toJSONString(param.build()));
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info("load 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug("load 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         }
         if(!JsonUtil.isEmpity(result.getData())){
@@ -350,7 +350,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         param.addData(obj);
         Result result = client.delete(JSON.toJSONString(param.build()));
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info("deleteOrder 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug("deleteOrder 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
         }
     }
@@ -359,7 +359,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     public CharacterAndFormatTo getCharacterAndFormat(String classId) {
         Result result = edmClient.getCharacterAndFormat(classId);
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-            logger.info("getCharacterAndFormat 调用EDM异常，异常消息: " + result == null ? null : result.getErrMsg());
+            logger.debug("getCharacterAndFormat 调用EDM异常，异常消息: " + result == null ? null : result.getErrMsg());
             ApplicationException.throwCodeMesg(ErrorMessage._60007.getCode(), ErrorMessage._60007.getMsg());
         }
         if(!JsonUtil.isEmpity(result.getData())){
@@ -402,7 +402,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             param.addColumns(Constant.ID);
             Result result = client.find(JSON.toJSONString(param.build()));
             if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
-                logger.info("queryResource 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
+                logger.debug("queryResource 调用ORM异常，异常消息: " + result == null ? null : result.getErrMsg());
                 ApplicationException.throwCodeMesg(ErrorMessage._60002.getCode(), ErrorMessage._60002.getMsg());
             }
             if(!JsonUtil.isEmpity(result.getData())){
