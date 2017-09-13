@@ -673,20 +673,25 @@ public class MonitorTreeOrderController {
             List<NodeDetailTo> inNodes = service.load(edmName, invalidNodes.stream().map(TargetNodeTo::getId).collect(Collectors.toList()));
             if(!JsonUtil.isEmpity(inNodes)){
                 JSONArray arry = new JSONArray();
+                List<String> arry2 = new ArrayList<String>();
                 Date currentDate = new Date(System.currentTimeMillis());
                 inNodes.stream().forEach(s->{
                     Date sStartDate = Date.valueOf(s.getMtor011());
                     Date sEndDate = Date.valueOf(s.getMtor012());
-                    if(!(sStartDate.after(currentDate) || sEndDate.before(currentDate))){
+                    if(sStartDate.after(currentDate)){
+                        arry2.add(s.getId());
+                    }else if(!(sStartDate.after(currentDate) || sEndDate.before(currentDate))){
                         JSONObject obj = new JSONObject();
                         obj.put(Constant.ID,s.getId());
                         obj.put("moni005",currentDate.toString());
                         obj.put("moduser", MODUSER);
                         arry.add(obj);
                     }
-                });
-                if(!JsonUtil.isEmpity(arry))
                     
+                });
+                if(!JsonUtil.isEmpity(arry2))
+                    service.batchDeleteResource(edmName, arry2);
+                if(!JsonUtil.isEmpity(arry))
                     service.batchUpdate(edmName, arry);
             }
         }
