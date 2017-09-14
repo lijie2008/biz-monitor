@@ -10,6 +10,7 @@
 package com.huntkey.rx.sceo.monitor.provider.controller;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -182,7 +183,9 @@ public class MonitorTreeOrderController {
         
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-
+        
+        startDate = startDate + " 00:00:00";
+        endDate = endDate + " 23:59:59";
         Date nowStartDate = ToolUtil.getDate(startDate);
         Date nowEndDate = ToolUtil.getDate(endDate);
         
@@ -675,7 +678,7 @@ public class MonitorTreeOrderController {
             if(!JsonUtil.isEmpity(inNodes)){
                 JSONArray arry = new JSONArray();
                 List<String> arry2 = new ArrayList<String>();
-                Date currentDate = new Date(System.currentTimeMillis());
+                Date currentDate = ToolUtil.getDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date())+ " 23:59:59");
                 inNodes.stream().forEach(s->{
                     Date sStartDate = ToolUtil.getDate(s.getMtor011());
                     Date sEndDate = ToolUtil.getDate(s.getMtor012());
@@ -684,7 +687,7 @@ public class MonitorTreeOrderController {
                     }else if(!(sStartDate.after(currentDate) || sEndDate.before(currentDate))){
                         JSONObject obj = new JSONObject();
                         obj.put(Constant.ID,s.getId());
-                        obj.put("moni005",currentDate.toString());
+                        obj.put("moni005",new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(currentDate));
                         obj.put("moduser", MODUSER);
                         arry.add(obj);
                     }
