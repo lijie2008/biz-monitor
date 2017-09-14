@@ -9,9 +9,9 @@
 
 package com.huntkey.rx.sceo.monitor.provider.controller;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,6 +50,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
 import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.TargetResourceTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
+import com.huntkey.rx.sceo.monitor.commom.utils.ToolUtil;
 import com.huntkey.rx.sceo.monitor.provider.config.Revoked;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
@@ -182,8 +183,8 @@ public class MonitorTreeOrderController {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
 
-        Date nowStartDate = Date.valueOf(startDate);
-        Date nowEndDate = Date.valueOf(endDate);
+        Date nowStartDate = ToolUtil.getDate(startDate);
+        Date nowEndDate = ToolUtil.getDate(endDate);
         
         if(nowStartDate.after(nowEndDate))
             ApplicationException.throwCodeMesg(ErrorMessage._60015.getCode(),ErrorMessage._60015.getMsg());
@@ -201,8 +202,8 @@ public class MonitorTreeOrderController {
            if(JsonUtil.isEmpity(upNode))
                ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"上级节点" + ErrorMessage._60005.getMsg());
            
-           Date upStartDate = Date.valueOf(upNode.getMtor011());
-           Date upEndDate = Date.valueOf(upNode.getMtor012());
+           Date upStartDate = ToolUtil.getDate(upNode.getMtor011());
+           Date upEndDate = ToolUtil.getDate(upNode.getMtor012());
            
            
            if(upStartDate.after(nowStartDate) ||  nowEndDate.after(upEndDate))
@@ -232,9 +233,9 @@ public class MonitorTreeOrderController {
            
            child_nodes.stream().anyMatch(s->{
                
-               Date cStartDate = Date.valueOf(s.getMtor011());
+               Date cStartDate = ToolUtil.getDate(s.getMtor011());
                
-               Date cEndDate = Date.valueOf(s.getMtor012());
+               Date cEndDate = ToolUtil.getDate(s.getMtor012());
                
                if(!nowStartDate.before(cEndDate) || !nowEndDate.after(cStartDate)){
                    result.setData(false);
@@ -676,8 +677,8 @@ public class MonitorTreeOrderController {
                 List<String> arry2 = new ArrayList<String>();
                 Date currentDate = new Date(System.currentTimeMillis());
                 inNodes.stream().forEach(s->{
-                    Date sStartDate = Date.valueOf(s.getMtor011());
-                    Date sEndDate = Date.valueOf(s.getMtor012());
+                    Date sStartDate = ToolUtil.getDate(s.getMtor011());
+                    Date sEndDate = ToolUtil.getDate(s.getMtor012());
                     if(sStartDate.after(currentDate)){
                         arry2.add(s.getId());
                     }else if(!(sStartDate.after(currentDate) || sEndDate.before(currentDate))){
@@ -734,6 +735,6 @@ public class MonitorTreeOrderController {
             return targetAllNode.stream().filter(q->q.getMtor006().equals(code)).findFirst().get().getId();
         return Constant.NULL;
     }
-
+    
 }
 
