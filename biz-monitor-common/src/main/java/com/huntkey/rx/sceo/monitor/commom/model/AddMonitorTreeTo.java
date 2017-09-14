@@ -28,7 +28,7 @@ public class AddMonitorTreeTo {
 	}
 	public void setBeginDate(String beginDate) {
 		beginDate=ToolUtil.formatDateStr(beginDate, Constant.YYYY_MM_DD);
-		this.beginDate = beginDate+Constant.STARTTIME;
+		this.beginDate = (StringUtil.isNullOrEmpty(beginDate)?ToolUtil.getNowDateStr(Constant.YYYY_MM_DD):beginDate)+Constant.STARTTIME;
 	}
 	public String getEndDate() {
 		return endDate;
