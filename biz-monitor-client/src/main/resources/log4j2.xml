@@ -18,24 +18,25 @@
                 <pattern>%d %p [${ctx:spring.application.name},%X{X-B3-TraceId},%X{X-B3-SpanId},%X{X-Span-Export}] %C{1.} [%t] %m%n</pattern>
             </PatternLayout>
             <Policies>
-                <TimeBasedTriggeringPolicy interval="1"/>
+                <TimeBasedTriggeringPolicy modulate="true" interval="24"/>
+                <SizeBasedTriggeringPolicy size="50MB" />
             </Policies>
 
             <!-- log文件只打印error级别信息 -->
-            <Filters>
-                <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
-            </Filters>
+            <!--<Filters>-->
+                <!--<ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>-->
+            <!--</Filters>-->
         </RollingFile>
     </Appenders>
     <Loggers>
-        <Logger name="com.huntkey.rx.sceo" level="DEBUG" additivity="false">
-            <appender-ref ref="Console" />
-            <appender-ref ref="file" />
-        </Logger>
+        <!--<Logger name="com.huntkey.rx.sceo" level="DEBUG" additivity="false">-->
+            <!--<appender-ref ref="Console" />-->
+            <!--<appender-ref ref="file" />-->
+        <!--</Logger>-->
 
         <!-- 输出info级别信息 Root 节点不可删除，但是root的level 可以在yml文件中配置-->
         <Root>
-            <AppenderRef ref="Console" />
+            <!--<AppenderRef ref="Console" />-->
             <AppenderRef ref="RollingFile" />
         </Root>
     </Loggers>

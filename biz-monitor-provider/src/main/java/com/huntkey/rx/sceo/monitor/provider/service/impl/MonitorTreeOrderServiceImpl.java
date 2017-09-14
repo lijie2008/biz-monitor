@@ -164,7 +164,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     @Override
     public NodeTo queryRootNode(String orderId) {
         SearchParam param = new SearchParam(Constant.MTOR005);
-        param.addCondition(new ConditionNode(Constant.ID, OperatorType.Equals, orderId));
+        param.addCondition(new ConditionNode(Constant.PID, OperatorType.Equals, orderId));
         param.addCondition(new ConditionNode(Constant.MTOR013, OperatorType.Equals, Constant.NULL));
         Result result = client.find(JSON.toJSONString(param.build()));
         if(result == null || result.getRetCode() != Result.RECODE_SUCCESS){
