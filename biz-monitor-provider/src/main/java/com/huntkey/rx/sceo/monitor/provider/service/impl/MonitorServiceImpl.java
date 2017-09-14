@@ -1,6 +1,7 @@
 package com.huntkey.rx.sceo.monitor.provider.service.impl;
 
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,6 +128,9 @@ public class MonitorServiceImpl implements MonitorService {
 					nodeJson.put("assistStaff", staffObj.getString("text"));
 				}
 			}
+			//日期转换
+			nodeJson.put(MTOR011, ToolUtil.formatDateStr(nodeJson.getString(MTOR011),YYYY_MM_DD));
+			nodeJson.put(MTOR012, ToolUtil.formatDateStr(nodeJson.getString(MTOR012),YYYY_MM_DD));
 			
 		}else{
 			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(), 
@@ -224,12 +228,14 @@ public class MonitorServiceImpl implements MonitorService {
 	public String saveNodeDetail(NodeTo nodeDetail) {
 		// TODO Auto-generated method stub
 		String nodeId=nodeDetail.getId();
-		String endDate=nodeDetail.getMtor012();
-		String beginDate=nodeDetail.getMtor011();
+		String endDate=nodeDetail.getMtor012()+" 23:59:59";
+		String beginDate=nodeDetail.getMtor011()+" 00:00:00";
 		if(StringUtil.isNullOrEmpty(nodeId)){
 			logger.info("不存在当前信息！");
 			throw new ServiceException("不存在当前信息！");
 		}
+		nodeDetail.setMtor011(beginDate);
+		nodeDetail.setMtor012(endDate);
 		DBUtils.update(MTOR005, JsonUtil.getJson(nodeDetail),"");
 		//修改下级节点失效日期
 		//1.根据根节点ID 临时单下级节点信息
@@ -376,10 +382,11 @@ public class MonitorServiceImpl implements MonitorService {
 		String beginDate="";
 		String endDate="";
 		JSONObject nodeParent=null;
+		String nowDate=ToolUtil.getNowDateStr(YYYY_MM_DD);
 		if(node!=null){
 			switch (nodeType){
 				case 0://创建子节点
-					beginDate=node.getString(MTOR011);
+					beginDate=!JsonUtil.compareDate(nowDate,node.getString(MTOR011))?nowDate:node.getString(MTOR011);
 					endDate=node.getString(MTOR012);
 					condition.addCondition(MTOR013, EQUAL, node.getString(ID), true);//当前节点的子节点
 					condition.addCondition(MTOR016, EQUAL, NULL, false);//最右侧节点
@@ -405,7 +412,7 @@ public class MonitorServiceImpl implements MonitorService {
 					condition.addCondition(ID, EQUAL, node.getString(MTOR013), true);
 					nodeParent=DBUtils.getObjectResult(MTOR005, null, condition);
 					if(nodeParent!=null){
-						beginDate=nodeParent.getString(MTOR011);
+						beginDate=!JsonUtil.compareDate(nowDate,nodeParent.getString(MTOR011))?nowDate:nodeParent.getString(MTOR011);
 						endDate=nodeParent.getString(MTOR012);
 					}
 					//1.创建新的左节点
@@ -428,7 +435,7 @@ public class MonitorServiceImpl implements MonitorService {
 					condition.addCondition(ID, EQUAL, node.getString(MTOR013), true);
 					nodeParent=DBUtils.getObjectResult(MTOR005, null, condition);
 					if(nodeParent!=null){
-						beginDate=nodeParent.getString(MTOR011);
+						beginDate=!JsonUtil.compareDate(nowDate,nodeParent.getString(MTOR011))?nowDate:nodeParent.getString(MTOR011);
 						endDate=nodeParent.getString(MTOR012);
 					}
 					//1.创建新的右节点
@@ -456,6 +463,8 @@ public class MonitorServiceImpl implements MonitorService {
 	@Override
 	public String deleteNode(String nodeId,int type) {
 		// TODO Auto-generated method stub
+		long beginTime=System.currentTimeMillis();
+		logger.info("删除开始时间==>"+beginTime);
 		//查询出被删除节点信息
 		Condition condition=new Condition();
 		condition.addCondition(ID, EQUAL, nodeId, true);
@@ -476,7 +485,6 @@ public class MonitorServiceImpl implements MonitorService {
 					updateNodes=JsonUtil.getJsonArrayByAttr(nodesClassify, "updateNodes");
 				}
 			}
-			
 			updateNodes(delNode);
 			
 			//新增节点做删除
@@ -521,6 +529,9 @@ public class MonitorServiceImpl implements MonitorService {
 				}
 			}
 		}
+		long endTime=System.currentTimeMillis();
+		logger.info("删除结束时间==>"+endTime);
+		logger.info("删除节点方法耗时==>"+(endTime-beginTime)/1000+"s");
 		return nodeId;
 	}
 	/**
@@ -688,9 +699,7 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor012(StringUtil.isNullOrEmpty(endDate)?MAXINVALIDDATE:endDate);
 		node.setPid(treeId);
 		logger.info("MonitorServiceImpl类的setNodePosition方法：==》节点编码生成前");
-//		String orderNum=orderNumberService.generateOrderNumber("NODE");
 		node.setMtor006("NODE"+System.currentTimeMillis());
-//		logger.info("MonitorServiceImpl类的setNodePosition方法：==》节点编码生成后，节点编码为："+orderNum);
 		return node;
 	}
 	
@@ -905,39 +914,6 @@ public class MonitorServiceImpl implements MonitorService {
 			}
 		}
 		
-//		String tempStr="";
-//		String resourceStr="";
-//		if(!JsonUtil.isNullOrEmpty(treeFormal) && !JsonUtil.isNullOrEmpty(treeTemp)){
-//			tempStr=JsonUtil.getJsonArrayString(treeTemp);//获取jsonArray字符串
-//			resourceStr=JsonUtil.getJsonArrayString(resourceArr);//获取jsonArray字符串
-//			JSONObject jsonFormal=null;
-//			JSONObject jsonTemp=null;
-//			for(Object objFormal:treeFormal){
-//				jsonFormal=JsonUtil.getJson(objFormal);
-//				if(jsonFormal!=null){
-//					for(int i=0;i<treeTemp.size();i++){
-//						jsonTemp=treeTemp.getJSONObject(i);
-//						if(jsonTemp!=null){
-//							if(StringUtil.isEqual(jsonFormal.getString("moni001"),
-//								jsonTemp.getString("mtor006"))){//如果编号相等
-//								String oldChar=jsonFormal.getString(ID);
-//								String newChar=jsonTemp.getString(ID);
-//								if(!StringUtil.isNullOrEmpty(tempStr)){
-//									
-//									tempStr=tempStr.replace(oldChar,newChar);//将旧ID替换成新的节点ID
-//								}
-//								if(!StringUtil.isNullOrEmpty(resourceStr)){
-//									resourceStr=resourceStr.replace(oldChar,
-//											newChar);//将旧ID替换成新的节点ID
-//								}
-//								treeTemp.remove(jsonTemp);
-//								break;
-//							}
-//						}  
-//					}
-//				}
-//			}
-//		}
 		JSONObject retObj=new JSONObject();
 		retObj.put("treeTemp", treeTempClone);
 		retObj.put("resource", resourceArr);
@@ -964,7 +940,6 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor016(NULL);
 		node.setMtor021(1);
 		node.setPid(pid);
-//		String nodeNum=orderNumberService.generateOrderNumber("NODE");
 		node.setMtor006("NODE"+System.currentTimeMillis());
 		return (String) DBUtils.add(MTOR005, JsonUtil.getJson(node),"");
 	}

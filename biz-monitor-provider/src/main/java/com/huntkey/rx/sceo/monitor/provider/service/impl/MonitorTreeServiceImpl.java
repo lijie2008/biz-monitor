@@ -21,6 +21,7 @@ import com.huntkey.rx.sceo.monitor.commom.constant.DateConstant;
 import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
+import com.huntkey.rx.sceo.monitor.commom.utils.ToolUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
@@ -164,8 +165,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                     JSONObject tree = new JSONObject();
                     tree.put("rootNodeId", temp.getString("id"));
                     tree.put("rootNodeName", temp.getString("moni002"));
-                    tree.put("beginTime", temp.getString("moni004"));
-                    tree.put("endTime", temp.getString("moni005"));
+                    tree.put("beginTime", ToolUtil.formatDateStr(temp.getString("moni004"),Constant.YYYY_MM_DD));
+                    tree.put("endTime", ToolUtil.formatDateStr(temp.getString("moni005"),Constant.YYYY_MM_DD));
                     monitorTrees.add(tree);
                 }
             } else {
