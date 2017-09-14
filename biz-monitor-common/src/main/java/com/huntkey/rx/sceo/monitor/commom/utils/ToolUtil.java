@@ -1,5 +1,6 @@
 package com.huntkey.rx.sceo.monitor.commom.utils;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -10,6 +11,7 @@ import java.util.Map.Entry;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.string.StringUtil;
+import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 
 public class ToolUtil {
@@ -115,5 +117,39 @@ public class ToolUtil {
             }
     	}
     	return copy_obj;
-    } 
+    }
+    /**
+     * 日期比较时分秒
+     * @param dateBegin
+     * @param dateEnd
+     * @return
+     */
+    public static  Boolean dateCompare(String dateBegin,String dateEnd) {
+    	DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm");
+		Date date1,date2;
+		Boolean b=false;
+		if(StringUtil.isNullOrEmpty(dateBegin)){
+			dateBegin=getNowDateStr(Constant.YYYY_MM_DD)+Constant.STARTTIME;
+		}else if(dateBegin.length()==10){
+			dateBegin=dateBegin+Constant.STARTTIME;
+		}
+		if(StringUtil.isNullOrEmpty(dateEnd)){
+			dateEnd=getNowDateStr(Constant.YYYY_MM_DD)+Constant.STARTTIME;
+		}else if(dateEnd.length()==10){
+			dateEnd=dateEnd+Constant.STARTTIME;
+		}
+		try {
+			date1 = df.parse(dateBegin);
+			date2=df.parse(dateEnd);
+			if(date1.getTime()<date2.getTime())
+			{
+				b=true;
+			}
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return b;
+		
+    }
 }

@@ -192,7 +192,7 @@ public class NodeTo implements Serializable{
     
     public void setMtor011(String mtor011) {
     	mtor011=ToolUtil.formatDateStr(mtor011, Constant.YYYY_MM_DD);
-        this.mtor011 = mtor011;
+        this.mtor011 = mtor011+Constant.STARTTIME;
     }
     public String getMtor012() {
         return mtor012;
@@ -204,7 +204,7 @@ public class NodeTo implements Serializable{
     	}else{
     		mtor012=ToolUtil.formatDateStr(mtor012, Constant.YYYY_MM_DD);
     	}
-        this.mtor012 = mtor012;
+        this.mtor012 = mtor012+Constant.ENDTIME;
     }
 
     public String getMtor013() {

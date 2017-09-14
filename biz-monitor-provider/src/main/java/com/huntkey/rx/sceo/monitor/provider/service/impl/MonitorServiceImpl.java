@@ -228,14 +228,12 @@ public class MonitorServiceImpl implements MonitorService {
 	public String saveNodeDetail(NodeTo nodeDetail) {
 		// TODO Auto-generated method stub
 		String nodeId=nodeDetail.getId();
-		String endDate=nodeDetail.getMtor012()+" 23:59:59";
-		String beginDate=nodeDetail.getMtor011()+" 00:00:00";
+		String endDate=nodeDetail.getMtor012();
+		String beginDate=nodeDetail.getMtor011();
 		if(StringUtil.isNullOrEmpty(nodeId)){
 			logger.info("不存在当前信息！");
 			throw new ServiceException("不存在当前信息！");
 		}
-		nodeDetail.setMtor011(beginDate);
-		nodeDetail.setMtor012(endDate);
 		DBUtils.update(MTOR005, JsonUtil.getJson(nodeDetail),"");
 		//修改下级节点失效日期
 		//1.根据根节点ID 临时单下级节点信息
@@ -257,19 +255,19 @@ public class MonitorServiceImpl implements MonitorService {
 					childEndDate=json.getString(MTOR012);
 					//-->修改父节点的失效日期
 					//2.修改的子节点失效日期小于等于子节点的生效日期==>子节点失效 
-					if(!JsonUtil.compareDate(childBeginDate,endDate)){
+					if(!ToolUtil.dateCompare(childBeginDate, endDate)){
 						invalidNode(json);
 					}
-					else if(JsonUtil.compareDate(endDate, childEndDate)){//1.子节点失效日期大于父节点修改的失效日期  ==>子节点失效日期=父节点失效日期
+					else if(ToolUtil.dateCompare(endDate, childEndDate)){//1.子节点失效日期大于父节点修改的失效日期  ==>子节点失效日期=父节点失效日期
 						json.put(MTOR012, endDate);
 						DBUtils.update(MTOR005, json, "");
 					}
 					//-->修改父节点的生效日期
 					//2.如果父节点的生效日期大于等于子节点失效日期==>子节点失效
-					if(!JsonUtil.compareDate(beginDate,childEndDate)){
+					if(!ToolUtil.dateCompare(beginDate,childEndDate)){
 						invalidNode(json);
 					}
-					else if(JsonUtil.compareDate(childBeginDate,beginDate)){//1.父节点生效日期>子节点生效日期时==>子节点生效日期=父节点生效日期
+					else if(ToolUtil.dateCompare(childBeginDate,beginDate)){//1.父节点生效日期>子节点生效日期时==>子节点生效日期=父节点生效日期
 						json.put(MTOR011, beginDate);
 						DBUtils.update(MTOR005, json, "");
 					}
@@ -386,7 +384,9 @@ public class MonitorServiceImpl implements MonitorService {
 		if(node!=null){
 			switch (nodeType){
 				case 0://创建子节点
-					beginDate=!JsonUtil.compareDate(nowDate,node.getString(MTOR011))?nowDate:node.getString(MTOR011);
+					beginDate=node.getString(MTOR011);
+					//如果当前节点生效时间小于当天则 将生成的字节点的日期设置为当天
+					beginDate=ToolUtil.dateCompare(beginDate, null)?nowDate:beginDate;
 					endDate=node.getString(MTOR012);
 					condition.addCondition(MTOR013, EQUAL, node.getString(ID), true);//当前节点的子节点
 					condition.addCondition(MTOR016, EQUAL, NULL, false);//最右侧节点
@@ -412,7 +412,9 @@ public class MonitorServiceImpl implements MonitorService {
 					condition.addCondition(ID, EQUAL, node.getString(MTOR013), true);
 					nodeParent=DBUtils.getObjectResult(MTOR005, null, condition);
 					if(nodeParent!=null){
-						beginDate=!JsonUtil.compareDate(nowDate,nodeParent.getString(MTOR011))?nowDate:nodeParent.getString(MTOR011);
+						beginDate=nodeParent.getString(MTOR011);
+						//如果当前节点生效时间小于当天则 将生成的字节点的日期设置为当天
+						beginDate=ToolUtil.dateCompare(beginDate, null)?nowDate:beginDate;
 						endDate=nodeParent.getString(MTOR012);
 					}
 					//1.创建新的左节点
@@ -435,7 +437,9 @@ public class MonitorServiceImpl implements MonitorService {
 					condition.addCondition(ID, EQUAL, node.getString(MTOR013), true);
 					nodeParent=DBUtils.getObjectResult(MTOR005, null, condition);
 					if(nodeParent!=null){
-						beginDate=!JsonUtil.compareDate(nowDate,nodeParent.getString(MTOR011))?nowDate:nodeParent.getString(MTOR011);
+						beginDate=nodeParent.getString(MTOR011);
+						//如果当前节点生效时间小于当天则 将生成的字节点的日期设置为当天
+						beginDate=ToolUtil.dateCompare(beginDate, null)?nowDate:beginDate;
 						endDate=nodeParent.getString(MTOR012);
 					}
 					//1.创建新的右节点
@@ -695,10 +699,10 @@ public class MonitorServiceImpl implements MonitorService {
 		node.setMtor015(leftNode);
 		node.setMtor016(rightNode);
 		node.setMtor021(1);  
-		node.setMtor011(StringUtil.isNullOrEmpty(beginDate)?ToolUtil.getNowDateStr(YYYY_MM_DD):beginDate);
-		node.setMtor012(StringUtil.isNullOrEmpty(endDate)?MAXINVALIDDATE:endDate);
+		node.setMtor011(StringUtil.isNullOrEmpty(beginDate)?
+				ToolUtil.getNowDateStr(YYYY_MM_DD)+STARTTIME:beginDate+STARTTIME);
+		node.setMtor012(StringUtil.isNullOrEmpty(endDate)?MAXINVALIDDATE+ENDTIME:endDate+ENDTIME);
 		node.setPid(treeId);
-		logger.info("MonitorServiceImpl类的setNodePosition方法：==》节点编码生成前");
 		node.setMtor006("NODE"+System.currentTimeMillis());
 		return node;
 	}

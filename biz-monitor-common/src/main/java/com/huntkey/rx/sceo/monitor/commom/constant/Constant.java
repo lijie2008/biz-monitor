@@ -67,6 +67,7 @@ public interface Constant {
     String YYYYMMDD = "yyyyMMdd";
     
     String YYYY_MM_DD = "yyyy-MM-dd";
+    String YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
     
 
     /**
@@ -166,5 +167,7 @@ public interface Constant {
     String EDMPCODE = "moni012";
     
     String VALUE = "value";
+    String STARTTIME = " 00:00:00";
+    String ENDTIME = " 23:59:59";
 }
 
