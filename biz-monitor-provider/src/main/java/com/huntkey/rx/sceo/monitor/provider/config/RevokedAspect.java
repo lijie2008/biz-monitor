@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
@@ -83,9 +84,7 @@ public class RevokedAspect {
                     orderId = key;
                 
                 logger.debug("服务开始前, 节点型操作， 取出表单 单号 ： " + orderId);
-                
                 List<NodeDetailTo> nodes = service.getAllNodesAndResource(orderId);
-                
                 originalMap.put(key, nodes);
                 break;
                 
@@ -229,7 +228,7 @@ public class RevokedAspect {
         
         List<ResourceTo> resources = service.queryResource(key);
         
-        NodeDetailTo detail = JSON.parseObject(JSON.toJSONString(node),NodeDetailTo.class);
+        NodeDetailTo detail = JSON.parseObject(JSON.toJSONString(node,SerializerFeature.WriteMapNullValue, SerializerFeature.WriteNullStringAsEmpty),NodeDetailTo.class);
         
         if(JsonUtil.isEmpity(detail))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), ErrorMessage._60005.getMsg());
