@@ -155,7 +155,7 @@ public class ToolUtil {
     
     public static Date getDate(String str){
         try {
-            DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             return format.parse(str);
         } catch (ParseException e) {
             throw new RuntimeException("日期转换错误"+ str);

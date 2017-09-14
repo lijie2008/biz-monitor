@@ -687,7 +687,7 @@ public class MonitorTreeOrderController {
                     }else if(!(sStartDate.after(currentDate) || sEndDate.before(currentDate))){
                         JSONObject obj = new JSONObject();
                         obj.put(Constant.ID,s.getId());
-                        obj.put("moni005",new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(currentDate));
+                        obj.put("moni005",new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(currentDate));
                         obj.put("moduser", MODUSER);
                         arry.add(obj);
                     }
