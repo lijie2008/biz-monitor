@@ -678,7 +678,7 @@ public class MonitorTreeOrderController {
             if(!JsonUtil.isEmpity(inNodes)){
                 JSONArray arry = new JSONArray();
                 List<String> arry2 = new ArrayList<String>();
-                Date currentDate = ToolUtil.getDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date())+ " 23:59:59");
+                Date currentDate = ToolUtil.getDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date())+ " 00:00:00");
                 inNodes.stream().forEach(s->{
                     Date sStartDate = ToolUtil.getDate(s.getMtor011());
                     Date sEndDate = ToolUtil.getDate(s.getMtor012());
