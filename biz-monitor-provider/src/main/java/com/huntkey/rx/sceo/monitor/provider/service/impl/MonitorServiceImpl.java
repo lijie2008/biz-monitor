@@ -812,6 +812,8 @@ public class MonitorServiceImpl implements MonitorService {
 		//1表示历史树与未来树的复制  
 		//2表示再用树的复制
 		//3表示在用树和未来树的维护
+		rootBeginDate=root.getString("moni004");
+		rootEndDate=root.getString("moni005");
 		if(ToolUtil.dateCompare(null, rootBeginDate)){//根节点生效时间大于当前时间==》未来树
 			type=changeType==1?1:3;//未来树的复制和维护逻辑不一致
 		}else if(!ToolUtil.dateCompare(null, rootEndDate)){//如果根节点的失效时间小于等于当前日期==》历史树
