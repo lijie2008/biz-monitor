@@ -60,6 +60,7 @@ public class MonitorServiceImpl implements MonitorService {
 			validDate=ToolUtil.getNowDateStr(YYYY_MM_DD);
 			condition.addCondition(MTOR012, GT, validDate, false);
 		}else{
+			validDate+=" 00:00:00";
 			condition.addCondition(MTOR011, LTE, validDate, false);
 			condition.addCondition(MTOR012, GT, validDate, false);
 		}

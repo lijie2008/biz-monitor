@@ -65,7 +65,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     @SuppressWarnings("unchecked")
     @Override
     public JSONArray getMonitorTreeNodes(String edmcNameEn, String searchDate, String rootNodeId) {
-
+    	searchDate=searchDate+" 00:00:00";
         //组装参数
         SearchParam requestParams = new SearchParam(edmcNameEn);
 

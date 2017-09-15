@@ -125,7 +125,7 @@ public class ToolUtil {
      * @return
      */
     public static  Boolean dateCompare(String dateBegin,String dateEnd) {
-    	DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    	DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Date date1,date2;
 		Boolean b=false;
 		if(StringUtil.isNullOrEmpty(dateBegin)){
