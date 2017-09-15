@@ -46,7 +46,8 @@ public interface ServiceCenterClient {
     @RequestMapping(value = "/servicecenter/business/monitors/trees/nodes", method = RequestMethod.GET)
     Result getMonitorTreeNodes(@RequestParam(value = "edmcNameEn") String edmcNameEn,
                                @RequestParam(value = "searchDate") String searchDate,
-                               @RequestParam(value = "rootNodeId") String rootNodeId);
+                               @RequestParam(value = "rootNodeId") String rootNodeId,
+                               @RequestParam(value = "type") int type);
 
     /**
      * 查询监管树类列表，并根据查询条件统计监管类下监管树的数量
@@ -97,7 +98,8 @@ public interface ServiceCenterClient {
     @RequestMapping(value= "/servicecenter/business/monitors/trees/nodes", method = RequestMethod.GET)
     Result getOrderMonitorTreeNodes(@RequestParam(value = "edmcNameEn") String edmcNameEn,
                                     @RequestParam(value = "searchDate") String searchDate,
-                                    @RequestParam(value = "rootNodeId") String rootNodeId);
+                                    @RequestParam(value = "rootNodeId") String rootNodeId,
+                                    @RequestParam(value = "type") int type);
     
     @RequestMapping(value= "/servicecenter/business/monitors/trees/search", method = RequestMethod.GET)
     Result searchResourceObj(@RequestParam(value = "resourceClassId") String resourceClassId,

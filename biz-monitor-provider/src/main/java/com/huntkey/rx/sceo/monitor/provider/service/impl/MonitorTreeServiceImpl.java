@@ -104,7 +104,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 
                 //根据根节点ID，查询所有子节点
                 Result childrenNpdeResult = serviceCenterClient.getMonitorTreeNodes(edmcNameEn,
-                        searchDate, rootNodeId);
+                        searchDate, rootNodeId,4);
                 if (childrenNpdeResult.getRetCode() != Result.RECODE_SUCCESS) {
                     throw new ServiceException(childrenNpdeResult.getErrMsg());
                 } else {
