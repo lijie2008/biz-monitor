@@ -1,7 +1,11 @@
 package com.huntkey.rx.sceo.monitor.provider.service.impl;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -282,9 +286,21 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                                         .toJSON(treeResult.getData());
                                 JSONArray rootArray = data.getJSONArray("dataset");
                                 if (rootArray.size() > 0) {
-                                    resultData.put("type", 1);
-                                    resultData.put("date",
-                                            rootArray.getJSONObject(0).getString("moni005"));
+
+                                    String lastDate = rootArray.getJSONObject(0).getString("moni005");
+                                    //TODO
+                                    DateFormat format =  new SimpleDateFormat("yyyy-MM-dd");
+                                    try {
+                                        Date tempDate = format.parse(lastDate);
+                                        Calendar cal = Calendar.getInstance();
+                                        cal.setTime(tempDate);
+                                        cal.add(Calendar.DATE, 1);
+                                        String newDate = format.format(cal.getTime());
+                                        resultData.put("type", 1);
+                                        resultData.put("date",newDate);
+                                    } catch (ParseException e) {
+                                        throw new ServiceException("日期格式不正确！");
+                                    }
                                 }
                             }
                         }
