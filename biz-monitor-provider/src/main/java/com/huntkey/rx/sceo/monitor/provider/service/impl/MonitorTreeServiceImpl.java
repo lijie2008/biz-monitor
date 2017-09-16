@@ -257,7 +257,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                     //统计没有失效时间的根节点
 
                     requestParams.addCondition(new ConditionNode("moni005", OperatorType.Equals,
-                            Constant.MAXINVALIDDATE));
+                            Constant.MAXINVALIDDATE + Constant.ENDTIME));
 
                     Result countResult = serviceCenterClient
                             .countByConditions(requestParams.toJSONString());
