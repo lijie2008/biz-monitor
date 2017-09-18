@@ -324,9 +324,7 @@ public class MonitorServiceImpl implements MonitorService {
 			//变更节点信息
 			nodes=updateNodesCache(node,nodes);
 			DBUtils.update(MTOR005, nodes, "");
-			if(!StringUtil.isNullOrEmpty(node.getString(MTOR014))){//如果删除节点存在下级节点  则删除下级节点
-				deleteChildrenNodes(Integer.parseInt(node.getString(MTOR021))==ChangeType.ADD.getValue()?1:0,node);
-			}
+			deleteChildrenNodes(Integer.parseInt(node.getString(MTOR021))==ChangeType.ADD.getValue()?1:0,node);
 		}
 	}
 	
