@@ -85,7 +85,7 @@ public class MonitorController {
      * @param nodeId 节点ID
      * @return
      */
-    @Revoked(type=OperateType.DETAIL)
+    @Revoked(type=OperateType.NODE)
     @RequestMapping(value = "/saveNodeDetail", method = RequestMethod.POST)
     public Result saveNodeDetail(@RequestBody @Revoked(key="id") NodeTo nodeDetail) {
         Result result = new Result();
