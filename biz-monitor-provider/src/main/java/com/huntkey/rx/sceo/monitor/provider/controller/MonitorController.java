@@ -87,7 +87,7 @@ public class MonitorController {
      */
     @Revoked(type=OperateType.NODE)
     @RequestMapping(value = "/saveNodeDetail", method = RequestMethod.POST)
-    public Result saveNodeDetail(@RequestBody @Revoked(key="id") NodeTo nodeDetail) {
+    public Result saveNodeDetail(@RequestBody @Revoked(key="pid") NodeTo nodeDetail) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(service.saveNodeDetail(nodeDetail));
