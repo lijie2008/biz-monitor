@@ -283,6 +283,7 @@ public class MonitorServiceImpl implements MonitorService {
 		JSONObject json=null;
 		String childBeginDate=null;
 		String childEndDate=null;
+		JSONArray tempList=new JSONArray();
 		if(!JsonUtil.isNullOrEmpty(childrenNodes)){
   			for(Object obj:childrenNodes){
 				json=JsonUtil.getJson(obj); 
@@ -294,7 +295,7 @@ public class MonitorServiceImpl implements MonitorService {
 					if(!ToolUtil.dateCompare(childBeginDate, endDate)){
 						//选择性失效节点
 						invalidNodeSelected(json,childrenNodes);
-						childrenNodes.remove(json);
+						tempList.add(json);
 					}
 					else if(ToolUtil.dateCompare(endDate, childEndDate)){//1.子节点失效日期大于父节点修改的失效日期  ==>子节点失效日期=父节点失效日期
 						json.put(MTOR012, endDate);
@@ -304,7 +305,7 @@ public class MonitorServiceImpl implements MonitorService {
 					//2.如果父节点的生效日期大于等于子节点失效日期==>子节点失效
 					if(!ToolUtil.dateCompare(beginDate,childEndDate)){
 						invalidNodeSelected(json,childrenNodes);
-						childrenNodes.remove(json);
+						tempList.add(json);
 					}
 					else if(ToolUtil.dateCompare(childBeginDate,beginDate)){//1.父节点生效日期>子节点生效日期时==>子节点生效日期=父节点生效日期
 						json.put(MTOR011, beginDate);
@@ -313,6 +314,7 @@ public class MonitorServiceImpl implements MonitorService {
 				}
 			}
 		}
+		childrenNodes.removeAll(tempList);
 		return childrenNodes;
 	}
 	
