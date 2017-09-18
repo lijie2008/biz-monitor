@@ -85,18 +85,15 @@ public class MonitorServiceImpl implements MonitorService {
 		result.setRetCode(Result.RECODE_SUCCESS);
 		
 		//根据类ID查询出资源表
-		JSONObject resourceObj=DBUtils.getEdmcNameEn(classId, "moni012");
-		if(resourceObj==null){
-			logger.info("未设置资源特征值！");
-			throw new ServiceException("未设置资源特征值！");
-		}
+		JSONObject resourceObj=getCharacter(classId);
 		
 		//循环查询资源表
 		JSONArray resourceArr=new JSONArray();
 		JSONArray resourceArrNew=new JSONArray();
 		for(String node:nodes){
 			if(!StringUtil.isNullOrEmpty(node)){
-				resourceArr=getNodeResource(node, resourceObj);//查询单个节点关联资源
+				resourceArr=getNodeResource(node, resourceObj.getString("resourceTab"),
+						resourceObj.getJSONObject("jsonCharacter"));//查询单个节点关联资源
 				resourceArrNew=JsonUtil.mergeJsonArray(resourceArrNew,resourceArr);
 			}
 		}
@@ -156,30 +153,33 @@ public class MonitorServiceImpl implements MonitorService {
 	public JSONArray nodeResource(String nodeId,String classId) {
 		// TODO Auto-generated method stub
 		//根据类ID查询出资源表
+		JSONObject resourceObj=getCharacter(classId);
+		JSONArray resourceArr=getNodeResource(nodeId,resourceObj.getString("resourceTab"),
+				resourceObj.getJSONObject("jsonCharacter"));
+		return resourceArr;
+	}
+	/***
+	 * 获取资源表特征值
+	 * @return
+	 */
+	private JSONObject getCharacter(String classId){
 		JSONObject resourceObj=DBUtils.getEdmcNameEn(classId, "moni012");
-		JSONArray resourceArr=null;
-		if(resourceObj!=null){
-			resourceArr=getNodeResource(nodeId,resourceObj);
-		}else{
+		if(resourceObj==null){
 			logger.info("未设置资源特征值！");
 			throw new ServiceException("未设置资源特征值！");
 		}
-		return resourceArr;
+		String resourceTab=resourceObj.getString("edmcNameEn").toLowerCase();
+		String resourceClassId=resourceObj.getString(ID);
+		//查询moderler特征表
+		JSONObject jsonCharacter=DBUtils.getCharacterAndFormat(resourceClassId);
+		
+		JSONObject jsonCharacterObj=new JSONObject();
+		jsonCharacterObj.put("resourceTab", resourceTab);
+		jsonCharacterObj.put("jsonCharacter", jsonCharacter);
+		return jsonCharacterObj;
 	}
-	private JSONArray getNodeResource(String nodeId,JSONObject resourceObj){
-		String resourceTab="",resourceClassId="";//资源表 资源类ID
+	private JSONArray getNodeResource(String nodeId,String resourceTab,JSONObject jsonCharacter){
 		JSONArray resources=null;
-		JSONObject jsonCharacter=null;
-		if(resourceObj!=null && !resourceObj.isEmpty()){
-			resourceTab=resourceObj.getString("edmcNameEn").toLowerCase();
-			resourceClassId=resourceObj.getString(ID);
-			//查询moderler特征表
-			jsonCharacter=DBUtils.getCharacterAndFormat(resourceClassId);
-		}else{
-			ApplicationException.throwCodeMesg(ErrorMessage._60012.getCode(), 
-					ErrorMessage._60012.getMsg());
-			logger.info("MonitorServiceImpl类的nodeResource方法：==》"+ErrorMessage._60012.getMsg());
-		}
 		//根据节点ID查询出关联资源结果集
 		Condition condition=new Condition();
 		condition.addCondition(PID, EQUAL, nodeId, true);
