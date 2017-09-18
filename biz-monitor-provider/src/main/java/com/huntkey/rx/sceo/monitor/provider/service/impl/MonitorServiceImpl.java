@@ -264,6 +264,21 @@ public class MonitorServiceImpl implements MonitorService {
 	}
 	//判断节点时间修改对子节点影响
 	private void childDateUpdate(String beginDate,String endDate,JSONArray childrenNodes){
+		childrenNodes=updateNodesByDate(beginDate,endDate,childrenNodes);//一级子节点的时间修改影响
+		//查询一级子节点所有子节点  
+		JSONArray arr=new JSONArray();
+		if(!JsonUtil.isNullOrEmpty(childrenNodes)){
+			for(Object o:childrenNodes){
+				JSONObject json=JsonUtil.getJson(o);
+				if(!StringUtil.isNullOrEmpty(json.getString(MTOR013))){
+					arr=JsonUtil.mergeJsonArray(arr, getChildNode(json.getString(ID)));
+				}
+			}
+		}
+		updateNodesByDate(beginDate,endDate,arr);
+	}
+	
+	private JSONArray updateNodesByDate(String beginDate,String endDate,JSONArray childrenNodes){
 		//遍历子节点，判断父节点修改时间对子节点的影响
 		JSONObject json=null;
 		String childBeginDate=null;
@@ -279,6 +294,7 @@ public class MonitorServiceImpl implements MonitorService {
 					if(!ToolUtil.dateCompare(childBeginDate, endDate)){
 						//选择性失效节点
 						invalidNodeSelected(json,childrenNodes);
+						childrenNodes.remove(json);
 					}
 					else if(ToolUtil.dateCompare(endDate, childEndDate)){//1.子节点失效日期大于父节点修改的失效日期  ==>子节点失效日期=父节点失效日期
 						json.put(MTOR012, endDate);
@@ -288,16 +304,16 @@ public class MonitorServiceImpl implements MonitorService {
 					//2.如果父节点的生效日期大于等于子节点失效日期==>子节点失效
 					if(!ToolUtil.dateCompare(beginDate,childEndDate)){
 						invalidNodeSelected(json,childrenNodes);
+						childrenNodes.remove(json);
 					}
 					else if(ToolUtil.dateCompare(childBeginDate,beginDate)){//1.父节点生效日期>子节点生效日期时==>子节点生效日期=父节点生效日期
 						json.put(MTOR011, beginDate);
 						DBUtils.update(MTOR005, json, "");
 					}
-					
 				}
 			}
-			
 		}
+		return childrenNodes;
 	}
 	
 	//失效节点 
