@@ -844,16 +844,6 @@ public class MonitorServiceImpl implements MonitorService {
 		String classId=addMonitorTreeTo.getClassId();
 		String rootId=addMonitorTreeTo.getRootId();
 		String edmcNameEn=addMonitorTreeTo.getEdmcNameEn().toLowerCase();
-		//先根据根节点查询是否存在临时树
-		Condition condition=new Condition();
-		condition.addCondition(MTOR003, EQUAL, classId, true);
-		condition.addCondition(MTOR002, EQUAL, ChangeType.ADD.toString(),false);
-		JSONObject ret=DBUtils.getObjectResult(MONITORTREEORDER, null, condition);
-		if(ret!=null){
-			if(!StringUtil.isNullOrEmpty(ret.getString(ID))){
-				return ret.getString(ID);
-			}
-		}
 		
 		String tempId=createTemp(classId,ChangeType.ADD.getValue(),"");
 		switch(type){
