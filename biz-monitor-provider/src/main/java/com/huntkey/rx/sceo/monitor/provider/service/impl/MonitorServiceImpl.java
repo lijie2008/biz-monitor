@@ -851,7 +851,7 @@ public class MonitorServiceImpl implements MonitorService {
 		JSONObject ret=DBUtils.getObjectResult(MONITORTREEORDER, null, condition);
 		if(ret!=null){
 			if(!StringUtil.isNullOrEmpty(ret.getString(ID))){
-				throw new ServiceException("不能同时新增多份临时单");
+				return ret.getString(ID);
 			}
 		}
 		
