@@ -67,10 +67,6 @@ public class MonitorServiceImpl implements MonitorService {
 		
 		//查询节点集合表
 		JSONArray nodeArray=DBUtils.getArrayResult(MTOR005,null,condition);
-		if(JsonUtil.isNullOrEmpty(nodeArray)){
-			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),
-					ErrorMessage._60003.getMsg()); 
-		}
 		return nodeArray;
 	}
 	/**
