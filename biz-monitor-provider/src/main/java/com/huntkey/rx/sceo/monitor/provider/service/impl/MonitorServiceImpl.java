@@ -844,6 +844,18 @@ public class MonitorServiceImpl implements MonitorService {
 		String classId=addMonitorTreeTo.getClassId();
 		String rootId=addMonitorTreeTo.getRootId();
 		String edmcNameEn=addMonitorTreeTo.getEdmcNameEn().toLowerCase();
+		//先根据根节点查询是否存在临时树
+		Condition condition=new Condition();
+		condition.addCondition(MTOR004, EQUAL, rootId, true);
+		condition.addCondition(MTOR002, EQUAL, ChangeType.ADD.toString(),false);
+		JSONObject ret=DBUtils.getObjectResult(MONITORTREEORDER, null, condition);
+		if(ret!=null){
+			if(!StringUtil.isNullOrEmpty(ret.getString(ID))){
+//				return ret.getString(ID);//临时单ID
+				throw new ServiceException("不能同时新增多份临时单");
+			}
+		}
+		
 		String tempId=createTemp(classId,ChangeType.ADD.getValue(),"");
 		switch(type){
 			case 1://提示界面新增
