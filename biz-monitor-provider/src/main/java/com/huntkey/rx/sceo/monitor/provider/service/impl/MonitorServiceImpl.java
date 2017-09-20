@@ -67,10 +67,6 @@ public class MonitorServiceImpl implements MonitorService {
 		
 		//查询节点集合表
 		JSONArray nodeArray=DBUtils.getArrayResult(MTOR005,null,condition);
-		if(JsonUtil.isNullOrEmpty(nodeArray)){
-			ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),
-					ErrorMessage._60003.getMsg()); 
-		}
 		return nodeArray;
 	}
 	/**
@@ -848,6 +844,7 @@ public class MonitorServiceImpl implements MonitorService {
 		String classId=addMonitorTreeTo.getClassId();
 		String rootId=addMonitorTreeTo.getRootId();
 		String edmcNameEn=addMonitorTreeTo.getEdmcNameEn().toLowerCase();
+		
 		String tempId=createTemp(classId,ChangeType.ADD.getValue(),"");
 		switch(type){
 			case 1://提示界面新增
@@ -917,7 +914,7 @@ public class MonitorServiceImpl implements MonitorService {
 			type=changeType==1?1:3;//未来树的复制和维护逻辑不一致
 		}else if(!ToolUtil.dateCompare(null, rootEndDate)){//如果根节点的失效时间小于等于当前日期==》历史树
 			type=1;
-		}else if(!ToolUtil.dateCompare(rootBeginDate,null)){//如果根节点生效日期大于等于当前时间==>再用树
+		}else if(ToolUtil.dateCompare(rootBeginDate,null)){//如果根节点生效日期大于等于当前时间==>再用树
 			type=changeType==1?2:3;
 		}
 		//2.根据根节点ID 查询正式树表的所有节点
