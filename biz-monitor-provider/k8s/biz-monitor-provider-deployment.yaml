@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: biz-monitor-provider-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: biz-monitor-provider
+    spec:
+      containers:
+        - name: biz-monitor-provider
+          image: 10.3.98.241/biz-monitor/biz-monitor-provider
+          ports:
+            - containerPort: 10042
+#          volumeMounts:
+#            - mountPath: /sceo-log/log
+#              name: go-logs
+#      volumes:
+#      - name: go-logs
+#        hostPath:
+#          path: /sceo-log/log
