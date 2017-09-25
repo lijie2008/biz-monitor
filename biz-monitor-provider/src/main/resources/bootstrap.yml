@@ -4,7 +4,7 @@ spring:
   cloud:
     config:
       profile: dev
-      uri: http://192.168.13.39:9999
+      uri: http://10.3.98.153:9999
   messages:
     encoding: UTF-8
     basename: i18n/base
