@@ -128,7 +128,14 @@ public class MonitorTreeController {
         result.setData(monitorTreeService.getConProperties(edmcNameEn,enable));
         return result;
     }
-
+    
+    /**
+     * 树新增时的树的最大时间计算
+     * @author lijie
+     * @param edmcNameEn
+     * @param classId
+     * @return
+     */
     @GetMapping("/newDate")
     public Result getNewMonitorTreeStartDate(@RequestParam(value = "edmcNameEn") @NotBlank(message = "类英文名不能为空") String edmcNameEn,
     		@RequestParam(value="classId") @NotBlank(message="监管类ID不能为空") String classId){
