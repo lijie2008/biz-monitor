@@ -144,6 +144,7 @@ public class MonitorTreeController {
         result.setData(monitorTreeService.getNewMonitorTreeStartDate(edmcNameEn,classId));
         return result;
     }
+    
     @GetMapping("/search")
     public Result searchResourceObj(@RequestParam(value = "resourceClassId") @NotBlank(message = "资源类ID不能为空") String resourceClassId,
                                     @RequestParam(value = "resourceValue") @NotBlank(message = "资源对象值不能为空")  String resourceValue){
