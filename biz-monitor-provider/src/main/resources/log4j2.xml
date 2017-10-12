@@ -12,8 +12,8 @@
             </PatternLayout>
         </Console>
         <!-- 按日期每天生成log文件 -->
-        <RollingFile name="RollingFile" fileName="/usr/sceo-run-jars/log/${ctx:spring.application.name}.log"
-                     filePattern="/usr/sceo-run-jars/log/${ctx:spring.application.name}-%d{yyyy-MM-dd}.log">
+        <RollingFile name="RollingFile" fileName="/home/symantec/biz-monitor/back-end/log/${ctx:spring.application.name}.log"
+                     filePattern="/home/symantec/biz-monitor/back-end/log/${ctx:spring.application.name}-%d{yyyy-MM-dd}.log">
             <PatternLayout>
                 <pattern>%d %p [${ctx:spring.application.name},%X{X-B3-TraceId},%X{X-B3-SpanId},%X{X-Span-Export}] %C{1.} [%t] %m%n</pattern>
             </PatternLayout>
