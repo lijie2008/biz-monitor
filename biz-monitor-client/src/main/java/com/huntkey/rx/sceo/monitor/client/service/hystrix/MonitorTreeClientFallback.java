@@ -1,10 +1,9 @@
 package com.huntkey.rx.sceo.monitor.client.service.hystrix;
 
-import com.huntkey.rx.commons.utils.rest.Result;
-import com.huntkey.rx.sceo.monitor.client.service.MonitorTreeClient;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.client.service.MonitorTreeClient;
 
 /**
  * Created by zhaomj on 2017/8/11.
@@ -12,7 +11,7 @@ import java.util.List;
 @Component
 public class MonitorTreeClientFallback implements MonitorTreeClient {
     @Override
-    public Result getMonitorTreeNodes(String edmcNameEn, String searchDate, String rootNodeId) {
+    public Result getMonitorTreeNodes(String edmcNameEn, String searchDate, String rootNodeId,String edmcId,boolean flag) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("MonitorTreeClient getMonitorTreeNodes fallback");
@@ -32,14 +31,6 @@ public class MonitorTreeClientFallback implements MonitorTreeClient {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("MonitorTreeClient getMonitorTrees fallback");
-        return result;
-    }
-
-    @Override
-    public Result getNodeResources(String name, List<String> nodes, String edmcId) {
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("MonitorTreeClient getNodeResources fallback");
         return result;
     }
 
@@ -67,13 +58,4 @@ public class MonitorTreeClientFallback implements MonitorTreeClient {
         result.setErrMsg("MonitorTreeClient searchResourceObj fallback");
         return result;
 	}
-
-    @Override
-    public Result getMonitorTreeNodesAndResource(String edmcNameEn, String searchDate,
-                                                 String rootNodeId, String edmcId) {
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("MonitorTreeClient searchResourceObj fallback");
-        return null;
-    }
 }

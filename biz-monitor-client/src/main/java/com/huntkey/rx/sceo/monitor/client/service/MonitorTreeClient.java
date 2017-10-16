@@ -1,13 +1,12 @@
 package com.huntkey.rx.sceo.monitor.client.service;
 
+import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.client.service.hystrix.MonitorTreeClientFallback;
-
-import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * Created by zhaomj on 2017/8/11.
@@ -18,7 +17,8 @@ public interface MonitorTreeClient {
     @RequestMapping(value = "/monitors/trees/nodes",method = RequestMethod.GET)
     Result getMonitorTreeNodes(@RequestParam(value = "edmcNameEn") String edmcNameEn,
                                @RequestParam(value = "searchDate") String searchDate,
-                               @RequestParam(required = false,value = "rootNodeId") String rootNodeId);
+                               @RequestParam(required = false,value = "rootNodeId") String rootNodeId,
+                               @RequestParam String edmcId,@RequestParam(defaultValue = "false") boolean flag);
 
 
     @RequestMapping(value = "/monitors",method = RequestMethod.GET)
@@ -32,12 +32,6 @@ public interface MonitorTreeClient {
                            @RequestParam(value = "beginTime", required = false) String beginTime,
                            @RequestParam(value = "endTime", required = false) String endTime);
 
-
-    @RequestMapping(value = "/monitors/trees/resources",method = RequestMethod.GET)
-    Result getNodeResources(@RequestParam(value = "name", required = false) String name,
-                            @RequestParam(value = "nodes") List<String> nodes,
-                            @RequestParam(value = "edmcId") String edmcId);
-
     @RequestMapping("/monitors/conproperties")
     Result getConProperties(@RequestParam(value = "edmcNameEn") String edmcNameEn,
                             @RequestParam(value = "enable",defaultValue = "true") boolean enable);
@@ -49,18 +43,4 @@ public interface MonitorTreeClient {
     Result searchResourceObj(@RequestParam(value = "resourceClassId") String resourceClassId,
     		@RequestParam(value = "resourceValue") String resourceValue);
 
-    
-    /**
-     * 查询目标表所有的节点和资源信息
-     * @param edmcNameEn
-     * @param searchDate
-     * @param rootNodeId
-     * @param edmcId
-     * @return
-     */
-    @RequestMapping("/monitors/trees/nodesAndResources")
-    Result getMonitorTreeNodesAndResource(@RequestParam(value="edmcNameEn") @NotBlank(message = "类英文名不能为空") String edmcNameEn,
-                                      @RequestParam(value="searchDate") @NotBlank(message = "查询日期不能为空") String searchDate,
-                                      @RequestParam(value = "rootNodeId",required = false,defaultValue = "") String rootNodeId,
-                                      @RequestParam(value = "edmcId") @NotBlank(message = "监管类ID不能为空") String edmcId);
 }

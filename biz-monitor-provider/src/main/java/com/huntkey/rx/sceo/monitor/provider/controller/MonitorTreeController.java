@@ -1,15 +1,23 @@
 package com.huntkey.rx.sceo.monitor.provider.controller;
 
-import com.huntkey.rx.commons.utils.rest.Result;
-import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.validation.constraints.Pattern;
-import java.util.List;
+
+import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
+import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
 
 /**
  * Created by zhaomj on 2017/8/9.
@@ -33,35 +41,34 @@ public class MonitorTreeController {
      * @return
      */
     @GetMapping("/trees/nodes")
-    public Result getMonitorTreeNodes(@RequestParam @NotBlank(message = "类英文名不能为空") String edmcNameEn,
+    public Result getMonitorTreeNodes(@RequestParam @NotBlank(message = "类英文名不能为空") String rootEdmcNameEn,
                                       @RequestParam @NotBlank(message = "查询日期不能为空") String searchDate,
-                                      @RequestParam(required = false,defaultValue = "") String rootNodeId){
+                                      @RequestParam(required = false,defaultValue = "") String rootNodeId,
+                                      @RequestParam String edmcId,@RequestParam(defaultValue = "false") boolean flag){
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(monitorTreeService.getMonitorTreeNodes(edmcNameEn,searchDate,rootNodeId));
+        JSONObject obj = monitorTreeService.getMonitorTreeNodes(rootEdmcNameEn,searchDate,rootNodeId);
+        JSONArray nodes = obj == null ? null : obj.getJSONArray("nodes");
+        
+        JSONObject re_obj = new JSONObject();
+        re_obj.put("nodes", nodes);
+        
+        if(nodes == null || nodes.isEmpty())
+            return result;
+        
+        if(!flag)
+            return result;
+        
+        List<String> ids = new ArrayList<String>();
+        for (int i = 0; i < nodes.size(); i++)
+            ids.add(nodes.getJSONObject(i).getString(Constant.ID));
+
+        obj.put("resources", monitorTreeService.getNodeResources(null, ids, edmcId, obj.getString("edmName")));
+        result.setData(re_obj);
+        
         return result;
     }
 
-    /**
-     * 查询目标表所有的节点和资源信息
-     * @param edmcNameEn
-     * @param searchDate
-     * @param rootNodeId
-     * @param edmcId
-     * @return
-     */
-    @GetMapping("/trees/nodesAndResources")
-    public Result getMonitorTreeNodesAndResource(@RequestParam @NotBlank(message = "类英文名不能为空") String edmcNameEn,
-                                      @RequestParam @NotBlank(message = "查询日期不能为空") String searchDate,
-                                      @RequestParam(required = false,defaultValue = "") String rootNodeId,
-                                      @RequestParam @NotBlank(message = "监管类ID不能为空") String edmcId){
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(monitorTreeService.getMonitorTreeNodesAndResource(edmcNameEn,searchDate,rootNodeId,edmcId));
-        return result;
-    }
-    
-    
     /**
      * 查询监管树类列表，并根据查询条件统计监管类下监管树的数量
      * @param treeName
@@ -90,28 +97,12 @@ public class MonitorTreeController {
     @GetMapping("/trees")
     public Result getMonitorTrees(@RequestParam(required = false) String treeName,
                                   @RequestParam @NotBlank(message = "类英文名不能为空") String edmcNameEn,
+                                  @RequestParam @NotBlank(message = "edmcEdmdId 不能为空") String edmcEdmdId,
                                   @RequestParam(required = false) String beginTime,
                                   @RequestParam(required = false) String endTime){
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(monitorTreeService.getMonitorTrees(treeName,edmcNameEn,beginTime,endTime));
-        return result;
-    }
-
-    /**
-     * 查询监管树节点关联的资源清单
-     * @param name
-     * @param nodes
-     * @param edmcId
-     * @return
-     */
-    @GetMapping("/trees/resources")
-    public Result getNodeResources(@RequestParam(required = false) String name,
-                                   @RequestParam @NotEmpty(message = "树节点ID集合不能为空") List<String> nodes,
-                                   @RequestParam @NotBlank(message = "监管类ID不能为空") String edmcId){
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(monitorTreeService.getNodeResources(name,nodes,edmcId));
+        result.setData(monitorTreeService.getMonitorTrees(treeName,edmcNameEn,edmcEdmdId,beginTime,endTime));
         return result;
     }
 

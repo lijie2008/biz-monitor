@@ -76,7 +76,8 @@ public interface ServiceCenterClient {
     @RequestMapping(value = "/servicecenter/business/monitors/trees/resources", method = RequestMethod.GET)
     Result getNodeResources(@RequestParam(value = "name", required = false) String name,
                             @RequestParam(value = "nodes") List<String> nodes,
-                            @RequestParam(value = "edmcId") String edmcId);
+                            @RequestParam(value = "edmcId") String edmcId,
+                            @RequestParam(value="edmName") String edmName);
 
     @RequestMapping(value = "/servicecenter/find", method = RequestMethod.POST)
     Result find(@RequestBody String datas);

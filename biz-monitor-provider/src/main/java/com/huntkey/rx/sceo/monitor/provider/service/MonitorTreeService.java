@@ -21,7 +21,7 @@ public interface MonitorTreeService {
      * @param searchDate
      * @return
      */
-    JSONArray getMonitorTreeNodes(String edmcNameEn, String searchDate, String rootNodeId);
+    JSONObject getMonitorTreeNodes(String edmcNameEn, String searchDate, String rootNodeId);
 
     /**
      * 查询监管树类列表，并根据查询条件统计监管类下监管树的数量
@@ -32,9 +32,9 @@ public interface MonitorTreeService {
      */
     Result getEntityByVersionAndEnglishName(String treeName, String beginTime, String endTime);
 
-    JSONArray getMonitorTrees(String treeName, String edmcNameEn, String beginTime, String endTime);
+    JSONArray getMonitorTrees(String treeName, String edmcNameEn, String edmcEdmdId, String beginTime, String endTime);
 
-    JSONArray getNodeResources(String name, List<String> nodes, String edmcId);
+    JSONArray getNodeResources(String name, List<String> nodes, String edmcId, String edmName);
 
     JSONArray getConProperties(String edmcNameEn, boolean enable);
 
@@ -50,7 +50,4 @@ public interface MonitorTreeService {
     JSONArray getChileNodes(String nodeId ,String edmcNameEn);
     
     JSONArray searchResourceObj(String resourceClassId,String resourceValue);
-
-    JSONObject getMonitorTreeNodesAndResource(String edmcNameEn, String searchDate, String rootNodeId,
-                                          String edmcId);
 }

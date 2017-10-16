@@ -59,7 +59,7 @@ public class ServiceCenterClientFallback implements ServiceCenterClient{
     }
 
     @Override
-    public Result getNodeResources(String name, List<String> nodes, String edmcNameEn) {
+    public Result getNodeResources(String name, List<String> nodes, String edmcId,String edmName) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("监管服务无法连接共享服务中心 getNodeResources 服务！");
