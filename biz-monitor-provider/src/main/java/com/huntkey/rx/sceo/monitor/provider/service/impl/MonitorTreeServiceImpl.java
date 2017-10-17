@@ -245,7 +245,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             if (temptreeResult.getRetCode() == Result.RECODE_SUCCESS) {
                 JSONObject tempTree = (JSONObject) JSONObject.toJSON(temptreeResult.getData());
                 JSONArray tempArray = tempTree.getJSONArray("dataset");
-                if (tempArray.size() > 0) {
+                if (tempArray!=null && tempArray.size() > 0) {
                     tempId = tempArray.getJSONObject(0).getString("id");
                     resultData.put("type", 4);
                     resultData.put("tempId", tempId);
