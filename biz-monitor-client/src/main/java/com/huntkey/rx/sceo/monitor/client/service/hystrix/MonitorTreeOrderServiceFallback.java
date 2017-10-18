@@ -27,7 +27,7 @@ import com.huntkey.rx.sceo.monitor.client.service.MonitorTreeOrderService;
 public class MonitorTreeOrderServiceFallback implements MonitorTreeOrderService{
 
     @Override
-    public Result queryNotUsingResource(String orderId, String nodeId, int currentPage,
+    public Result queryNotUsingResource(String key, String lvlCode, int currentPage,
                                         int pageSize) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
@@ -36,7 +36,7 @@ public class MonitorTreeOrderServiceFallback implements MonitorTreeOrderService{
     }
 
     @Override
-    public Result checkNodeResource(String nodeId, String startDate, String endDate) {
+    public Result checkNodeResource(String key, String lvlCode, String startDate, String endDate) {
         
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
@@ -45,7 +45,7 @@ public class MonitorTreeOrderServiceFallback implements MonitorTreeOrderService{
     }
 
     @Override
-    public Result addOtherNode(String orderId) {
+    public Result addOtherNode(String key) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("fallback");
@@ -53,7 +53,7 @@ public class MonitorTreeOrderServiceFallback implements MonitorTreeOrderService{
     }
 
     @Override
-    public Result store(String orderId) {
+    public Result store(String key) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("fallback");
@@ -69,7 +69,7 @@ public class MonitorTreeOrderServiceFallback implements MonitorTreeOrderService{
     }
 
     @Override
-    public Result checkAvailableResource(String orderId) {
+    public Result checkAvailableResource(String key) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("fallback");

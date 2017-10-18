@@ -10,6 +10,7 @@
 package com.huntkey.rx.sceo.monitor.commom.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
 
@@ -24,21 +25,18 @@ public class RevokedTo implements Serializable{
     
     private static final long serialVersionUID = 1L;
 
-    private Object obj;
+    private List<NodeTo> nodes;
     
     private OperateType type;
-
-    public Object getObj() {
-        return obj;
-    }
-
-    public RevokedTo(Object obj, OperateType type){
-        this.obj = obj;
-        this.type = type;
-    }
     
-    public void setObj(Object obj) {
-        this.obj = obj;
+    private String id;
+
+    public List<NodeTo> getNodes() {
+        return nodes;
+    }
+
+    public void setNodes(List<NodeTo> nodes) {
+        this.nodes = nodes;
     }
 
     public OperateType getType() {
@@ -48,6 +46,14 @@ public class RevokedTo implements Serializable{
     public void setType(OperateType type) {
         this.type = type;
     }
-    
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
 }
 

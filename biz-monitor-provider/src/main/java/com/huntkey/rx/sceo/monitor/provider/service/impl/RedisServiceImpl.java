@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
 
 /**
@@ -14,10 +15,10 @@ import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
  * @version
  */
 @Service
-public class RedisServiceImpl implements RedisService{
+public class RedisServiceImpl implements RedisService {
 
     @Autowired
-    private RedisTemplate<Object, Object> redis;
+    private RedisTemplate<String, NodeTo> redis;
     
     @Override
     public Long size(String key) {
@@ -30,7 +31,7 @@ public class RedisServiceImpl implements RedisService{
     }
 
     @Override
-    public void lPush(String key, Object value) {
+    public void lPush(String key, NodeTo value) {
         redis.opsForList().leftPush(key, value);
     }
 
@@ -45,7 +46,7 @@ public class RedisServiceImpl implements RedisService{
     }
     
     @Override
-    public void set(String key, long index, Object value){
+    public void set(String key, long index, NodeTo value){
         redis.opsForList().set(key, index, value);
     }
     
@@ -53,7 +54,5 @@ public class RedisServiceImpl implements RedisService{
     public Object index(String key,long index){
         return redis.opsForList().index(key, index);
     }
-    
-    
 
 }

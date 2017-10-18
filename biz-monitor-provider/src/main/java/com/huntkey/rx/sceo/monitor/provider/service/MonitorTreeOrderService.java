@@ -9,18 +9,9 @@
 
 package com.huntkey.rx.sceo.monitor.provider.service;
 
-import java.util.List;
-
-import org.springframework.web.bind.annotation.RequestParam;
-
 import com.alibaba.fastjson.JSONArray;
-import com.huntkey.rx.sceo.monitor.commom.model.CharacterAndFormatTo;
-import com.huntkey.rx.sceo.monitor.commom.model.EdmClassTo;
-import com.huntkey.rx.sceo.monitor.commom.model.MonitorTreeOrderTo;
-import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailTo;
-import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
-import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
-import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
+import com.alibaba.fastjson.JSONObject;
+import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
 
 /**
  * ClassName:MonitorTreeOrderService 临时单服务
@@ -31,199 +22,18 @@ import com.huntkey.rx.sceo.monitor.commom.model.TargetNodeTo;
  */
 public interface MonitorTreeOrderService {
     
-    /**
-     * 
-     * queryNode: 查询节点详细信息 
-     * @author lijie
-     * @param nodeId 节点ID
-     * @return
-     */
-    NodeTo queryNode(String nodeId);
+    JSONObject queryNotUsingResource(String key,String lvlCode,int currentPage, int pageSize);
     
-    /**
-     * 
-     * queryNode: 查询指定节点下的资源集信息 
-     * @author lijie
-     * @param nodeId 节点ID
-     * @return
-     */
-    List<ResourceTo> queryResource(String nodeId);
+    boolean checkDate(String key, String lvlCode,String startDate, String endDate);
     
-    /**
-     * 
-     * queryOrder: 查询监管树临时单信息
-     * @author lijie
-     * @param orderId 临时单ID
-     * @return
-     */
-    MonitorTreeOrderTo queryOrder(String orderId);
+    JSONArray queryAvailableResource(String key);
     
-    /**
-     * 
-     * queryTreeNodeUsingResource: 查询当前临时单里已使用的资源信息
-     * @author lijie
-     * @param orderId
-     * @param startDate
-     * @param endDate - 可为空 空代表最大的失效日期
-     * @param excNodeId - 此id的资源不统计
-     * @param invalid - 是否跳过失效的节点
-     * @return
-     */
-    List<ResourceTo> queryTreeNodeUsingResource(String orderId, String startDate, String endDate,String excNodeId,Boolean invalid);
-    
-    /**
-     * 
-     * getEdmClass: 获取Edm类信息
-     * @author lijie
-     * @param classId 监管树类ID
-     * @param edmpCode 属性编码
-     * @return
-     */
-    EdmClassTo getEdmClass(String classId, String edmpCode);
-    
-    /**
-     * 
-     * getAllResource: 取出资源类中所有的资源信息
-     * @author lijie
-     * @param edmName
-     * @return
-     */
-    JSONArray getAllResource(String edmName);
-    
-    /**
-     * 
-     * queryRootNode:查询树根节点
-     * @author lijie
-     * @param orderId 临时单ID
-     * @return
-     */
-    NodeTo queryRootNode(String orderId);
-    
-    /**
-     * 
-     * queryRootChildrenNode: 查询根节点下的子节点的 最后一个子节点
-     * @author lijie
-     * @param orderId
-     * @param rootNodeId
-     * @return
-     */
-    NodeTo queryRootChildrenNode(String orderId,String rootNodeId);
-    
-    /**
-     * 
-     * queryTreeNodeResource: 查询临时单下所有节点信息
-     * @author lijie
-     * @param orderId
-     * @return
-     */
-    List<NodeTo> queryTreeNode(String orderId);
-    
-    /**
-     * 
-     * queryEdmClassName: 查询Edm类名称
-     * @author lijie
-     * @param id 类ID
-     * @return
-     */
-    String queryEdmClassName(String id);
-    
-    /**
-     * 
-     * batchUpdate: 批量更新目标表数据
-     * @author lijie
-     * @param edmName 目标类
-     * @param nodes 目标表节点集合
-     * @return
-     */
-    void batchUpdate(String edmName, JSONArray nodes);
-    
-    /**
-     * 
-     * batchAdd: 批量新增数据
-     * @author lijie
-     * @param edmName 目标类
-     * @param nodes 目标表节点集合
-     * @return
-     */
-    List<String> batchAdd(String edmName, JSONArray nodes);
+    void addOtherNode(String key);
 
-    /**
-     * 
-     * updateNodeAndResource: 更新临时单节点和资源信息
-     * @author lijie
-     * @param edmName edm类名
-     * @param to
-     */
-    void updateNodeAndResource(String edmName, NodeDetailTo to);
-    
-    /**
-     * 
-     * updateNode: 更新临时单节点信息
-     * @author lijie
-     * @param edmName edm类名
-     * @param to
-     */
-    void updateNode(String edmName, NodeDetailTo to);
-    
-    /**
-     * 
-     * batchDeleteResource: 批量删除临时单资源信息
-     * @author lijie
-     * @param edmName edm
-     * @param ids 资源id信息
-     */
-    void batchDeleteResource(String edmName, List<String> ids);
-    
-    /**
-     * 
-     * load: 根据id 查询edm信息
-     * @author lijie
-     * @param edmName edm
-     * @param ids ids
-     */
-    List<NodeDetailTo> load(String edmName, List<String> ids);
-    
-    /**
-     * 
-     * getAllNodesAndResource: 查询临时单下所有的节点和资源信息
-     * @author lijie
-     * @param orderId 临时单ID
-     * @return
-     */
-    List<NodeDetailTo> getAllNodesAndResource(String orderId);
-    
-    /**
-     * 
-     * deleteOrder: 删除临时单信息
-     * @author lijie
-     * @param orderId 临时单
-     */
-    void deleteOrder(String orderId);
-    
-    /**
-     * 根据类id 查询特征值字段集合和格式化样式
-     * @param classId
-     * @return
-     */
-    CharacterAndFormatTo getCharacterAndFormat(@RequestParam(value = "classId") String classId);
-    
-    /**
-     * 
-     * queryAvailableResource: 查询出可用的资源列表
-     * @author lijie
-     * @param orderId 临时单ID
-     * @return
-     */
-    List<Object> queryAvailableResource(String orderId);
+    String store(String key);
 
-    /**
-     * 
-     * queryTargetResource:查询节点下的所有资源信息
-     * @author lijie
-     * @param edmName 
-     * @param ids
-     * @return
-     */
-    List<String> queryTargetResource(String edmName, List<String> ids);
+    String save(String key);
+
+    RevokedTo revoke(String key);
 }
 

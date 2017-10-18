@@ -79,10 +79,6 @@ public interface ServiceCenterClient {
                             @RequestParam(value = "edmcId") String edmcId,
                             @RequestParam(value="edmName") String edmName);
 
-    @RequestMapping(value = "/servicecenter/find", method = RequestMethod.POST)
-    Result find(@RequestBody String datas);
-
-
     @RequestMapping(value = "/servicecenter/add", method = RequestMethod.POST)
     Result add(@RequestBody String datas);
 

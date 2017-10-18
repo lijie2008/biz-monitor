@@ -38,8 +38,8 @@ public interface MonitorTreeOrderService {
      * @return
      */
     @RequestMapping(value="/nodes/resource")
-    public Result queryNotUsingResource(@RequestParam(value="orderId") String orderId, 
-                                        @RequestParam(value="nodeId") String nodeId, 
+    public Result queryNotUsingResource(@RequestParam(value="key") String key, 
+                                        @RequestParam(value="lvlCode") String lvlCode, 
                                         @RequestParam(value="currentPage", defaultValue = "1",required=false) int currentPage,
                                         @RequestParam(value="pageSize", defaultValue="20",required=false) int pageSize);
 
@@ -48,13 +48,15 @@ public interface MonitorTreeOrderService {
      * 
      * checkNodeResource: 节点时间区间修改检查
      * @author lijie
-     * @param nodeId 节点ID
+     * @param key 临时单key
+     * @param lvlCode 节点编号
      * @param startDate 生效时间
      * @param endDate 失效时间
      * @return
      */
     @RequestMapping(value="/nodes/checkDate")
-    public Result checkNodeResource(@RequestParam(value="nodeId") String nodeId,
+    public Result checkNodeResource(@RequestParam(value="key") String key,
+                                    @RequestParam(value="lvlCode") String lvlCode,
                                     @RequestParam(value="startDate") String startDate,
                                     @RequestParam(value="endDate") String endDate);
 
@@ -67,17 +69,17 @@ public interface MonitorTreeOrderService {
      * @return
      */
     @RequestMapping(value="/nodes/other")
-    public Result addOtherNode(@RequestParam(value="orderId") String orderId);
+    public Result addOtherNode(@RequestParam(value="key") String key);
     
     /**
      * 
      * store: 临时单入库
      * @author lijie
-     * @param orderId 临时单Id
+     * @param key 临时单key
      * @return
      */
-    @RequestMapping(value="/nodes/{orderId}")
-    public Result store(@PathVariable(value="orderId") String orderId);
+    @RequestMapping(value="/nodes/{key}")
+    public Result store(@PathVariable(value="key") String key);
     
     /**
      * 
@@ -98,7 +100,7 @@ public interface MonitorTreeOrderService {
      * @return
      */
     @RequestMapping(value="/nodes/other/resource")
-    public Result checkAvailableResource(@RequestParam(value="orderId") String orderId);
+    public Result checkAvailableResource(@RequestParam(value="key") String key);
     
 }
 

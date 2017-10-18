@@ -1,5 +1,7 @@
 package com.huntkey.rx.sceo.monitor.provider.service;
 
+import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
+
 /**
  * 
  * ClassName: RedisService redis操作
@@ -7,19 +9,19 @@ package com.huntkey.rx.sceo.monitor.provider.service;
  * @author lijie
  * @version
  */
-public interface RedisService {
+public interface RedisService<T extends NodeTo> {
     
     Long size(String key);
     
     Boolean isEmpity(String key);
     
-    void lPush(String key, Object value);
+    void lPush(String key, T value);
     
     Object lPop(String key);
     
     void delete(String key);
     
-    void set(String key, long index, Object value);
+    void set(String key, long index, T value);
     
     Object index(String key,long index);
 }

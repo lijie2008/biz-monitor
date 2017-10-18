@@ -9,6 +9,8 @@
 
 package com.huntkey.rx.sceo.monitor.client.controller;
 
+import javax.validation.constraints.Pattern;
+
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -47,27 +49,31 @@ public class MonitorTreeOrderController {
      * @return
      */
     @GetMapping("/resource")
-    public Result queryNotUsingResource(@RequestParam @NotBlank(message = "临时单ID不能为空") String orderId,
-                                        @RequestParam @NotBlank(message = "节点ID不能为空") String nodeId, 
+    public Result queryNotUsingResource(@RequestParam @NotBlank(message = "临时单Key不能为空")
+                                        @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单key格式不正确") String key,
+                                        @RequestParam @NotBlank(message = "节点层级编码不能为空") String lvlCode, 
                                         @RequestParam(defaultValue = "1",required=false) int currentPage, 
                                         @RequestParam(defaultValue="20",required=false) int pageSize){
-        return service.queryNotUsingResource(orderId,nodeId,currentPage,pageSize);
+        return service.queryNotUsingResource(key,lvlCode,currentPage,pageSize);
     }
     
     /**
      * 
      * checkNodeResource: 节点时间区间修改检查
      * @author lijie
-     * @param nodeId 节点ID
+     * @param key 临时单key
+     * @param lvlCode 节点编号
      * @param startDate 生效时间
      * @param endDate 失效时间
      * @return
      */
     @GetMapping(value="/checkDate")
-    public Result checkNodeResource(@RequestParam @NotBlank(message="临时单ID不能为空") String nodeId,
+    public Result checkNodeResource(@RequestParam @NotBlank(message = "临时单Key不能为空")
+                                    @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单key格式不正确") String key,
+                                    @RequestParam @NotBlank(message="节点层级编码不能为空") String lvlCode,
                                     @RequestParam @NotBlank(message="生效日期不能为空") String startDate,
                                     @RequestParam @NotBlank(message="失效日期不能为空") String endDate){
-        return service.checkNodeResource(nodeId, startDate, endDate);
+        return service.checkNodeResource(key,lvlCode, startDate, endDate);
     }
     
     /**
@@ -78,20 +84,22 @@ public class MonitorTreeOrderController {
      * @return
      */
     @GetMapping("/other")
-    public Result addOtherNode(@RequestParam @NotBlank(message="临时单ID不能为空") String orderId){
-        return service.addOtherNode(orderId);
+    public Result addOtherNode(@RequestParam @NotBlank(message="临时单Key不能为空") 
+                               @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单key格式不正确") String key){
+        return service.addOtherNode(key);
     }
     
     /**
      * 
      * store: 临时单入库
      * @author lijie
-     * @param orderId 临时单Id
+     * @param key 临时单key
      * @return
      */
-    @GetMapping(value="/{orderId}")
-    public Result store(@PathVariable(value="orderId") @NotBlank(message="临时单ID不能为空") String orderId){
-        return service.store(orderId);
+    @GetMapping(value="/{key}")
+    public Result store(@PathVariable(value="key") @NotBlank(message="临时单ID不能为空") 
+                        @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单Key格式不正确") String key){
+        return service.store(key);
     }
     
     /**
@@ -114,8 +122,8 @@ public class MonitorTreeOrderController {
      * @return
      */
     @GetMapping("/other/resource")
-    public Result checkAvailableResource(@RequestParam @NotBlank(message = "临时单ID不能为空") String orderId){
-        return service.checkAvailableResource(orderId);
+    public Result checkAvailableResource(@RequestParam @NotBlank(message = "临时单Key不能为空") String key){
+        return service.checkAvailableResource(key);
     }
 }
 
