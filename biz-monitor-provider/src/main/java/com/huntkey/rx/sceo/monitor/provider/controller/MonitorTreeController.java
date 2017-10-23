@@ -47,6 +47,7 @@ public class MonitorTreeController {
                                       @RequestParam String edmcId,@RequestParam(defaultValue = "false") boolean flag){
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
+        
         JSONObject obj = monitorTreeService.getMonitorTreeNodes(rootEdmcNameEn,searchDate,rootNodeId);
         JSONArray nodes = obj == null ? null : obj.getJSONArray("nodes");
         
