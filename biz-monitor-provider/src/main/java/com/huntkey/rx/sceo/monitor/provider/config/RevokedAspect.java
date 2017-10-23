@@ -11,7 +11,6 @@ package com.huntkey.rx.sceo.monitor.provider.config;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,16 +27,11 @@ import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
-import com.huntkey.rx.sceo.monitor.commom.model.NodeDetailTo;
-import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
-import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
-import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
 import com.huntkey.rx.sceo.monitor.provider.service.RedisService;
@@ -79,18 +73,18 @@ public class RevokedAspect {
                 
                 String orderId = null;
                 if(JsonUtil.isEmpity(revoked.character()))
-                    orderId = getNode(key).getPid();
-                else
-                    orderId = key;
+//                    orderId = getNode(key).getPid();
+//                else
+//                    orderId = key;
                 
                 logger.debug("服务开始前, 节点型操作， 取出表单 单号 ： " + orderId);
-                List<NodeDetailTo> nodes = service.getAllNodesAndResource(orderId);
-                originalMap.put(key, nodes);
+//                List<NodeDetailTo> nodes = service.getAllNodesAndResource(orderId);
+//                originalMap.put(key, nodes);
                 break;
                 
             case DETAIL: 
                 
-                originalMap.put(key,  getNode(key));
+//                originalMap.put(key,  getNode(key));
                 break;
         }
     }
@@ -140,7 +134,7 @@ public class RevokedAspect {
                 if(!redisService.isEmpity(orderId))
                    redisService.delete(orderId);
                 
-                redisService.lPush(orderId, new RevokedTo(null, revoked.type()));
+//                redisService.lPush(orderId, new RevokedTo(null, revoked.type()));
                 return;
                 
             case NODE:
@@ -163,7 +157,7 @@ public class RevokedAspect {
         if(orderId == null || redisService.isEmpity(orderId)) // 未初始化堆栈进行的操作 不做撤销储备
             return;
         
-        redisService.lPush(orderId, new RevokedTo(value, revoked.type()));
+//        redisService.lPush(orderId, new RevokedTo(value, revoked.type()));
         
         if(!JsonUtil.isEmpity(key))
             originalMap.remove(key);
@@ -222,20 +216,20 @@ public class RevokedAspect {
      * @param key
      * @return
      */
-    private NodeDetailTo getNode(String key) {
-        
-        NodeTo node = service.queryNode(key);
-        
-        List<ResourceTo> resources = service.queryResource(key);
-        
-        NodeDetailTo detail = JSON.parseObject(JSON.toJSONString(node,SerializerFeature.WriteMapNullValue, SerializerFeature.WriteNullStringAsEmpty),NodeDetailTo.class);
-        
-        if(JsonUtil.isEmpity(detail))
-            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), ErrorMessage._60005.getMsg());
-        
-        detail.setMtor019(resources);
-        
-        return detail;
-    }
+//    private NodeDetailTo getNode(String key) {
+//        
+//        NodeTo node = service.queryNode(key);
+//        
+//        List<ResourceTo> resources = service.queryResource(key);
+//        
+//        NodeDetailTo detail = JSON.parseObject(JSON.toJSONString(node,SerializerFeature.WriteMapNullValue, SerializerFeature.WriteNullStringAsEmpty),NodeDetailTo.class);
+//        
+//        if(JsonUtil.isEmpity(detail))
+//            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), ErrorMessage._60005.getMsg());
+//        
+//        detail.setMtor019(resources);
+//        
+//        return null;
+//    }
 }
 

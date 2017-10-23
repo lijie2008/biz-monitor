@@ -33,24 +33,6 @@ public interface Constant {
     // 授权ID
     String EMPO_001 = "empo_001";
     
-    // equal operate
-    String EQUAL = "=";
-    
-    // like operate
-    String LIKE = "like";
-    
-    // > GT
-    String GT = ">";
-    
-    // < LT
-    String LT = "<";
-    
-    // >=
-    String GTE = ">=";
-    
-    // >=
-    String LTE = "<=";
-    
     // 查询结果集名称
     String DATASET = "dataset";
     

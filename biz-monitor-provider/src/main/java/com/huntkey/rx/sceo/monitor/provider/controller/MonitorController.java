@@ -1,17 +1,18 @@
 package com.huntkey.rx.sceo.monitor.provider.controller;
 
-import com.huntkey.rx.commons.utils.rest.Result;
-import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
-import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
-import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
-import com.huntkey.rx.sceo.monitor.provider.config.Revoked;
-import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.Range;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.constraints.Size;
+import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
+import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 
 @RestController
 @RequestMapping("/monitors")
@@ -19,211 +20,93 @@ import javax.validation.constraints.Size;
 public class MonitorController {
     @Autowired
     MonitorService service;
-
-    /***
-     * 查询监管树临时结构
-     * @param tempId 监管树临时单id
-     * @param hasResource 是否包含资源
-     * @param validDate 日期
+    
+    /**
+     * 在树新增、树维护时必须校验临时单中是否存在失效的临时树
+     * 如果存在，需要将临时树、节点全部删除
+     * @param classId
+     * @param rootId
+     * @param type 1 - 树新增 、 2 - 树维护 
      * @return
      */
-    @RequestMapping(value = "/tempTree")
-    public Result tempTree(@RequestParam(value = "tempId") String tempId,
-                           @RequestParam(value = "validDate") String validDate) {
+    @RequestMapping(value = "/checkOrder")
+    public Result checkOrder(@RequestParam(value = "classId") @NotBlank(message="监管类ID不能为空") String classId,
+                             @RequestParam(value = "rootId",defaultValue="") String rootId,
+                             @RequestParam(value = "type") @Range(min=1,max=2) @NotBlank(message="操作类型不能为空") int type){
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.tempTree(tempId, validDate));
-        return result;
-    }
-
-    /**
-     * 监管树临时单预览 是否需要包含资源
-     *
-     * @param nodes
-     * @return
-     */
-    @RequestMapping(value = "/resource")
-    public Result resource(@RequestParam(value = "nodes") @Size(min = 1)
-                                   String[] nodes, @RequestParam(value = "classId") String classId) {
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.resource(nodes, classId));
-        return result;
-    }
-
-    /**
-     * 查询节点详情
-     *
-     * @param nodeId 节点ID
-     * @return
-     */
-    @RequestMapping(value = "/nodeDetail")
-    public Result nodeDetail(@RequestParam(value = "nodeId") String nodeId) {
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.nodeDetail(nodeId));
-        return result;
-    }
-
-    /**
-     * 查询节点关联资源
-     *
-     * @param nodeId 节点ID
-     * @return
-     */
-    @RequestMapping(value = "/nodeResource")
-    public Result nodeResource(@RequestParam(value = "nodeId") String nodeId,
-                               @RequestParam(value = "classId") String classId) {
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.nodeResource(nodeId, classId));
-        return result;
-    }
-
-    /**
-     * 保存节点详情
-     * @param nodeId 节点ID
-     * @return
-     */
-    @Revoked(type=OperateType.NODE)
-    @RequestMapping(value = "/saveNodeDetail", method = RequestMethod.POST)
-    public Result saveNodeDetail(@RequestBody @Revoked(key="id") NodeTo nodeDetail) {
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.saveNodeDetail(nodeDetail));
-        return result;
-    }
-
-    /**
-     * 删除节点资源
-     *
-     * @param nodeId     节点ID
-     * @param resourceId 临时单ID
-     * @return
-     */
-    @Revoked(type=OperateType.DETAIL)
-    @RequestMapping(value = "/deleteNodeResource")
-    public Result deleteNodeResource(@RequestParam(value = "nodeId") @Revoked String nodeId,
-                                     @RequestParam(value = "resourceId") String resourceId) {
-        return service.deleteNodeResource(nodeId, resourceId);
-    }
-
-    /**
-     * 变更公式接口
-     *
-     * @param nodeId     节点ID
-     * @param resourceId 临时单ID
-     * @return
-     */
-    @RequestMapping(value = "/changeFormula", method = RequestMethod.GET)
-    public Result changeFormula(@RequestParam(value = "nodeId") String nodeId,
-                                @RequestParam(value = "formularId") String formularId) {
-        return service.changeFormula(nodeId, formularId);
-    }
-
-    /**
-     * 新增资源
-     *
-     * @param nodeId      节点ID
-     * @param resourceIds 资源id集合
-     * @return
-     */
-    @Revoked(type=OperateType.DETAIL)
-    @RequestMapping(value = "/addResource")
-    public Result addResource(@RequestParam(value = "nodeId") @NotBlank(message = "节点ID不能为空")
-                                      @Revoked String nodeId,
-                              @RequestParam(value = "resourceIds") @Size(min = 1)
-                                      String[] resourceIds) {
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.addResource(nodeId, resourceIds));
-        return result;
-    }
-
-    /**
-     * 新增节点
-     *
-     * @param nodeId   节点ID
-     * @param nodeType 创建节点的类型
-     * @return
-     */
-    @Revoked(type=OperateType.NODE)
-    @RequestMapping(value = "/addNode", method = RequestMethod.GET)
-    public Result addNode(@RequestParam(value = "nodeId") @Revoked String nodeId,
-                          @RequestParam(value = "nodeType")
-                                  int nodeType) {
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.addNode(nodeId, nodeType,""));
-        return result;
-    }
-
-    /**
-     * 删除节点
-     *
-     * @param nodeId 节点ID
-     * @param type   0代表失效 1代表删除
-     * @return
-     */
-    @Revoked(type=OperateType.NODE)
-    @RequestMapping(value = "/deleteNode", method = RequestMethod.GET)
-    public Result deleteNode(@RequestParam(value = "nodeId") @Revoked String nodeId,
-                             @RequestParam(value = "type") int type) {
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.deleteNode(nodeId, type));
+        result.setData(service.checkOrder(classId, rootId, type));
         return result;
     }
     
-    @Revoked(type=OperateType.NODE)
-    @RequestMapping(value = "/moveNode", method = RequestMethod.GET)
-    public Result moveNode(@RequestParam(value = "nodeId") @Revoked String nodeId,
-                           @RequestParam(value = "nodeParentId") String nodeParentId,
-                           @RequestParam(value = "nodeLeftId") String nodeLeftId,
-                           @RequestParam(value = "nodeRightId") String nodeRightId
-    ) {
+    
+    /**
+     * 是否进行上次操作
+     * @param key redis的key值
+     * @param flag 确认框选择
+     * @return
+     */
+    @RequestMapping(value = "/edit")
+    public Result editBefore(@RequestParam(value = "key") @NotBlank(message="redis的Key不能为空") String key,
+                             @RequestParam(value = "flag",defaultValue="false") @NotBlank(message="用户选择不能为空") boolean flag){
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.moveNode(nodeId, nodeParentId, nodeLeftId, nodeRightId));
+        result.setData(service.editBefore(key, flag));
         return result;
     }
-
+    
+    
+    
     /**
      * @param type       1表示新增 2提示界面复制
      * @param beginDate
-     * @param endDate
-     * @param classId
-     * @param treeId
-     * @param edmcNameEn
      * @return
      */
-    @Revoked(type=OperateType.INITIALIZE)
     @RequestMapping(value = "/addMonitorTree", method = RequestMethod.POST)
-    public Result addMonitorTree(@RequestBody AddMonitorTreeTo addMonitorTreeTo
-    ) {
+    public Result addMonitorTree(@RequestBody AddMonitorTreeTo addMonitorTreeTo) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(service.addMonitorTree(addMonitorTreeTo));
         return result;
     }
-
+    
+    
     /**
      * 监管树的维护
      *
      * @param classId    监管类ID
      * @param rootId     根节点
-     * @param edmcNameEn edm类型英文名  即监管树实体类表名
+     * @param rootEdmcNameEn edm类型英文名  即监管树实体类表名
      * @return
      */
-    @Revoked(type=OperateType.INITIALIZE)
     @RequestMapping(value = "/treeMaintaince")
     public Result treeMaintaince(@RequestParam(value = "classId") String classId,
                                  @RequestParam(value = "rootId") String rootId,
-                                 @RequestParam(value = "edmcNameEn") String edmcNameEn) {
+                                 @RequestParam(value = "rootEdmcNameEn") String rootEdmcNameEn) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.treeMaintaince(classId, rootId, edmcNameEn));
+        result.setData(service.treeMaintaince(classId, rootId, rootEdmcNameEn));
         return result;
     }
-
+    
+    
+    /***
+     * 查询监管树临时结构
+     * @param tempId 监管树临时单id
+     * @param hasResource 是否包含资源
+     * @param validDate 日期
+     * @param type 1 - 从redis中查询 2 - 从临时单表查询
+     * @return
+     */
+    @RequestMapping(value = "/tempTree")
+    public Result tempTree(@RequestParam(value = "tempId") String tempId,
+                           @RequestParam(value = "validDate") String validDate, 
+                           @RequestParam(value = "type", defaultValue="1") int type,
+                           @RequestParam(value = "flag", defaultValue="false") boolean flag) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(service.tempTree(tempId, validDate,type,flag));
+        return result;
+    }
+    
 }

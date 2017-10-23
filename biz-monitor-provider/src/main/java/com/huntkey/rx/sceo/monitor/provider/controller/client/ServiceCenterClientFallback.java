@@ -67,14 +67,6 @@ public class ServiceCenterClientFallback implements ServiceCenterClient{
     }
 
     @Override
-    public Result find(String datas) {
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("hbase client find fallback");
-        return result;
-    }
-
-    @Override
     public Result add(String datas) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);

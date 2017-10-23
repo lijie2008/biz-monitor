@@ -35,5 +35,7 @@ public interface MonitorTreeOrderService {
     String save(String key);
 
     RevokedTo revoke(String key);
+    
+    JSONArray getResourceText(JSONArray resources, String classId, String edmId);
 }
 

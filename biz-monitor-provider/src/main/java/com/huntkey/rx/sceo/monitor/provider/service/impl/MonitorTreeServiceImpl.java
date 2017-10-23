@@ -21,9 +21,7 @@ import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.constant.DateConstant;
-import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
-import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 import com.huntkey.rx.sceo.monitor.commom.utils.ToolUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
@@ -85,7 +83,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     	    //组装参数
     	    SearchParam requestParams = new SearchParam(edmName);
     	    
-            String characters[] = new String[] {"id","moni_node_no", "moni_node_name", "moni_lvl", "moni_lvl_code"};
+            String characters[] = new String[] {"id","moni_node_no", "moni_node_name", "moni_lvl", "moni_lvl_code","moni_seq"};
             requestParams.addColumns(characters);
             
             requestParams.addSortParam(new SortNode("moni_lvl",SortType.ASC));
@@ -431,10 +429,9 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                 if (result.getData() == null) {
                     return null;
                 }
-                JSONObject jsonObj = JsonUtil.getJson(result.getData());
-                JSONArray jsonArray = jsonObj.getJSONArray(ServiceCenterConstant.DATA_SET);
-
-                return jsonArray;
+                
+                return JSONObject.parseObject(JSONObject.toJSONString(result.getData()))
+                        .getJSONArray(Constant.DATASET);
             } else {
                 throw new ServiceException(result.getErrMsg());
             }

@@ -6,9 +6,7 @@
  * Copyright (c) 2017 嘉源锐信 All Rights Reserved.
  *
 */
-
 package com.huntkey.rx.sceo.monitor.commom.utils;
-
 import java.io.IOException;
 import java.sql.Date;
 import java.util.ArrayList;
@@ -20,7 +18,6 @@ import java.util.Map.Entry;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-
 /**
  * ClassName:JsonUtil json操作工具类
  * @author   lijie

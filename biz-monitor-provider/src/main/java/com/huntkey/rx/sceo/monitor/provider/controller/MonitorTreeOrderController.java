@@ -12,8 +12,6 @@ package com.huntkey.rx.sceo.monitor.provider.controller;
 import javax.validation.constraints.Pattern;
 
 import org.hibernate.validator.constraints.NotBlank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -169,7 +167,7 @@ public class MonitorTreeOrderController {
      * @param key 临时单Key
      * @return
      */
-    @GetMapping("/revoke/{orderId}")
+    @GetMapping("/revoke/{key}")
     public Result revoked(@PathVariable(value="key") @NotBlank(message="临时单Key不能为空") 
                           @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单Key格式不正确") String key){
        

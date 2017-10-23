@@ -9,8 +9,16 @@
 
 package com.huntkey.rx.sceo.monitor.commom.model;
 
+import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.ID;
+import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.PID;
+
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 
 /**
  * ClassName:NodeDetail
@@ -193,5 +201,63 @@ public class NodeTo implements Serializable{
         this.seq = seq;
     }
     
+    public static List<NodeTo> setValue(JSONArray orderNodes){
+        List<NodeTo> nodes = new ArrayList<NodeTo>();
+        for(int i = 0; i < orderNodes.size(); i++){
+            JSONObject to = orderNodes.getJSONObject(i);
+            NodeTo node = new NodeTo();
+            
+            node.setNodeNo(to.getString("mtor_node_no"));
+            node.setNodeName(to.getString("mtor_node_name"));
+            node.setNodeDef(to.getString("mtor_node_def"));
+            node.setMajor(to.getString("mtor_major"));
+            node.setAssit(to.getString("mtor_assit"));
+            node.setIndexConf(to.getString("mtor_index_conf"));
+            node.setSeq(Double.valueOf(to.getString("mtor_seq")));
+            node.setMtorEnum(Integer.valueOf(to.getString("mtor_enum")));
+            node.setLvl(Integer.valueOf(to.getString("mtor_lvl")));
+            node.setLvlCode(to.getString("mtor_lvl_code"));
+            node.setRelateCnd(to.getString("mtor_relate_cnd"));
+            node.setType(Integer.valueOf(to.getString("mtor_type")));
+            node.setRelateId(to.getString("mtor_relate_id"));
+            node.setBegin(to.getString("mtor_beg"));
+            node.setEnd(to.getString("mtor_end"));
+            
+            // 资源集 
+            JSONArray res = to.getJSONArray("mtor_res_set");
+            
+            if(res != null && !res.isEmpty()){
+                List<ResourceTo> resources = new ArrayList<ResourceTo>();
+                for(int k = 0; k < res.size(); k++){
+                    JSONObject rr = res.getJSONObject(k);
+                    ResourceTo resourceTo = new ResourceTo();
+                    resourceTo.setResId(rr.getString("mtor_res_id"));
+                    resourceTo.setText(rr.getString("text"));
+                    
+                    resources.add(resourceTo);
+                    
+                }
+                node.setResources(resources);
+            }
+            
+            JSONArray bks = to.getJSONArray("mtor_bk_set");
+            
+            if(bks != null && !bks.isEmpty()){
+                List<BackTo> bkList = new ArrayList<BackTo>();
+                for(int k = 0; k < bks.size(); k++){
+                    JSONObject bk = bks.getJSONObject(k);
+                    BackTo bkTo = new BackTo();
+                    bkTo.setBk1(bk.getString("mtor_bk1"));
+                    bkTo.setBk2(bk.getString("mtor_bk2"));
+                    bkTo.setBk3(Integer.valueOf(bk.getString("mtor_bk3")));
+                    bkList.add(bkTo);
+                    
+                }
+                node.setBackSet(bkList);
+            }
+            nodes.add(node);
+        }
+        return nodes;
+    }
 }
 
