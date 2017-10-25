@@ -10,130 +10,41 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-/**
- * Created by zhaomj on 2017/8/11.
- */
 @FeignClient(value = "biz-monitor-provider", fallback = MonitorClientFallback.class)
 public interface MonitorClient {
-    /***
-     * 查询监管树临时结构
-     * @param tempId 监管树临时单id
-     * @param hasResource 是否包含资源
-     * @param validDate 日期
-     * @return
-     */
-    @RequestMapping(value = "/monitors/tempTree")
-    Result tempTree(@RequestParam(value = "tempId") String tempId,
-                    @RequestParam(value = "validDate", required = false) String validDate);
 
-    /**
-     * 监管树临时单预览 是否需要包含资源
-     *
-     * @param nodes
-     * @return
-     */
-    @RequestMapping(value = "/monitors/resource")
-    Result resource(@RequestParam(value = "nodes")
-                            String[] nodes,
-                    @RequestParam(value = "classId") String classId);
-
-    /**
-     * 查询节点详情
-     *
-     * @param nodeId 节点ID
-     * @return
-     */
     @RequestMapping(value = "/monitors/nodeDetail")
-    Result nodeDetail(@RequestParam(value = "nodeId") String nodeId);
+    Result nodeDetail(@RequestParam(value = "key") String key,
+    		@RequestParam(value = "levelCode") String levelCode);
 
-    /**
-     * 查询节点关联资源
-     *
-     * @param nodeId 节点ID
-     * @return
-     */
-    @RequestMapping(value = "/monitors/nodeResource")
-    Result nodeResource(@RequestParam(value = "nodeId") String nodeId,
-                        @RequestParam(value = "classId") String classId);
-
-    /**
-     * 保存节点详情
-     *
-     * @param nodeId 节点ID
-     * @return
-     */
     @RequestMapping(value = "/monitors/saveNodeDetail", method = RequestMethod.POST)
     Result saveNodeDetail(@RequestBody NodeTo nodeDetail);
 
-    /**
-     * 删除节点资源
-     *
-     * @param nodeId     节点ID
-     * @param resourceId 临时单ID
-     * @return
-     */
     @RequestMapping(value = "/monitors/deleteNodeResource")
-    Result deleteNodeResource(@RequestParam(value = "nodeId") String nodeId,
+    Result deleteNodeResource(@RequestParam(value = "key") String key,
+    						  @RequestParam(value = "levelCode") String levelCode,
                               @RequestParam(value = "resourceId") String resourceId);
 
-    /**
-     * 变更公式接口
-     *
-     * @param nodeId     节点ID
-     * @param resourceId 临时单ID
-     * @return
-     */
-    @RequestMapping(value = "/monitors/changeFormula", method = RequestMethod.GET)
-    Result changeFormula(@RequestParam(value = "nodeId") String nodeId,
-                         @RequestParam(value = "formularId") String formularId);
-
-    /**
-     * 新增资源
-     *
-     * @param nodeId      节点ID
-     * @param resourceIds 资源id集合
-     * @return
-     */
     @RequestMapping(value = "/monitors/addResource")
-    Result addResource(@RequestParam(value = "nodeId") String nodeId,
-                       @RequestParam(value = "resourceIds") String[] resourceIds);
+    Result addResource(@RequestParam(value = "key") String key,
+                       @RequestParam(value = "levelCode") String levelCode,
+                       @RequestParam(value = "resourceId") String resourceId,
+                       @RequestParam(value = "resourceText") String resourceText);
 
-
-    /**
-     * 新增节点
-     *
-     * @param nodeId   节点ID
-     * @param nodeType 创建节点的类型
-     * @return
-     */
     @RequestMapping(value = "/monitors/addNode", method = RequestMethod.GET)
-    Result addNode(@RequestParam(value = "nodeId") String nodeId,
-                   @RequestParam(value = "nodeType") int nodeType);
+    Result addNode(@RequestParam(value = "key") String key,
+    			   @RequestParam(value = "levelCode") String levelCode,
+                   @RequestParam(value = "type") int type);
 
-    /**
-     * 删除节点
-     *
-     * @param nodeId 节点ID
-     * @param type   0代表失效 1代表删除
-     * @return
-     */
     @RequestMapping(value = "/monitors/deleteNode", method = RequestMethod.GET)
-    Result deleteNode(@RequestParam(value = "nodeId") String nodeId,
+    Result deleteNode(@RequestParam(value = "key") String key,
+    				  @RequestParam(value = "levelCode") String levelCode,
                       @RequestParam(value = "type") int type);
 
     @RequestMapping(value = "/monitors/moveNode", method = RequestMethod.GET)
-    Result moveNode(@RequestParam(value = "nodeId") String nodeId,
-                    @RequestParam(value = "nodeParentId") String nodeParentId,
-                    @RequestParam(value = "nodeLeftId") String nodeLeftId,
-                    @RequestParam(value = "nodeRightId") String nodeRightId
+    Result moveNode(@RequestParam(value = "key") String key,
+                    @RequestParam(value = "moveLvlCode") String moveLvlCode,
+                    @RequestParam(value = "desLvlCode") String desLvlCode,
+                    @RequestParam(value = "type") int type
     );
-
-    @RequestMapping(value = "/monitors/addMonitorTree", method = RequestMethod.POST)
-    Result addMonitorTree(@RequestBody AddMonitorTreeTo addMonitorTreeTo);
-
-    //监管树维护
-    @RequestMapping(value = "/monitors/treeMaintaince")
-    Result treeMaintaince(@RequestParam(value = "classId") String classId,
-                          @RequestParam(value = "rootId") String rootId,
-                          @RequestParam(value = "edmcNameEn") String edmcNameEn);
 }

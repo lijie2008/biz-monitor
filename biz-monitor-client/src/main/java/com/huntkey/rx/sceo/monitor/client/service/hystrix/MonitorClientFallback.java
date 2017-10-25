@@ -13,38 +13,11 @@ import org.springframework.stereotype.Component;
 public class MonitorClientFallback implements MonitorClient {
 
     @Override
-    public Result tempTree(String tempId, String validDate) {
-        // TODO Auto-generated method stub
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("MonitorClient tempTree fallback");
-        return result;
-    }
-
-    @Override
-    public Result resource(String[] nodes, String classId) {
-        // TODO Auto-generated method stub
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("MonitorClient containResource fallback");
-        return result;
-    }
-
-    @Override
-    public Result nodeDetail(String nodeId) {
+    public Result nodeDetail(String key,String levelCode) {
         // TODO Auto-generated method stub
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("MonitorClient nodeDetail fallback");
-        return result;
-    }
-
-    @Override
-    public Result nodeResource(String nodeId, String classId) {
-        // TODO Auto-generated method stub
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("MonitorClient nodeResource fallback");
         return result;
     }
 
@@ -58,7 +31,7 @@ public class MonitorClientFallback implements MonitorClient {
     }
 
     @Override
-    public Result deleteNodeResource(String nodeId, String resourceId) {
+    public Result deleteNodeResource(String key,String levelCode, String resourceId) {
         // TODO Auto-generated method stub
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
@@ -67,16 +40,7 @@ public class MonitorClientFallback implements MonitorClient {
     }
 
     @Override
-    public Result changeFormula(String nodeId, String formularId) {
-        // TODO Auto-generated method stub
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("MonitorClient changeFormula fallback");
-        return result;
-    }
-
-    @Override
-    public Result addResource(String nodeId, String[] resourceIds) {
+    public Result addResource(String tempId,String levelCode, String resourceId,String resourceText) {
         // TODO Auto-generated method stub
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
@@ -85,7 +49,7 @@ public class MonitorClientFallback implements MonitorClient {
     }
 
     @Override
-    public Result addNode(String nodeId, int nodeType) {
+    public Result addNode(String key,String levelCode, int type) {
         // TODO Auto-generated method stub
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
@@ -94,7 +58,7 @@ public class MonitorClientFallback implements MonitorClient {
     }
 
     @Override
-    public Result deleteNode(String nodeId, int type) {
+    public Result deleteNode(String key,String levelCode,int type) {
         // TODO Auto-generated method stub
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
@@ -103,30 +67,11 @@ public class MonitorClientFallback implements MonitorClient {
     }
 
     @Override
-    public Result moveNode(String nodeId, String nodeParentId, String nodeLeftId, String nodeRightId) {
+    public Result moveNode(String key, String moveLvlCode, String desLvlCode, int type) {
         // TODO Auto-generated method stub
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("MonitorClient moveNode fallback");
         return result;
     }
-
-    @Override
-    public Result addMonitorTree(AddMonitorTreeTo addMonitorTreeTo) {
-        // TODO Auto-generated method stub
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("MonitorClient addMonitorTree fallback");
-        return result;
-    }
-
-    @Override
-    public Result treeMaintaince(String classId, String rootId, String edmcNameEn) {
-        // TODO Auto-generated method stub
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("MonitorClient treeMaintaince fallback");
-        return result;
-    }
-
 }
