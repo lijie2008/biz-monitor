@@ -16,9 +16,12 @@ package com.huntkey.rx.sceo.monitor.commom.enums;
  * @see 	 
  */
 public enum OperateType {
+    
     NODE(2, "节点操作"),
     
-    DETAIL(3, "节点详情操作");
+    DETAIL(3, "节点详情操作"),
+    
+    QUERY(4, "查询操作");
 
     private int value;
     
@@ -51,6 +54,8 @@ public enum OperateType {
                 return NODE;
             case 3:
                 return DETAIL;
+            case 4:
+                return QUERY;
             default:
                 return null;
         }

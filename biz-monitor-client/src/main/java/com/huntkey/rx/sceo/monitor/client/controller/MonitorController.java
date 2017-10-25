@@ -112,8 +112,8 @@ public class MonitorController {
      */
     @RequestMapping(value = "/nodeDetail")
     public Result nodeDetail(@RequestParam(value = "key") @NotBlank(message = "redis key不能为空") String key,
-            @RequestParam(value = "levelCode") @NotBlank(message = "节点层及编码不能为空") String levelCode) {
-        return monitorClient.nodeDetail(key,levelCode);
+            @RequestParam(value = "lvlCode") @NotBlank(message = "节点层及编码不能为空") String lvlCode) {
+        return monitorClient.nodeDetail(key,lvlCode);
     }
 
     /***
@@ -130,21 +130,21 @@ public class MonitorController {
     /***
      * 删除节点资源
      * @param key redis key
-     * @param levelCode 节点层及编码
+     * @param lvlCode 节点层及编码
      * @param resourceId 资源ID
      * @return 被删除的节点ID
      */
     @RequestMapping(value = "/deleteNodeResource")
     public Result deleteNodeResource(@RequestParam(value = "key") @NotBlank(message = "redis key不能为空") String key,
-                                     @RequestParam(value = "levelCode") @NotBlank(message = "节点层及编码不能为空")   String levelCode,
+                                     @RequestParam(value = "lvlCode") @NotBlank(message = "节点层及编码不能为空")   String lvlCode,
                                      @RequestParam(value = "resourceId") @NotBlank(message = "资源ID不能为空") String resourceId) {
-        return monitorClient.deleteNodeResource(key,levelCode, resourceId);
+        return monitorClient.deleteNodeResource(key,lvlCode, resourceId);
     }
 
     /***
      * 添加节点资源
      * @param key redis key
-     * @param levelCode 节点层级编码
+     * @param lvlCode 节点层级编码
      * @param resourceId 资源ID
      * @param resourceText 资源名称  
      * @return 资源ID
@@ -152,39 +152,39 @@ public class MonitorController {
      */
     @RequestMapping(value = "/addResource")
     public Result addResource(@RequestParam(value = "key") @NotBlank(message = "redis key不能为空") String key,
-                              @RequestParam(value = "levelCode") @NotBlank(message = "节点层级编码不能为空") String levelCode,
+                              @RequestParam(value = "lvlCode") @NotBlank(message = "节点层级编码不能为空") String lvlCode,
                               @RequestParam(value = "resourceId") @NotBlank(message = "资源ID不能为空") String resourceId,
                               @RequestParam(value = "resourceText") String resourceText) {
-        return monitorClient.addResource(key,levelCode, resourceId,resourceText);
+        return monitorClient.addResource(key,lvlCode, resourceId,resourceText);
     }
 
     /****
      * 添加节点
      * @param key redis key
-     * @param levelCode 节点层级编码
+     * @param lvlCode 节点层级编码
      * @return type 添加节点类型
      * @author fangkun 2017-10-24
      */
     @RequestMapping(value = "/addNode")
     public Result addNode(@RequestParam(value = "key") @NotBlank(message = "redis key不能为空") String key,
-                          @RequestParam(value = "levelCode") @NotBlank(message = "节点层及编码不能为空") String levelCode,
+                          @RequestParam(value = "lvlCode") @NotBlank(message = "节点层及编码不能为空") String lvlCode,
                           @RequestParam(value = "type") @Range(min = 0, max = 2, message = "0：创建子节点 1：创建上节点 2：创建下节点") int type) {
-        return monitorClient.addNode(key,levelCode, type);
+        return monitorClient.addNode(key,lvlCode, type);
     }
 
     /**
      * 删除节点
      * @param key redis key
-     * @param levelCode 节点层级编码
+     * @param lvlCode 节点层级编码
      * @param type 0代表失效 1代表删除
      * @return
      */
     @RequestMapping(value = "/deleteNode", method = RequestMethod.GET)
     public Result deleteNode(
             @RequestParam(value = "key") @NotBlank(message = "redis key不能为空") String key,
-            @RequestParam(value = "levelCode") @NotBlank(message = "节点层级编码不能为空") String levelCode,
+            @RequestParam(value = "lvlCode") @NotBlank(message = "节点层级编码不能为空") String lvlCode,
             @RequestParam(value = "type") @Range(min = 0, max = 1, message = "0：节点失效 1：节点删除") int type) {
-        return monitorClient.deleteNode(key,levelCode, type);
+        return monitorClient.deleteNode(key,lvlCode, type);
     }
 
     @RequestMapping(value = "/moveNode", method = RequestMethod.GET)

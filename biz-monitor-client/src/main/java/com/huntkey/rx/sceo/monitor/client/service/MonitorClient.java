@@ -64,30 +64,30 @@ public interface MonitorClient {
     
     @RequestMapping(value = "/monitors/nodeDetail")
     Result nodeDetail(@RequestParam(value = "key") String key,
-            @RequestParam(value = "levelCode") String levelCode);
+            @RequestParam(value = "lvlCode") String lvlCode);
 
     @RequestMapping(value = "/monitors/saveNodeDetail", method = RequestMethod.POST)
     Result saveNodeDetail(@RequestBody NodeTo nodeDetail);
 
     @RequestMapping(value = "/monitors/deleteNodeResource")
     Result deleteNodeResource(@RequestParam(value = "key") String key,
-                              @RequestParam(value = "levelCode") String levelCode,
+                              @RequestParam(value = "lvlCode") String levelCode,
                               @RequestParam(value = "resourceId") String resourceId);
 
     @RequestMapping(value = "/monitors/addResource")
     Result addResource(@RequestParam(value = "key") String key,
-                       @RequestParam(value = "levelCode") String levelCode,
+                       @RequestParam(value = "lvlCode") String lvlCode,
                        @RequestParam(value = "resourceId") String resourceId,
                        @RequestParam(value = "resourceText") String resourceText);
 
     @RequestMapping(value = "/monitors/addNode", method = RequestMethod.GET)
     Result addNode(@RequestParam(value = "key") String key,
-                   @RequestParam(value = "levelCode") String levelCode,
+                   @RequestParam(value = "lvlCode") String lvlCode,
                    @RequestParam(value = "type") int type);
 
     @RequestMapping(value = "/monitors/deleteNode", method = RequestMethod.GET)
     Result deleteNode(@RequestParam(value = "key") String key,
-                      @RequestParam(value = "levelCode") String levelCode,
+                      @RequestParam(value = "lvlCode") String lvlCode,
                       @RequestParam(value = "type") int type);
 
     @RequestMapping(value = "/monitors/moveNode", method = RequestMethod.GET)

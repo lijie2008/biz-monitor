@@ -112,16 +112,16 @@ public class MonitorController {
 	/***
 	 * 查询节点详情
 	 * @param key redis key
-	 * @param levelCode 节点层及编码
+	 * @param lvlCode 节点层及编码
 	 * @return 节点信息
 	 * @author fangkun 2017-10-21
 	 */
     @RequestMapping(value = "/nodeDetail")
     public Result nodeDetail(@RequestParam(value = "key") String key,
-    		@RequestParam(value = "levelCode") String levelCode) {
+    		@RequestParam(value = "lvlCode") String lvlCode) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.nodeDetail(key,levelCode));
+        result.setData(service.nodeDetail(key,lvlCode));
         return result;
     }
 
@@ -148,18 +148,18 @@ public class MonitorController {
 	 */
     @RequestMapping(value = "/deleteNodeResource")
     public Result deleteNodeResource(@RequestParam(value = "key")  String key,
-    								 @RequestParam(value = "levelCode")   String levelCode,
+    								 @RequestParam(value = "lvlCode")   String lvlCode,
                                      @RequestParam(value = "resourceId")   String resourceId) {
     	Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.deleteNodeResource(key, levelCode,resourceId));
+        result.setData(service.deleteNodeResource(key, lvlCode,resourceId));
         return result;
     }
 
 	/***
 	 * 添加节点资源
 	 * @param key redis key
-	 * @param levelCode 节点层级编码
+	 * @param lvlCode 节点层级编码
 	 * @param resourceId 资源ID
 	 * @param resourceText 资源名称  
 	 * @return 资源ID
@@ -168,12 +168,12 @@ public class MonitorController {
     @RequestMapping(value = "/addResource")
     public Result addResource(
     		@RequestParam(value = "key") @NotBlank(message = "redis key不能为空") String key,
-            @RequestParam(value = "levelCode") @NotBlank(message = "节点层及编码不能为空") String levelCode,        
+            @RequestParam(value = "lvlCode") @NotBlank(message = "节点层及编码不能为空") String lvlCode,        
             @RequestParam(value = "resourceId") String resourceId,
             @RequestParam(value = "resourceText") String resourceText) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.addResource(key,levelCode, resourceId,resourceText));
+        result.setData(service.addResource(key,lvlCode, resourceId,resourceText));
         return result;
     }
 
@@ -187,11 +187,11 @@ public class MonitorController {
 	 */
     @RequestMapping(value = "/addNode", method = RequestMethod.GET)
     public Result addNode(@RequestParam(value = "key")  String key,
-                          @RequestParam(value = "levelCode") String levelCode,
+                          @RequestParam(value = "lvlCode") String lvlCode,
                           @RequestParam(value = "type") int type) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.addNode(key, levelCode,type));
+        result.setData(service.addNode(key, lvlCode,type));
         return result;
     }
 

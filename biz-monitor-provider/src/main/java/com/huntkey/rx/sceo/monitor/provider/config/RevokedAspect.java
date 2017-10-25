@@ -79,6 +79,11 @@ public class RevokedAspect {
         JSONObject data = new JSONObject();
         JSONObject args = getKey(point);
         String key = args.getString(KEY);
+        if(revoked.type() == OperateType.QUERY){
+            data.put("data", result.getData());
+            data.put("revoke", hashOps.size(key+REVOKE_KEY));
+            return;
+        }
         String lvlCode = args.getString(LVLCODE);
         
         List<NodeTo> nodes = hashOps.values(key);

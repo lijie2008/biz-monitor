@@ -29,7 +29,7 @@ import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
 @Documented
 public @interface Revoked {
     
-    OperateType type() default OperateType.NODE;
+    OperateType type() default OperateType.QUERY;
     
     String key() default "";
 }

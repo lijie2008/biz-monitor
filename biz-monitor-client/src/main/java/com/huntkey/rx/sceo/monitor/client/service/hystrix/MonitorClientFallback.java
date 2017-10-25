@@ -55,8 +55,7 @@ public class MonitorClientFallback implements MonitorClient {
     }
     
     @Override
-    public Result nodeDetail(String key,String levelCode) {
-        // TODO Auto-generated method stub
+    public Result nodeDetail(String key,String lvlCode) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("MonitorClient nodeDetail fallback");
@@ -73,7 +72,7 @@ public class MonitorClientFallback implements MonitorClient {
     }
 
     @Override
-    public Result deleteNodeResource(String key,String levelCode, String resourceId) {
+    public Result deleteNodeResource(String key,String lvlCode, String resourceId) {
         // TODO Auto-generated method stub
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
@@ -82,7 +81,7 @@ public class MonitorClientFallback implements MonitorClient {
     }
 
     @Override
-    public Result addResource(String tempId,String levelCode, String resourceId,String resourceText) {
+    public Result addResource(String key,String lvlCode, String resourceId,String resourceText) {
         // TODO Auto-generated method stub
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
@@ -91,7 +90,7 @@ public class MonitorClientFallback implements MonitorClient {
     }
 
     @Override
-    public Result addNode(String key,String levelCode, int type) {
+    public Result addNode(String key,String lvlCode, int type) {
         // TODO Auto-generated method stub
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
@@ -100,7 +99,7 @@ public class MonitorClientFallback implements MonitorClient {
     }
 
     @Override
-    public Result deleteNode(String key,String levelCode,int type) {
+    public Result deleteNode(String key,String lvlCode,int type) {
         // TODO Auto-generated method stub
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
