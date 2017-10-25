@@ -1,14 +1,15 @@
 package com.huntkey.rx.sceo.monitor.client.service;
 
-import com.huntkey.rx.commons.utils.rest.Result;
-import com.huntkey.rx.sceo.monitor.client.service.hystrix.MonitorClientFallback;
-import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
-import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.client.service.hystrix.MonitorClientFallback;
+import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 
 /**
  * Created by zhaomj on 2017/8/11.
@@ -23,20 +24,46 @@ public interface MonitorClient {
      * @return
      */
     @RequestMapping(value = "/monitors/tempTree")
-    Result tempTree(@RequestParam(value = "tempId") String tempId,
-                    @RequestParam(value = "validDate", required = false) String validDate);
-
+    Result tempTree(@RequestParam(value = "key") String key,
+                    @RequestParam(value = "validDate", required = false) String validDate,
+                    @RequestParam(value = "type", defaultValue="1") int type,
+                    @RequestParam(value = "flag", defaultValue="false") boolean flag);
+    
     /**
-     * 监管树临时单预览 是否需要包含资源
-     *
-     * @param nodes
+     * 在树新增、树维护时必须校验临时单中是否存在失效的临时树
+     * 如果存在，需要将临时树、节点全部删除
+     * @param classId
+     * @param rootId
+     * @param type 1 - 树新增 、 2 - 树维护 
      * @return
      */
-    @RequestMapping(value = "/monitors/resource")
-    Result resource(@RequestParam(value = "nodes")
-                            String[] nodes,
-                    @RequestParam(value = "classId") String classId);
-
+    @RequestMapping(value = "/monitors/checkOrder")
+    Result checkOrder(@RequestParam(value = "classId")String classId,
+                      @RequestParam(value = "rootId",defaultValue="") String rootId,
+                      @RequestParam(value = "type") int type);
+    
+    /**
+     * 是否进行上次操作
+     * @param key redis的key值
+     * @param flag 确认框选择
+     * @return
+     */
+    @RequestMapping(value = "/monitors/edit")
+    Result editBefore(@RequestParam(value = "key")String key,
+                      @RequestParam(value = "flag",defaultValue="false") boolean flag);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     /**
      * 查询节点详情
      *
@@ -135,5 +162,7 @@ public interface MonitorClient {
     @RequestMapping(value = "/monitors/treeMaintaince")
     Result treeMaintaince(@RequestParam(value = "classId") String classId,
                           @RequestParam(value = "rootId") String rootId,
-                          @RequestParam(value = "edmcNameEn") String edmcNameEn);
+                          @RequestParam(value = "rootEdmcNameEn") String rootEdmcNameEn);
+
+
 }

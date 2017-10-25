@@ -146,7 +146,7 @@ public interface Constant {
     
     String STAFFCLASSID="6f913ed266e211e7b2e4005056bc4879";
     
-    String EDMPCODE = "moni012";
+    String EDMPCODE = "moni_sub_res";
     
     String VALUE = "value";
     String STARTTIME = " 00:00:00";

@@ -33,23 +33,92 @@ public class MonitorController {
      * @return
      */
     @RequestMapping(value = "/tempTree")
-    public Result tempTree(@RequestParam(value = "tempId") @NotBlank(message = "监管树临时单ID不能为空") String tempId,
-                           @RequestParam(value = "validDate", required = false) @Pattern(regexp=ValidBean.DATE_REGX,message="日期格式不正确") String validDate) {
-        return monitorClient.tempTree(tempId, validDate);
+    public Result tempTree(@RequestParam(value = "key") @NotBlank(message = "监管树临时单Key不能为空") String key,
+                           @RequestParam(value = "validDate", required = false) 
+                           @Pattern(regexp=ValidBean.DATE_REGX,message="日期格式不正确") String validDate,
+                           @RequestParam(value = "type", defaultValue="1") int type,
+                           @RequestParam(value = "flag", defaultValue="false") boolean flag) {
+        return monitorClient.tempTree(key, validDate,type,flag);
     }
 
     /**
-     * 监管树临时单预览 是否需要包含资源
-     *
-     * @param nodes
+     * 在树新增、树维护时必须校验临时单中是否存在失效的临时树
+     * 如果存在，需要将临时树、节点全部删除
+     * @param classId
+     * @param rootId
+     * @param type 1 - 树新增 、 2 - 树维护 
      * @return
      */
-    @RequestMapping(value = "/resource")
-    public Result resource(@RequestParam(value = "nodes") @Size(min = 1) String[] nodes,
-                           @RequestParam(value = "classId") @NotBlank(message = "监管树类ID不能为空") String classId) {
-        return monitorClient.resource(nodes, classId);
+    @RequestMapping(value = "/checkOrder")
+    public Result checkOrder(@RequestParam(value = "classId") @NotBlank(message="监管类ID不能为空") String classId,
+                             @RequestParam(value = "rootId",defaultValue="") String rootId,
+                             @RequestParam(value = "type") @Range(min=1,max=2) @NotBlank(message="操作类型不能为空") int type){
+        return monitorClient.checkOrder(classId,rootId,type);
+    }
+    
+    /**
+     * 是否进行上次操作
+     * @param key redis的key值
+     * @param flag 确认框选择
+     * @return
+     */
+    @RequestMapping(value = "/edit")
+    public Result editBefore(@RequestParam(value = "key") @NotBlank(message="redis的Key不能为空") String key,
+                             @RequestParam(value = "flag",defaultValue="false") @NotBlank(message="用户选择不能为空") boolean flag){
+        return monitorClient.editBefore(key,flag);
+    }
+    
+    /**
+     * @param type       1表示新增 2提示界面复制
+     * @param beginDate
+     * @param endDate
+     * @param classId
+     * @param rootId
+     * @param edmcNameEn
+     * @param rootEdmcNameEn
+     * @return
+     */
+    @RequestMapping(value = "/addMonitorTree", method = RequestMethod.POST)
+    public Result addMonitorTree(@RequestBody() @Valid AddMonitorTreeTo addMonitorTreeTo) {
+        return monitorClient.addMonitorTree(addMonitorTreeTo);
     }
 
+    /**
+     * 监管树的维护
+     *
+     * @param classId    监管类ID
+     * @param rootId     根节点
+     * @param edmcNameEn edm类型英文名  即监管树实体类表名
+     * @return
+     */
+    @RequestMapping(value = "/treeMaintaince", method = RequestMethod.GET)
+    public Result treeMaintaince(@RequestParam(value = "classId") @NotBlank(message = "监管类ID不能为空") String classId,
+                                 @RequestParam(value = "rootId") @NotBlank(message = "监管树根节点ID不能为空") String rootId,
+                                 @RequestParam(value = "rootEdmcNameEn") @NotBlank(message = "EDM类英文名称不能为空") String rootEdmcNameEn) {
+        return monitorClient.treeMaintaince(classId, rootId, rootEdmcNameEn);
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     /**
      * 查询节点详情
      *
@@ -157,34 +226,5 @@ public class MonitorController {
                            @RequestParam(value = "nodeRightId") String nodeRightId
     ) {
         return monitorClient.moveNode(nodeId, nodeParentId, nodeLeftId, nodeRightId);
-    }
-
-    /**
-     * @param type       1表示新增 2提示界面复制
-     * @param beginDate
-     * @param endDate
-     * @param classId
-     * @param treeId
-     * @param edmcNameEn
-     * @return
-     */
-    @RequestMapping(value = "/addMonitorTree", method = RequestMethod.POST)
-    public Result addMonitorTree(@RequestBody() @Valid AddMonitorTreeTo addMonitorTreeTo) {
-        return monitorClient.addMonitorTree(addMonitorTreeTo);
-    }
-
-    /**
-     * 监管树的维护
-     *
-     * @param classId    监管类ID
-     * @param rootId     根节点
-     * @param edmcNameEn edm类型英文名  即监管树实体类表名
-     * @return
-     */
-    @RequestMapping(value = "/treeMaintaince", method = RequestMethod.GET)
-    public Result treeMaintaince(@RequestParam(value = "classId") @NotBlank(message = "监管类ID不能为空") String classId,
-                                 @RequestParam(value = "rootId") @NotBlank(message = "监管树根节点ID不能为空") String rootId,
-                                 @RequestParam(value = "edmcNameEn") @NotBlank(message = "EDM类英文名称不能为空") String edmcNameEn) {
-        return monitorClient.treeMaintaince(classId, rootId, edmcNameEn);
     }
 }

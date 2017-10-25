@@ -13,6 +13,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,7 +58,6 @@ import com.huntkey.rx.sceo.serviceCenter.common.model.SearchParam;
 @Component
 public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     
-    private static final String MODUSER = "admin";
     private static final String ADDUSER = "admin";
     
     private static final String DATE_TIME = "yyyy-MM-dd HH:mm:ss";
@@ -65,7 +65,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     private static final String ROOT_LVL_CODE = "1,";
     private static final String SEP = ",";
     private static final String REVOKE_KEY = "REVOKE";
-    
+    private static final String KEY_SEP = "-";
     private static final String MTOR_NODES_EDM = "monitortreeorder.mtor_node_set";
     
     @Autowired
@@ -94,7 +94,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         if(node == null)
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"redis中节点层级编码["+ lvlCode +"]" + ErrorMessage._60005.getMsg());
             
-        Result resourceEdmClass = edmClient.getEdmcNameEn(key.split("-")[1], Constant.EDMPCODE);
+        Result resourceEdmClass = edmClient.getEdmcNameEn(key.split(KEY_SEP)[1], Constant.EDMPCODE);
         
         String resourceEdmcNameEn = "";
         
@@ -171,7 +171,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         JSONArray textRes = getResourceText(new JSONArray(filterRes), "", resourceEdmId);
         
         datas.put("data", textRes);
-        
         return datas;
     }
     
@@ -240,10 +239,10 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     
                     String txt = format.toLowerCase();
                     
-                    for (String fieldName : resourceFields) {
+                    for (String fieldName : resourceFields) 
                         txt = txt.replace(fieldName,
                                 ((JSONObject)s).getString(fieldName));
-                    }
+                    
                     
                     text.put("text",txt);
                     textRes.add(text);
@@ -349,7 +348,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         if(hashOps.size(key) == 0)
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"redis中 键值[" + key + "]"+ErrorMessage._60005.getMsg());
         
-        Result resourceEdmClass = edmClient.getEdmcNameEn(key.split("-")[1], Constant.EDMPCODE);
+        Result resourceEdmClass = edmClient.getEdmcNameEn(key.split(KEY_SEP)[1], Constant.EDMPCODE);
         
         String resourceEdmcNameEn = "";
         
@@ -408,7 +407,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     }
     
     @Override
-    public void addOtherNode(String key){
+    public String addOtherNode(String key){
         
         if(hashOps.size(key) == 0)
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"redis中 临时单[" + key + "]"+ ErrorMessage._60005.getMsg());
@@ -416,7 +415,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         JSONArray unusedResources = queryAvailableResource(key);
         
         if(unusedResources == null || unusedResources.isEmpty())
-            return;
+            return key;
         
         // 取出根节点
         NodeTo rootNode = hashOps.get(key, ROOT_LVL_CODE);
@@ -458,12 +457,16 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         if(childKeys.isEmpty())
             to.setSeq(1);
-        else
+        else{
+            Collections.sort(childKeys);
             to.setSeq(Math.floor(hashOps.get(key, childKeys.get(childKeys.size()-1)).getSeq()) + 1);
+        }
         
         to.setLvlCode(ROOT_LVL_CODE+(int)to.getSeq()+SEP);
         
         hashOps.put(key, to.getLvlCode(), to);
+        
+        return key;
     }
 
     @Override
@@ -482,8 +485,9 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         //查询出所有的节点信息
         SearchParam params = new SearchParam(MTOR_NODES_EDM);
-        params.addColumns(new String[]{Constant.ID});
-        params.addCond_equals(Constant.PID, key.split("-")[0]);
+        params
+        .addColumns(new String[]{Constant.ID})
+        .addCond_equals(Constant.PID, key.split(KEY_SEP)[0]);
         
         Result allNodes = client.queryServiceCenter(params.toJSONString());
         
@@ -497,17 +501,15 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             throw new ServiceException(allNodes.getErrMsg());
         
         MergeParam mergeParams = new MergeParam(MTOR_NODES_EDM);
-        
+
         // 删除临时单中的节点信息
-        if(ids != null && ids.isEmpty()){
-            
-           mergeParams.addAllData(ids);
-           
-           Result delResult = client.delete(mergeParams.toJSONString());
-           
-           if(delResult.getRetCode() != Result.RECODE_SUCCESS)
-               throw new ServiceException(delResult.getErrMsg());
+        if(ids != null && !ids.isEmpty()){
+            mergeParams.addAllData(ids);
+            Result delResult = client.delete(mergeParams.toJSONString());
+            if(delResult.getRetCode() != Result.RECODE_SUCCESS)
+                throw new ServiceException(delResult.getErrMsg());
         }
+        
         // 新增节点 和 资源信息
         mergeParams.addAllData(setValues(key, nodes));
         
@@ -526,7 +528,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         for(NodeTo to : nodes){
             JSONObject node = new JSONObject();
             
-            node.put(Constant.PID, key.split("-")[0]);
+            node.put(Constant.PID, key.split(KEY_SEP)[0]);
             node.put("mtor_node_no", to.getNodeNo());
             node.put("mtor_node_name", to.getNodeName());
             node.put("mtor_node_def", to.getNodeDef());
@@ -590,8 +592,8 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         hashOps.delete(key, hashOps.keys(key));
         hashOps.putAll(key, nodes);
         revoke.setNodes(null);
-        return revoke;
         
+        return revoke;
     }
 }
 

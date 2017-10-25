@@ -78,6 +78,18 @@ public class MonitorTreeOrderController {
     
     /**
      * 
+     * checkAvailableResource:校验是否存在资源未分配
+     * @author lijie
+     * @param orderId 临时单id
+     * @return
+     */
+    @GetMapping("/other/resource")
+    public Result checkAvailableResource(@RequestParam @NotBlank(message = "临时单Key不能为空") String key){
+        return service.checkAvailableResource(key);
+    }
+    
+    /**
+     * 
      * addOtherNode: 将未分配的资源归类到其他节点上
      * @author lijie
      * @param orderId 临时单Id
@@ -87,6 +99,31 @@ public class MonitorTreeOrderController {
     public Result addOtherNode(@RequestParam @NotBlank(message="临时单Key不能为空") 
                                @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单key格式不正确") String key){
         return service.addOtherNode(key);
+    }
+    
+    /**
+     * 
+     * save: 临时单保存
+     * @author lijie
+     * @param key 临时单key
+     * @return
+     */
+    @RequestMapping("/save/{key}")
+    public Result save(@PathVariable(value="key") @NotBlank(message="临时单Key不能为空") 
+                        @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单Key格式不正确") String key){
+        return service.save(key);
+    }
+    
+    /**
+     * 
+     * revoked: 撤销操作
+     * @author lijie
+     * @param orderId 临时单ID
+     * @return
+     */
+    @GetMapping("/revoke/{key}")
+    public Result revoked(@PathVariable(value="key") @NotBlank(message="临时单Key不能为空") String key){
+        return service.revoked(key);
     }
     
     /**
@@ -102,28 +139,5 @@ public class MonitorTreeOrderController {
         return service.store(key);
     }
     
-    /**
-     * 
-     * revoked: 撤销操作
-     * @author lijie
-     * @param orderId 临时单ID
-     * @return
-     */
-    @GetMapping("/revoke/{orderId}")
-    public Result revoked(@PathVariable(value="orderId") @NotBlank(message="临时单ID不能为空") String orderId){
-        return service.revoked(orderId);
-    }
-    
-    /**
-     * 
-     * checkAvailableResource:校验是否存在资源未分配
-     * @author lijie
-     * @param orderId 临时单id
-     * @return
-     */
-    @GetMapping("/other/resource")
-    public Result checkAvailableResource(@RequestParam @NotBlank(message = "临时单Key不能为空") String key){
-        return service.checkAvailableResource(key);
-    }
 }
 

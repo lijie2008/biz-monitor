@@ -28,7 +28,7 @@ public interface MonitorTreeOrderService {
     
     JSONArray queryAvailableResource(String key);
     
-    void addOtherNode(String key);
+    String addOtherNode(String key);
 
     String store(String key);
 

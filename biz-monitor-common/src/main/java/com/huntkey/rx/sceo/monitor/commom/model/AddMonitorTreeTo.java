@@ -1,11 +1,15 @@
 package com.huntkey.rx.sceo.monitor.commom.model;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.Range;
 
 import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
-import com.huntkey.rx.sceo.monitor.commom.utils.ToolUtil;
+import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 
 public class AddMonitorTreeTo {
     
@@ -41,8 +45,8 @@ public class AddMonitorTreeTo {
 	}
 	
 	public void setBeginDate(String beginDate) {
-		beginDate=ToolUtil.formatDateStr(beginDate, Constant.YYYY_MM_DD);
-		this.beginDate = (StringUtil.isNullOrEmpty(beginDate)?ToolUtil.getNowDateStr(Constant.YYYY_MM_DD):beginDate)+Constant.STARTTIME;
+		beginDate=formatDateStr(beginDate, Constant.YYYY_MM_DD);
+		this.beginDate = (StringUtil.isNullOrEmpty(beginDate)?getNowDateStr(Constant.YYYY_MM_DD):beginDate)+Constant.STARTTIME;
 	}
 	
 	public String getEndDate() {
@@ -53,7 +57,7 @@ public class AddMonitorTreeTo {
 		if(StringUtil.isNullOrEmpty(endDate)){
 			endDate=Constant.MAXINVALIDDATE;
     	}else{
-    		endDate=ToolUtil.formatDateStr(endDate, Constant.YYYY_MM_DD);
+    		endDate=formatDateStr(endDate, Constant.YYYY_MM_DD);
     	}
 		this.endDate = endDate+Constant.ENDTIME;
 	}
@@ -89,5 +93,39 @@ public class AddMonitorTreeTo {
     public void setRootEdmcNameEn(String rootEdmcNameEn) {
         this.rootEdmcNameEn = rootEdmcNameEn;
     }
+    
+    /**
+     * 日期格式转化
+     * @param dateStr 日期字符串 
+     * @param formatStr 日期格式
+     * @return
+     */
+    public static  String formatDateStr(String dateStr,String formatStr) {
+        String formatDateStr=null;
+        if(!StringUtil.isNullOrEmpty(dateStr)){
+            SimpleDateFormat sdf = new SimpleDateFormat(formatStr);
+            Date datetime=null;
+            try {
+                datetime=(Date) sdf.parse(dateStr);
+            } catch (ParseException e) {
+                // TODO Auto-generated catch block
+                throw new ServiceException("传入日期格式错误！");
+            }
+            formatDateStr= sdf.format(datetime);
+        }
+        return formatDateStr;
+    }
+    
+    /**
+     * 日期格式转化
+     * @param dateStr 日期字符串 
+     * @param formatStr 日期格式
+     * @return
+     */
+    public static  String getNowDateStr(String formatStr) {
+        SimpleDateFormat sdf = new SimpleDateFormat(formatStr);
+        String formatDateStr= sdf.format(new Date());
+        return formatDateStr;
+    } 
 	
 }

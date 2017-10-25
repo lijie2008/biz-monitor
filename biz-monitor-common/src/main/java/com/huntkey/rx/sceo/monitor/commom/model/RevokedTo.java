@@ -29,7 +29,7 @@ public class RevokedTo implements Serializable{
     
     private OperateType type;
     
-    private String id;
+    private String code;
 
     public List<NodeTo> getNodes() {
         return nodes;
@@ -47,12 +47,12 @@ public class RevokedTo implements Serializable{
         this.type = type;
     }
 
-    public String getId() {
-        return id;
+    public String getCode() {
+        return code;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setCode(String code) {
+        this.code = code;
     }
 
 }

@@ -22,7 +22,6 @@ import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.constant.DateConstant;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
-import com.huntkey.rx.sceo.monitor.commom.utils.ToolUtil;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
@@ -55,107 +54,13 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 
     @Value("${edm.edmcNameEn.monitor}")
     private String monitorEdmcNameEn;
-
+    
     @Override
-    public Result getEntityByVersionAndEnglishName(String treeName, String beginTime,
-                                                   String endTime) {
-
-        Result monitorClassesResult = serviceCenterClient.getMonitorClasses(treeName, beginTime,
-                endTime, edmdVer, monitorEdmcNameEn);
-        if (monitorClassesResult.getRetCode() != Result.RECODE_SUCCESS) {
-            throw new ServiceException(monitorClassesResult.getErrMsg());
-        }
-        return monitorClassesResult;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public JSONObject getMonitorTreeNodes(String edmcNameEn, String searchDate, String rootNodeId) {
-    	searchDate=searchDate+" 00:00:00";
-    	// 需要确定必须从哪里开始查-- 有根节点id 必须根据edmcNameEn 查一次就可以
-    	String[] edmNames = null;
-    	if(StringUtil.isNullOrEmpty(rootNodeId))
-    	    edmNames = new String[]{edmcNameEn,edmcNameEn+MONITOR_HISTORY_SET};
-    	else
-    	    edmNames = new String[]{edmcNameEn};
-    	
-    	for(String edmName : edmNames){
-    	    //组装参数
-    	    SearchParam requestParams = new SearchParam(edmName);
-    	    
-            String characters[] = new String[] {"id","moni_node_no", "moni_node_name", "moni_lvl", "moni_lvl_code","moni_seq"};
-            requestParams.addColumns(characters);
-            
-            requestParams.addSortParam(new SortNode("moni_lvl",SortType.ASC));
-            requestParams.addSortParam(new SortNode("moni_lvl_code",SortType.ASC));
-            
-            if (StringUtil.isNullOrEmpty(rootNodeId)) {
-                //根据时间查询根节点
-                requestParams.addCondition(new ConditionNode("moni_lvl", OperatorType.Equals, ROOT_LVL));
-                requestParams.addCondition(new ConditionNode("moni_lvl_code", OperatorType.Equals, ROOT_LVL_CODE));
-                       
-            } else {
-                //根据ID查询跟节点
-                requestParams.addCondition(new ConditionNode("id", OperatorType.Equals, rootNodeId));
-            }
-            requestParams
-            .addCondition(new ConditionNode("moni_beg", OperatorType.LessEquals, searchDate))
-            .addCondition(new ConditionNode("moni_end", OperatorType.Greater, searchDate));
-
-            Result rootNodeResult = serviceCenterClient
-                    .queryServiceCenter(requestParams.toJSONString());
-            
-            if (rootNodeResult.getRetCode() != Result.RECODE_SUCCESS) 
-                throw new ServiceException(rootNodeResult.getErrMsg());
-                
-            if (rootNodeResult.getData() != null) {
-                JSONObject rootData = JSONObject.parseObject(JSONObject.toJSONString(rootNodeResult.getData()));
-
-                JSONArray rootArray = rootData.getJSONArray("dataset");
-
-                if (rootArray.size() == 1) {
-                    
-                    // 表中存在需要的根节点 - 查找出所有的节点信息
-                    SearchParam params = new SearchParam(edmName);
-                    params.addColumns(characters);
-                    
-                    params.addSortParam(new SortNode("moni_lvl",SortType.ASC));
-                    params.addSortParam(new SortNode("moni_lvl_code",SortType.ASC));
-                    
-                    params
-                    .addCondition(new ConditionNode("moni_beg", OperatorType.LessEquals, searchDate))
-                    .addCondition(new ConditionNode("moni_end", OperatorType.Greater, searchDate));
-                    
-                    params.addCond_like("moni_lvl_code", ROOT_LVL_CODE);
-                    
-                    Result allResult = serviceCenterClient
-                            .queryServiceCenter(params.toJSONString());
-                    
-                    if (allResult.getRetCode() != Result.RECODE_SUCCESS) {
-                        throw new ServiceException(allResult.getErrMsg());
-                    } else {
-                        JSONObject obj = new JSONObject();
-                        obj.put("edmName", edmName);
-                        obj.put("nodes", new JSONArray((List<Object>) allResult.getData()));
-                        return obj;
-                    }
-
-                } else {
-                    if (rootArray.size() > 1) {
-                        throw new ServiceException("数据异常，同一时间找到多个监管树！");
-                    }
-                }
-            }
-    	}
-    	return null;
-    }
-
-    @Override
-    public JSONArray getMonitorTrees(String treeName, String edmcNameEn,String edmcEdmdId, String beginTime,
+    public JSONArray getMonitorTrees(String treeName, String edmcNameEn,String edmId, String beginTime,
                                      String endTime) {
         JSONArray monitorTrees = new JSONArray();
         
-        // 根据edmcEdmdId endTime 查询出所有的版本信息
+        // 根据edmId endTime 查询出所有的版本信息
         JSONArray versions = new JSONArray();
 
         SearchParam versionParams = new SearchParam(MONITOR_VERSION);
@@ -163,7 +68,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         String versionCharacters[] = new String[] { "motr_ver_code", "motr_beg", "motr_end", "motr_root_id" };
         
         versionParams.addColumns(versionCharacters);
-        versionParams.addCond_equals("motr_edm_id", edmcEdmdId);
+        versionParams.addCond_equals("motr_edm_id", edmId);
         
         if (!StringUtil.isNullOrEmpty(endTime)) {
             versionParams.addCond_lessOrEquals("motr_beg", endTime);
@@ -181,8 +86,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                     JSONObject temp = versionArray.getJSONObject(i);
                     JSONObject version = new JSONObject();
                     version.put("versionCode", temp.getString("motr_ver_code"));
-                    version.put("beginTime", ToolUtil.formatDateStr(temp.getString("motr_beg"),Constant.YYYY_MM_DD));
-                    version.put("endTime", ToolUtil.formatDateStr(temp.getString("motr_end"),Constant.YYYY_MM_DD));
+                    version.put("beginTime", formatDateStr(temp.getString("motr_beg"),Constant.YYYY_MM_DD));
+                    version.put("endTime", formatDateStr(temp.getString("motr_end"),Constant.YYYY_MM_DD));
                     version.put("rootNodeId", temp.getString("motr_root_id"));
                     versions.add(version);
                 }
@@ -205,20 +110,19 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                 String characters[] = new String[] { "moni_node_no", "moni_node_name", "moni_beg", "moni_end" };
                 requestParams.addColumns(characters);
                 requestParams.addSortParam(new SortNode("moni_end",SortType.ASC));
-                
                 requestParams.addCondition(new ConditionNode("moni_lvl_code", OperatorType.Equals, ROOT_LVL_CODE));
                 requestParams.addCondition(new ConditionNode("moni_lvl", OperatorType.Equals, ROOT_LVL));
+                requestParams.addCondition(new ConditionNode("moni_beg",OperatorType.LessEquals,versions.getJSONObject(i).getString("motr_beg")));
+                requestParams.addCondition(new ConditionNode("moni_end", OperatorType.GreaterEquals, versions.getJSONObject(i).getString("motr_end")));
+                
 
-                if (!StringUtil.isNullOrEmpty(treeName)) {
+                if (!StringUtil.isNullOrEmpty(treeName)) 
                     requestParams.addCondition(new ConditionNode("moni_node_name", OperatorType.Like, treeName));
-                }
+                
                 // ORM暂不支持or查询，先只根据失效时间过滤
                 if (!StringUtil.isNullOrEmpty(endTime)) {
                     requestParams.addCondition(new ConditionNode("moni_beg",OperatorType.LessEquals,endTime));
                     requestParams.addCondition(new ConditionNode("moni_end", OperatorType.GreaterEquals, endTime));
-                }else{
-                    requestParams.addCondition(new ConditionNode("moni_beg",OperatorType.LessEquals,versions.getJSONObject(i).getString("motr_beg")));
-                    requestParams.addCondition(new ConditionNode("moni_end", OperatorType.GreaterEquals, versions.getJSONObject(i).getString("motr_end")));
                 }
                 
                 Result treesResult = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
@@ -233,8 +137,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                             JSONObject tree = new JSONObject();
                             tree.put("rootNodeId", temp.getString("id"));
                             tree.put("rootNodeName", temp.getString("moni_node_name"));
-                            tree.put("beginTime", ToolUtil.formatDateStr(temp.getString("moni_beg"),Constant.YYYY_MM_DD));
-                            tree.put("endTime", ToolUtil.formatDateStr(temp.getString("moni_end"),Constant.YYYY_MM_DD));
+                            tree.put("beginTime", formatDateStr(temp.getString("moni_beg"),Constant.YYYY_MM_DD));
+                            tree.put("endTime", formatDateStr(temp.getString("moni_end"),Constant.YYYY_MM_DD));
                             tree.put("rootEdmcNameEn", edmName);
                             
                             JSONArray rootNodes = version.getJSONArray("rootNodes") == null ? new JSONArray():version.getJSONArray("rootNodes");
@@ -245,9 +149,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                                 version.put("rootNodeName", temp.getString("moni_node_name"));
                         }
                     }
-                } else {
+                } else 
                     throw new ServiceException(treesResult.getErrMsg());
-                }
             }
             
             version.put("count",version.getJSONArray("rootNodes") == null ? 0 : version.getJSONArray("rootNodes").size() );
@@ -257,21 +160,105 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         
         return monitorTrees;
     }
+    
+    @Override
+    public Result getEntityByVersionAndEnglishName(String treeName, String beginTime,
+                                                   String endTime) {
+
+        Result monitorClassesResult = serviceCenterClient.getMonitorClasses(treeName, beginTime,
+                endTime, edmdVer, monitorEdmcNameEn);
+        if (monitorClassesResult.getRetCode() != Result.RECODE_SUCCESS) {
+            throw new ServiceException(monitorClassesResult.getErrMsg());
+        }
+        return monitorClassesResult;
+    }
 
     @SuppressWarnings("unchecked")
     @Override
-    public JSONArray getNodeResources(String name, List<String> nodes, String edmcId,String edmName) {
-        Result resourcesResult = serviceCenterClient.getNodeResources(name, nodes, edmcId,edmName);
-        if (resourcesResult.getRetCode() == Result.RECODE_SUCCESS) {
-            if (resourcesResult.getData() != null) {
-                JSONArray childrenArray = new JSONArray((List<Object>) resourcesResult.getData());
-                return childrenArray;
-            } else {
-                return null;
+    public JSONObject getMonitorTreeNodes(String rootEdmcNameEn, String searchDate, String rootNodeId) {
+        
+        JSONObject nodeRet = new JSONObject();
+        
+    	searchDate=searchDate+" 00:00:00";
+    	// 需要确定必须从哪里开始查-- 有根节点id 必须根据edmcNameEn 查一次就可以
+    	String[] edmNames = null;
+    	if(StringUtil.isNullOrEmpty(rootNodeId))
+    	    edmNames = new String[]{rootEdmcNameEn,rootEdmcNameEn+MONITOR_HISTORY_SET};
+    	else
+    	    edmNames = new String[]{rootEdmcNameEn};
+    	
+    	for(String edmName : edmNames){
+    	    //组装参数
+    	    SearchParam requestParams = new SearchParam(edmName);
+    	    
+            String characters[] = new String[] {"id","moni_node_no", "moni_node_name", "moni_lvl", "moni_lvl_code","moni_seq"};
+            requestParams
+            .addColumns(characters)
+            .addSortParam(new SortNode("moni_lvl",SortType.ASC))
+            .addSortParam(new SortNode("moni_lvl_code",SortType.ASC))
+            .addCondition(new ConditionNode("moni_beg", OperatorType.LessEquals, searchDate))
+            .addCondition(new ConditionNode("moni_end", OperatorType.Greater, searchDate));
+            
+            if (StringUtil.isNullOrEmpty(rootNodeId)) 
+                requestParams
+                .addCondition(new ConditionNode("moni_lvl", OperatorType.Equals, ROOT_LVL))
+                .addCondition(new ConditionNode("moni_lvl_code", OperatorType.Equals, ROOT_LVL_CODE));
+                       
+            else 
+                requestParams.addCondition(new ConditionNode("id", OperatorType.Equals, rootNodeId));
+
+            Result rootNodeResult = serviceCenterClient
+                    .queryServiceCenter(requestParams.toJSONString());
+            
+            if (rootNodeResult.getRetCode() != Result.RECODE_SUCCESS) 
+                throw new ServiceException(rootNodeResult.getErrMsg());
+                
+            if (rootNodeResult.getData() != null) {
+                JSONObject rootData = JSONObject.parseObject(JSONObject.toJSONString(rootNodeResult.getData()));
+
+                JSONArray rootArray = rootData.getJSONArray("dataset");
+
+                if (rootArray.size() == 1) {
+                    
+                    // 表中存在需要的根节点 - 查找出所有的节点信息
+                    SearchParam params = new SearchParam(edmName);
+                    params
+                    .addColumns(characters)
+                    .addSortParam(new SortNode("moni_lvl",SortType.ASC))
+                    .addSortParam(new SortNode("moni_lvl_code",SortType.ASC))
+                    .addCondition(new ConditionNode("moni_beg", OperatorType.LessEquals, searchDate))
+                    .addCondition(new ConditionNode("moni_end", OperatorType.Greater, searchDate))
+                    .addCond_like("moni_lvl_code", ROOT_LVL_CODE);
+                    
+                    Result allResult = serviceCenterClient.queryServiceCenter(params.toJSONString());
+                    
+                    if (allResult.getRetCode() != Result.RECODE_SUCCESS) {
+                        throw new ServiceException(allResult.getErrMsg());
+                    } else {
+                        nodeRet.put("edmName", edmName);
+                        nodeRet.put("nodes", new JSONArray((List<Object>) allResult.getData()));
+                        return nodeRet;
+                    }
+
+                } else 
+                    if (rootArray.size() > 1) {
+                        throw new ServiceException("数据异常，同一时间找到多个监管树！");
+                    }
             }
-        } else {
+    	}
+    	return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public JSONArray getNodeResources(String name, List<String> nodes, String edmId,String edmName,int type) {
+        
+        Result resourcesResult = serviceCenterClient.getNodeResources(name, nodes, edmId,edmName,type);
+        
+        if (resourcesResult.getRetCode() == Result.RECODE_SUCCESS) 
+            return new JSONArray((List<Object>) resourcesResult.getData());
+        else 
             throw new ServiceException(resourcesResult.getErrMsg());
-        }
     }
 
     @Override
@@ -295,38 +282,11 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         }
     }
     
-    /**
-     * 
-     * 1 - 返回最大的开始时间 - 跳复制页面
-     * 2 - 不存在临时单也不存在任何监管树 直接新增临时单和节点
-     * 3 - 存在一颗最大的树 9999-12-31 不能新增
-     * 4 - 存在临时单 打开临时单
-     */
     @Override
-    public JSONObject getNewMonitorTreeStartDate(String edmcNameEn, String classId) {
+    public JSONObject getNewMonitorTreeStartDate(String edmcNameEn) {
 
         JSONObject resultData = new JSONObject();
 
-        // 是否存在临时单
-        SearchParam params = new SearchParam("monitortreeorder");
-        
-        params.addCondition(new ConditionNode("mtor_order_type", OperatorType.Equals, "1"));
-        params.addCondition(new ConditionNode("mtor_cls_id", OperatorType.Equals, classId));
-        Result orderResult = serviceCenterClient.queryServiceCenter(params.toJSONString());
-        
-        if (orderResult.getRetCode() == Result.RECODE_SUCCESS) {
-            
-            JSONObject tempTree = (JSONObject) JSONObject.toJSON(orderResult.getData());
-            JSONArray tempArray = tempTree.getJSONArray("dataset");
-            
-            if (tempArray != null && !tempArray.isEmpty()) {
-                resultData.put("type", 4);
-                resultData.put("tempId", tempArray.getJSONObject(0).getString("id"));
-                return resultData;
-            } 
-        }else 
-            throw new ServiceException("调用" + orderResult.getErrMsg());
-        
         // 查找最大失效时间的树
         SearchParam requestParams = new SearchParam(edmcNameEn);
         
@@ -357,41 +317,50 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             if (rootArray != null && !rootArray.isEmpty()) {
 
                 String lastDate = rootArray.getJSONObject(0).getString("moni_end");
-                
                 DateFormat format =  new SimpleDateFormat("yyyy-MM-dd");
-                
                 try {
-                    
                     Date tempDate = format.parse(lastDate);
-                    
                     // 存在最大时间区间的记录
-                    if(tempDate.compareTo(format.parse(Constant.MAXINVALIDDATE)) == 0){
+                    if(tempDate.compareTo(format.parse(Constant.MAXINVALIDDATE)) == 0)
                         resultData.put("type", 3);
-                        return resultData;
+                    else{
+                        // 计算出最大时间加一天的 时间 作为可新增的最大时间树
+                        Calendar cal = Calendar.getInstance();
+                        cal.setTime(tempDate);
+                        cal.add(Calendar.DATE, 1);
+                        String newDate = format.format(cal.getTime());
+                        resultData.put("type", 1);
+                        resultData.put("date",newDate);
                     }
                     
-                    // 计算出最大时间加一天的 时间 作为可新增的最大时间树
-                    Calendar cal = Calendar.getInstance();
-                    cal.setTime(tempDate);
-                    cal.add(Calendar.DATE, 1);
-                    String newDate = format.format(cal.getTime());
-                    
-                    resultData.put("type", 1);
-                    resultData.put("date",newDate);
-                    
+                    return resultData;
                 } catch (ParseException e) {
                     throw new ServiceException("日期格式不正确！");
                 }
-            }else{
+            }else
                 resultData.put("type", 2);
-                return resultData;
-            }
         }else 
             throw new ServiceException("调用" + treeResult.getErrMsg());
         
         return resultData;
     }
 
+    private  String formatDateStr(String dateStr,String formatStr) {
+        String formatDateStr=null;
+        if(!StringUtil.isNullOrEmpty(dateStr)){
+            SimpleDateFormat sdf = new SimpleDateFormat(formatStr);
+            Date datetime=null;
+            try {
+                datetime=(Date) sdf.parse(dateStr);
+            } catch (ParseException e) {
+                throw new ServiceException("传入日期格式错误！");
+            }
+            formatDateStr= sdf.format(datetime);
+        }
+        return formatDateStr;
+    }
+    
+    
     /**
      * getChileNodes:根据节点id查询其子节点信息
      * @author caozhenx
@@ -443,7 +412,6 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 
     @Override
     public JSONArray searchResourceObj(String resourceClassId, String resourceValue) {
-        // TODO Auto-generated method stub
         Result resourcesResult = serviceCenterClient.searchResourceObj(resourceClassId,
                 resourceValue);
         if (resourcesResult.getRetCode() == Result.RECODE_SUCCESS) {

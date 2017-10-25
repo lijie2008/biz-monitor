@@ -15,5 +15,5 @@ public interface MonitorService {
     
     String editBefore(String key, boolean flag);
     
-    List<NodeTo> tempTree(String tempId,String validDate, int type,boolean flag);
+    List<NodeTo> tempTree(String key,String validDate, int type,boolean flag);
 }

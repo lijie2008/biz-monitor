@@ -13,26 +13,38 @@ import org.springframework.stereotype.Component;
 public class MonitorClientFallback implements MonitorClient {
 
     @Override
-    public Result tempTree(String tempId, String validDate) {
-        // TODO Auto-generated method stub
+    public Result tempTree(String tempId, String validDate,int type, boolean flag) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("MonitorClient tempTree fallback");
         return result;
     }
-
+    
     @Override
-    public Result resource(String[] nodes, String classId) {
-        // TODO Auto-generated method stub
+    public Result checkOrder(String classId, String rootId, int type) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
-        result.setErrMsg("MonitorClient containResource fallback");
+        result.setErrMsg("MonitorClient treeMaintaince fallback");
         return result;
     }
 
     @Override
+    public Result editBefore(String key, boolean flag) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("MonitorClient treeMaintaince fallback");
+        return result;
+    }
+    
+    
+    
+    
+    
+    
+    
+
+    @Override
     public Result nodeDetail(String nodeId) {
-        // TODO Auto-generated method stub
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("MonitorClient nodeDetail fallback");

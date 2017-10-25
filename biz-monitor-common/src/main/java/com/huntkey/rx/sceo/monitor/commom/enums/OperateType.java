@@ -16,9 +16,6 @@ package com.huntkey.rx.sceo.monitor.commom.enums;
  * @see 	 
  */
 public enum OperateType {
-    
-    INITIALIZE(1, "初始化堆栈"),
-    
     NODE(2, "节点操作"),
     
     DETAIL(3, "节点详情操作");
@@ -50,8 +47,6 @@ public enum OperateType {
     
     public static OperateType valueOf(int value) {
         switch (value) {
-            case 1:
-                return INITIALIZE;
             case 2:
                 return NODE;
             case 3:

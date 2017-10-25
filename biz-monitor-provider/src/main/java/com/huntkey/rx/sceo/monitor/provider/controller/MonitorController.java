@@ -18,6 +18,7 @@ import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 @RequestMapping("/monitors")
 @Validated
 public class MonitorController {
+    
     @Autowired
     MonitorService service;
     
@@ -55,6 +56,24 @@ public class MonitorController {
         return result;
     }
     
+    /***
+     * 查询监管树临时结构
+     * @param tempId 监管树临时单id
+     * @param flag 是否包含资源
+     * @param validDate 日期
+     * @param type 1 - 从redis中查询 2 - 从临时单表查询
+     * @return
+     */
+    @RequestMapping(value = "/tempTree")
+    public Result tempTree(@RequestParam(value = "key") String key,
+                           @RequestParam(value = "validDate") String validDate, 
+                           @RequestParam(value = "type", defaultValue="1") int type,
+                           @RequestParam(value = "flag", defaultValue="false") boolean flag) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(service.tempTree(key, validDate, type, flag));
+        return result;
+    }
     
     
     /**
@@ -88,25 +107,4 @@ public class MonitorController {
         result.setData(service.treeMaintaince(classId, rootId, rootEdmcNameEn));
         return result;
     }
-    
-    
-    /***
-     * 查询监管树临时结构
-     * @param tempId 监管树临时单id
-     * @param hasResource 是否包含资源
-     * @param validDate 日期
-     * @param type 1 - 从redis中查询 2 - 从临时单表查询
-     * @return
-     */
-    @RequestMapping(value = "/tempTree")
-    public Result tempTree(@RequestParam(value = "tempId") String tempId,
-                           @RequestParam(value = "validDate") String validDate, 
-                           @RequestParam(value = "type", defaultValue="1") int type,
-                           @RequestParam(value = "flag", defaultValue="false") boolean flag) {
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.tempTree(tempId, validDate,type,flag));
-        return result;
-    }
-    
 }

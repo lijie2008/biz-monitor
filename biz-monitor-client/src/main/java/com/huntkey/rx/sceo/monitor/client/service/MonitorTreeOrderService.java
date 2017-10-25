@@ -85,22 +85,32 @@ public interface MonitorTreeOrderService {
      * 
      * revoked: 撤销操作
      * @author lijie
-     * @param orderId 临时单ID
+     * @param key 临时单Key
      * @return
      */
-    @RequestMapping(value="/nodes/revoke/{orderId}")
-    public Result revoked(@PathVariable(value="orderId") String orderId);
+    @RequestMapping(value="/nodes/revoke/{key}")
+    public Result revoked(@PathVariable(value="key") String key);
 
 
     /**
      * 
      * checkAvailableResource:校验是否存在资源未分配
      * @author lijie
-     * @param orderId 临时单id
+     * @param key 临时单Key
      * @return
      */
     @RequestMapping(value="/nodes/other/resource")
     public Result checkAvailableResource(@RequestParam(value="key") String key);
+    
+    /**
+     * 
+     * revoked: 撤销操作
+     * @author lijie
+     * @param orderId 临时单ID
+     * @return
+     */
+    @RequestMapping(value="/nodes/save/{key}")
+    public Result save(@PathVariable(value="key") String key);
     
 }
 

@@ -30,46 +30,7 @@ public class MonitorTreeController {
 
     @Autowired
     MonitorTreeService monitorTreeService;
-
-    /**
-     * 查询某个时间的指定监管树所有节点
-     * 若有根节点ID则根据根节点ID查询
-     * 无根节点ID则先根据时间查询出根节点ID
-     * @param edmcNameEn
-     * @param searchDate
-     * @param rootNodeId
-     * @return
-     */
-    @GetMapping("/trees/nodes")
-    public Result getMonitorTreeNodes(@RequestParam @NotBlank(message = "类英文名不能为空") String rootEdmcNameEn,
-                                      @RequestParam @NotBlank(message = "查询日期不能为空") String searchDate,
-                                      @RequestParam(required = false,defaultValue = "") String rootNodeId,
-                                      @RequestParam String edmcId,@RequestParam(defaultValue = "false") boolean flag){
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_SUCCESS);
-        
-        JSONObject obj = monitorTreeService.getMonitorTreeNodes(rootEdmcNameEn,searchDate,rootNodeId);
-        JSONArray nodes = obj == null ? null : obj.getJSONArray("nodes");
-        
-        JSONObject re_obj = new JSONObject();
-        re_obj.put("nodes", nodes);
-        
-        if(nodes == null || nodes.isEmpty())
-            return result;
-        
-        if(!flag)
-            return result;
-        
-        List<String> ids = new ArrayList<String>();
-        for (int i = 0; i < nodes.size(); i++)
-            ids.add(nodes.getJSONObject(i).getString(Constant.ID));
-
-        obj.put("resources", monitorTreeService.getNodeResources(null, ids, edmcId, obj.getString("edmName")));
-        result.setData(re_obj);
-        
-        return result;
-    }
-
+    
     /**
      * 查询监管树类列表，并根据查询条件统计监管类下监管树的数量
      * @param treeName
@@ -86,11 +47,12 @@ public class MonitorTreeController {
         result.setData(monitorTreeService.getEntityByVersionAndEnglishName(treeName,beginTime,endTime));
         return result;
     }
-
+    
     /**
      * 根据监管类英文名查询监管类下的监管树
      * @param treeName
      * @param edmcNameEn
+     * @param edmId
      * @param beginTime
      * @param endTime
      * @return
@@ -98,12 +60,52 @@ public class MonitorTreeController {
     @GetMapping("/trees")
     public Result getMonitorTrees(@RequestParam(required = false) String treeName,
                                   @RequestParam @NotBlank(message = "类英文名不能为空") String edmcNameEn,
-                                  @RequestParam @NotBlank(message = "edmcEdmdId 不能为空") String edmcEdmdId,
+                                  @RequestParam @NotBlank(message = "edmid 不能为空") String edmId,
                                   @RequestParam(required = false) String beginTime,
                                   @RequestParam(required = false) String endTime){
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(monitorTreeService.getMonitorTrees(treeName,edmcNameEn,edmcEdmdId,beginTime,endTime));
+        result.setData(monitorTreeService.getMonitorTrees(treeName,edmcNameEn,edmId,beginTime,endTime));
+        return result;
+    }
+    
+    /**
+     * 查询某个时间的指定监管树所有节点
+     * 若有根节点ID则根据根节点ID查询
+     * 无根节点ID则先根据时间查询出根节点ID
+     * @param rootEdmcNameEn
+     * @param searchDate
+     * @param rootNodeId
+     * @param edmId edm id 模型id
+     * @param flag 是否包含节点 true代表包含
+     * @return
+     */
+    @GetMapping("/trees/nodes")
+    public Result getMonitorTreeNodes(@RequestParam @NotBlank(message = "类英文名不能为空") String rootEdmcNameEn,
+                                      @RequestParam @NotBlank(message = "查询日期不能为空") String searchDate,
+                                      @RequestParam(required = false,defaultValue = "") String rootNodeId,
+                                      @RequestParam(required = true) String edmId,
+                                      @RequestParam(defaultValue = "false") boolean flag){
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        
+        JSONObject obj = monitorTreeService.getMonitorTreeNodes(rootEdmcNameEn,searchDate,rootNodeId);
+        JSONArray nodes = obj == null ? null : obj.getJSONArray("nodes");
+        
+        if(nodes == null || nodes.isEmpty())
+            return result;
+        
+        result.setData(obj);
+        
+        if(!flag)
+            return result;
+        
+        List<String> ids = new ArrayList<String>();
+        for (int i = 0; i < nodes.size(); i++)
+            ids.add(nodes.getJSONObject(i).getString(Constant.ID));
+        
+        obj.put("resources", monitorTreeService.getNodeResources(null, ids, edmId, obj.getString("edmName"),1));
+        
         return result;
     }
 
@@ -122,18 +124,18 @@ public class MonitorTreeController {
     }
     
     /**
-     * 树新增时的树的最大时间计算
+     * 树新增 最大时间计算
      * @author lijie
-     * @param edmcNameEn
-     * @param classId
+     * @param edmcNameEn 树列表中的英文名
+     * @param classId 类id
      * @return
      */
     @GetMapping("/newDate")
-    public Result getNewMonitorTreeStartDate(@RequestParam(value = "edmcNameEn") @NotBlank(message = "类英文名不能为空") String edmcNameEn,
-    		@RequestParam(value="classId") @NotBlank(message="监管类ID不能为空") String classId){
+    public Result getNewMonitorTreeStartDate(@RequestParam(value = "edmcNameEn") 
+                                             @NotBlank(message = "类英文名不能为空") String edmcNameEn){
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(monitorTreeService.getNewMonitorTreeStartDate(edmcNameEn,classId));
+        result.setData(monitorTreeService.getNewMonitorTreeStartDate(edmcNameEn));
         return result;
     }
     

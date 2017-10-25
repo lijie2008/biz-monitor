@@ -29,15 +29,8 @@ import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
 @Documented
 public @interface Revoked {
     
-    /**
-     * type: 操作类型
-     * @author lijie
-     * @return
-     */
-    OperateType type() default OperateType.INITIALIZE;
+    OperateType type() default OperateType.NODE;
     
     String key() default "";
-    
-    String character() default "";
 }
 

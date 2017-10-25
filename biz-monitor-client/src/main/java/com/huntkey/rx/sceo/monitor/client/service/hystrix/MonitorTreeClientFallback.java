@@ -11,7 +11,7 @@ import com.huntkey.rx.sceo.monitor.client.service.MonitorTreeClient;
 @Component
 public class MonitorTreeClientFallback implements MonitorTreeClient {
     @Override
-    public Result getMonitorTreeNodes(String edmcNameEn, String searchDate, String rootNodeId,String edmcId,boolean flag) {
+    public Result getMonitorTreeNodes(String rootEdmcNameEn, String searchDate, String rootNodeId,String edmId,boolean flag) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("MonitorTreeClient getMonitorTreeNodes fallback");
@@ -27,7 +27,7 @@ public class MonitorTreeClientFallback implements MonitorTreeClient {
     }
 
     @Override
-    public Result getMonitorTrees(String treeName, String edmcNameEn, String beginTime, String endTime) {
+    public Result getMonitorTrees(String treeName, String edmcNameEn,String edmId, String beginTime, String endTime) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("MonitorTreeClient getMonitorTrees fallback");
@@ -43,7 +43,7 @@ public class MonitorTreeClientFallback implements MonitorTreeClient {
     }
 
     @Override
-    public Result getNewMonitorTreeStartDate(String edmcNameEn,String classId) {
+    public Result getNewMonitorTreeStartDate(String edmcNameEn) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("MonitorTreeClient getNewMonitorTreeStartDate fallback");

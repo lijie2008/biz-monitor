@@ -75,6 +75,14 @@ public class MonitorTreeOrderServiceFallback implements MonitorTreeOrderService{
         result.setErrMsg("fallback");
         return result;
     }
+
+    @Override
+    public Result save(String key) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("fallback");
+        return result;
+    }
     
 }
 

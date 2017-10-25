@@ -21,15 +21,7 @@ public class MonitorTreeController {
 
     @Autowired
     MonitorTreeClient treeClient;
-    @GetMapping("/trees/nodes")
-    public Result getMonitorTreeNodes(@RequestParam @NotBlank(message = "类英文名不能为空") String edmcNameEn,
-                                      @RequestParam @NotBlank(message = "查询日期不能为空") String searchDate,
-                                      @RequestParam(required = false, defaultValue = "") String rootNodeId,
-                                      @RequestParam String edmcId,@RequestParam(defaultValue = "false") boolean flag) {
-        Result result = treeClient.getMonitorTreeNodes(edmcNameEn, searchDate, rootNodeId,edmcId,flag);
-        return result;
-    }
-
+    
     @GetMapping
     public Result getMonitors(@RequestParam(required = false) String treeName,
                               @RequestParam(required = false) String beginTime,
@@ -37,13 +29,24 @@ public class MonitorTreeController {
         Result result = treeClient.getMonitors(treeName, beginTime, endTime);
         return result;
     }
-
+    
     @GetMapping("/trees")
     public Result getMonitorTrees(@RequestParam(required = false) String treeName,
                                   @RequestParam @NotBlank(message = "类英文名不能为空") String edmcNameEn,
+                                  @RequestParam @NotBlank(message = "edmid 不能为空") String edmId,
                                   @RequestParam(required = false) String beginTime,
                                   @RequestParam(required = false) String endTime) {
-        Result result = treeClient.getMonitorTrees(treeName, edmcNameEn, beginTime, endTime);
+        Result result = treeClient.getMonitorTrees(treeName, edmcNameEn, edmId, beginTime, endTime);
+        return result;
+    }
+    
+    @GetMapping("/trees/nodes")
+    public Result getMonitorTreeNodes(@RequestParam @NotBlank(message = "类英文名不能为空") String rootEdmcNameEn,
+                                      @RequestParam @NotBlank(message = "查询日期不能为空") String searchDate,
+                                      @RequestParam(required = false, defaultValue = "") String rootNodeId,
+                                      @RequestParam String edmId,
+                                      @RequestParam(defaultValue = "false") boolean flag) {
+        Result result = treeClient.getMonitorTreeNodes(rootEdmcNameEn, searchDate, rootNodeId,edmId,flag);
         return result;
     }
 
@@ -55,9 +58,9 @@ public class MonitorTreeController {
     }
 
     @GetMapping("/newDate")
-    public Result getNewMonitorTreeStartDate(@RequestParam(value = "edmcNameEn") @NotBlank(message = "类英文名不能为空") String edmcNameEn,
-    		@RequestParam(value="classId") @NotBlank(message="监管类ID不能为空") String classId){
-        Result result = treeClient.getNewMonitorTreeStartDate(edmcNameEn,classId);
+    public Result getNewMonitorTreeStartDate(@RequestParam(value = "edmcNameEn") 
+                                             @NotBlank(message = "类英文名不能为空") String edmcNameEn){
+        Result result = treeClient.getNewMonitorTreeStartDate(edmcNameEn);
         return result;
     }
     @GetMapping("/search")

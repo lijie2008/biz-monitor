@@ -27,7 +27,7 @@ public class NodeTo implements Serializable{
     
     private static final long serialVersionUID = 1L;
     
-    private String tempId;
+    private String key;
     
     private String nodeNo;
     
@@ -39,30 +39,6 @@ public class NodeTo implements Serializable{
     
     private String majorText;
     
-    public String getTempId() {
-		return tempId;
-	}
-
-	public void setTempId(String tempId) {
-		this.tempId = tempId;
-	}
-
-	public String getMajorText() {
-		return majorText;
-	}
-
-	public void setMajorText(String majorText) {
-		this.majorText = majorText;
-	}
-
-	public String getAssitText() {
-		return assitText;
-	}
-
-	public void setAssitText(String assitText) {
-		this.assitText = assitText;
-	}
-
 	private String assit;
     
     private String assitText;
@@ -227,6 +203,31 @@ public class NodeTo implements Serializable{
         this.seq = seq;
     }
     
+    
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public String getMajorText() {
+        return majorText;
+    }
+
+    public void setMajorText(String majorText) {
+        this.majorText = majorText;
+    }
+
+    public String getAssitText() {
+        return assitText;
+    }
+
+    public void setAssitText(String assitText) {
+        this.assitText = assitText;
+    }
+
     public static List<NodeTo> setValue(JSONArray orderNodes){
         
         List<NodeTo> nodes = new ArrayList<NodeTo>();
@@ -251,6 +252,11 @@ public class NodeTo implements Serializable{
             node.setRelateId(to.getString("mtor_relate_id"));
             node.setBegin(to.getString("mtor_beg"));
             node.setEnd(to.getString("mtor_end"));
+            
+            //TODO 主管人 协管人赋值
+            node.setAssitText(null);
+            node.setMajorText(null);
+            // TODO 主管人 协管人赋值
             
             // 资源集 
             JSONArray res = to.getJSONArray("mtor_res_set");
@@ -280,7 +286,6 @@ public class NodeTo implements Serializable{
                     bkTo.setBk2(bk.getString("mtor_bk2"));
                     bkTo.setBk3(Integer.valueOf(bk.getString("mtor_bk3")));
                     bkList.add(bkTo);
-                    
                 }
                 node.setBackSet(bkList);
             }
