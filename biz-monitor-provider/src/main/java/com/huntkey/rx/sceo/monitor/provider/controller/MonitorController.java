@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 
 @RestController
@@ -105,6 +106,122 @@ public class MonitorController {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(service.treeMaintaince(classId, rootId, rootEdmcNameEn));
+        return result;
+    }
+    
+	/***
+	 * 查询节点详情
+	 * @param key redis key
+	 * @param levelCode 节点层及编码
+	 * @return 节点信息
+	 * @author fangkun 2017-10-21
+	 */
+    @RequestMapping(value = "/nodeDetail")
+    public Result nodeDetail(@RequestParam(value = "key") String key,
+    		@RequestParam(value = "levelCode") String levelCode) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(service.nodeDetail(key,levelCode));
+        return result;
+    }
+
+	/***
+	 * 保存节点详情
+	 * @param 节点详情
+	 * @return 节点的层级编码
+	 * @author fangkun
+	 */
+    @RequestMapping(value = "/saveNodeDetail", method = RequestMethod.POST)
+    public Result saveNodeDetail(@RequestBody NodeTo nodeDetail) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(service.saveNodeDetail(nodeDetail));
+        return result;
+    }
+
+	/***
+	 * 删除节点资源
+	 * @param key redis key
+	 * @param levelCode 节点层及编码
+	 * @param resourceId 资源ID
+	 * @return 被删除的节点ID
+	 */
+    @RequestMapping(value = "/deleteNodeResource")
+    public Result deleteNodeResource(@RequestParam(value = "key")  String key,
+    								 @RequestParam(value = "levelCode")   String levelCode,
+                                     @RequestParam(value = "resourceId")   String resourceId) {
+    	Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(service.deleteNodeResource(key, levelCode,resourceId));
+        return result;
+    }
+
+	/***
+	 * 添加节点资源
+	 * @param key redis key
+	 * @param levelCode 节点层级编码
+	 * @param resourceId 资源ID
+	 * @param resourceText 资源名称  
+	 * @return 资源ID
+	 * @author fangkun 2017-10-24
+	 */
+    @RequestMapping(value = "/addResource")
+    public Result addResource(
+    		@RequestParam(value = "key") @NotBlank(message = "redis key不能为空") String key,
+            @RequestParam(value = "levelCode") @NotBlank(message = "节点层及编码不能为空") String levelCode,        
+            @RequestParam(value = "resourceId") String resourceId,
+            @RequestParam(value = "resourceText") String resourceText) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(service.addResource(key,levelCode, resourceId,resourceText));
+        return result;
+    }
+
+	/****
+	 * 添加节点
+	 * @param key redis key
+	 * @param levelCode 节点层级编码
+	 * @param type 新增节点类型
+	 * @return levelCode 节点层级编码
+	 * @author fangkun 2017-10-24
+	 */
+    @RequestMapping(value = "/addNode", method = RequestMethod.GET)
+    public Result addNode(@RequestParam(value = "key")  String key,
+                          @RequestParam(value = "levelCode") String levelCode,
+                          @RequestParam(value = "type") int type) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(service.addNode(key, levelCode,type));
+        return result;
+    }
+
+	/****
+	 * 删除节点
+	 * @param key redis key
+	 * @param levelCode 节点层级编码
+	 * @param type 删除类型 0 失效 1删除
+	 * @return levelCode 节点层级编码
+	 * @author fangkun 2017-10-24 
+	 */
+    @RequestMapping(value = "/deleteNode", method = RequestMethod.GET)
+    public Result deleteNode(@RequestParam(value = "key") String key,
+    						 @RequestParam(value = "levelCode") String levelCode,
+                             @RequestParam(value = "type") int type) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(service.deleteNode(key,levelCode, type));
+        return result;
+    }
+    
+    @RequestMapping(value = "/moveNode", method = RequestMethod.GET)
+    public Result moveNode(@RequestParam(value = "key")  String key,
+                           @RequestParam(value = "moveLvlCode") String moveLvlCode,
+                           @RequestParam(value = "desLvlCode") String desLvlCode,
+                           @RequestParam(value = "type") int type
+    ) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(service.moveNode(key, moveLvlCode, desLvlCode, type));
         return result;
     }
 }

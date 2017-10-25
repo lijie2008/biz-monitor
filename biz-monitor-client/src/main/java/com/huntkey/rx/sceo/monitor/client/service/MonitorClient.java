@@ -53,108 +53,6 @@ public interface MonitorClient {
                       @RequestParam(value = "flag",defaultValue="false") boolean flag);
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    /**
-     * 查询节点详情
-     *
-     * @param nodeId 节点ID
-     * @return
-     */
-    @RequestMapping(value = "/monitors/nodeDetail")
-    Result nodeDetail(@RequestParam(value = "nodeId") String nodeId);
-
-    /**
-     * 查询节点关联资源
-     *
-     * @param nodeId 节点ID
-     * @return
-     */
-    @RequestMapping(value = "/monitors/nodeResource")
-    Result nodeResource(@RequestParam(value = "nodeId") String nodeId,
-                        @RequestParam(value = "classId") String classId);
-
-    /**
-     * 保存节点详情
-     *
-     * @param nodeId 节点ID
-     * @return
-     */
-    @RequestMapping(value = "/monitors/saveNodeDetail", method = RequestMethod.POST)
-    Result saveNodeDetail(@RequestBody NodeTo nodeDetail);
-
-    /**
-     * 删除节点资源
-     *
-     * @param nodeId     节点ID
-     * @param resourceId 临时单ID
-     * @return
-     */
-    @RequestMapping(value = "/monitors/deleteNodeResource")
-    Result deleteNodeResource(@RequestParam(value = "nodeId") String nodeId,
-                              @RequestParam(value = "resourceId") String resourceId);
-
-    /**
-     * 变更公式接口
-     *
-     * @param nodeId     节点ID
-     * @param resourceId 临时单ID
-     * @return
-     */
-    @RequestMapping(value = "/monitors/changeFormula", method = RequestMethod.GET)
-    Result changeFormula(@RequestParam(value = "nodeId") String nodeId,
-                         @RequestParam(value = "formularId") String formularId);
-
-    /**
-     * 新增资源
-     *
-     * @param nodeId      节点ID
-     * @param resourceIds 资源id集合
-     * @return
-     */
-    @RequestMapping(value = "/monitors/addResource")
-    Result addResource(@RequestParam(value = "nodeId") String nodeId,
-                       @RequestParam(value = "resourceIds") String[] resourceIds);
-
-
-    /**
-     * 新增节点
-     *
-     * @param nodeId   节点ID
-     * @param nodeType 创建节点的类型
-     * @return
-     */
-    @RequestMapping(value = "/monitors/addNode", method = RequestMethod.GET)
-    Result addNode(@RequestParam(value = "nodeId") String nodeId,
-                   @RequestParam(value = "nodeType") int nodeType);
-
-    /**
-     * 删除节点
-     *
-     * @param nodeId 节点ID
-     * @param type   0代表失效 1代表删除
-     * @return
-     */
-    @RequestMapping(value = "/monitors/deleteNode", method = RequestMethod.GET)
-    Result deleteNode(@RequestParam(value = "nodeId") String nodeId,
-                      @RequestParam(value = "type") int type);
-
-    @RequestMapping(value = "/monitors/moveNode", method = RequestMethod.GET)
-    Result moveNode(@RequestParam(value = "nodeId") String nodeId,
-                    @RequestParam(value = "nodeParentId") String nodeParentId,
-                    @RequestParam(value = "nodeLeftId") String nodeLeftId,
-                    @RequestParam(value = "nodeRightId") String nodeRightId
-    );
-
     @RequestMapping(value = "/monitors/addMonitorTree", method = RequestMethod.POST)
     Result addMonitorTree(@RequestBody AddMonitorTreeTo addMonitorTreeTo);
 
@@ -163,6 +61,39 @@ public interface MonitorClient {
     Result treeMaintaince(@RequestParam(value = "classId") String classId,
                           @RequestParam(value = "rootId") String rootId,
                           @RequestParam(value = "rootEdmcNameEn") String rootEdmcNameEn);
+    
+    @RequestMapping(value = "/monitors/nodeDetail")
+    Result nodeDetail(@RequestParam(value = "key") String key,
+            @RequestParam(value = "levelCode") String levelCode);
 
+    @RequestMapping(value = "/monitors/saveNodeDetail", method = RequestMethod.POST)
+    Result saveNodeDetail(@RequestBody NodeTo nodeDetail);
 
+    @RequestMapping(value = "/monitors/deleteNodeResource")
+    Result deleteNodeResource(@RequestParam(value = "key") String key,
+                              @RequestParam(value = "levelCode") String levelCode,
+                              @RequestParam(value = "resourceId") String resourceId);
+
+    @RequestMapping(value = "/monitors/addResource")
+    Result addResource(@RequestParam(value = "key") String key,
+                       @RequestParam(value = "levelCode") String levelCode,
+                       @RequestParam(value = "resourceId") String resourceId,
+                       @RequestParam(value = "resourceText") String resourceText);
+
+    @RequestMapping(value = "/monitors/addNode", method = RequestMethod.GET)
+    Result addNode(@RequestParam(value = "key") String key,
+                   @RequestParam(value = "levelCode") String levelCode,
+                   @RequestParam(value = "type") int type);
+
+    @RequestMapping(value = "/monitors/deleteNode", method = RequestMethod.GET)
+    Result deleteNode(@RequestParam(value = "key") String key,
+                      @RequestParam(value = "levelCode") String levelCode,
+                      @RequestParam(value = "type") int type);
+
+    @RequestMapping(value = "/monitors/moveNode", method = RequestMethod.GET)
+    Result moveNode(@RequestParam(value = "key") String key,
+                    @RequestParam(value = "moveLvlCode") String moveLvlCode,
+                    @RequestParam(value = "desLvlCode") String desLvlCode,
+                    @RequestParam(value = "type") int type
+    );
 }

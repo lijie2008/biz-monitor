@@ -11,13 +11,18 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.HashOperations;
@@ -34,6 +39,7 @@ import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
+import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
@@ -45,13 +51,16 @@ import com.huntkey.rx.sceo.serviceCenter.common.model.SortNode;
 public class MonitorServiceImpl implements MonitorService {
     
     private static final String ADDUSER = "admin";
-    
+    private static final String LVSPLIT = ",";
     private static final String ROOT_LVL_CODE = "1,";
     private static final String REVOKE_KEY = "REVOKE";
     private static final String DATE_TIME = "yyyy-MM-dd HH:mm:ss";
-    
     private static final String MTOR_NODES_EDM = "monitortreeorder.mtor_node_set";
     private static final String KEY_SEP = "-";
+    
+    private static final String DEFAULTNODENAME="未命名节点";
+    
+    private static final Logger logger = LoggerFactory.getLogger(MonitorServiceImpl.class);
     
     @Autowired
     private ServiceCenterClient client;
@@ -756,9 +765,589 @@ public class MonitorServiceImpl implements MonitorService {
         }
     }
     
+
     private  String getNowDateStr(String formatStr) {
         SimpleDateFormat sdf = new SimpleDateFormat(formatStr);
         String formatDateStr= sdf.format(new Date());
         return formatDateStr;
     } 
+
+    /***
+     * 查询节点详情
+     * @param tempId 临时单ID
+     * @param levelCode 节点层及编码
+     * @return 节点信息
+     * @author fangkun 2017-10-21
+     */
+    @Override
+    public NodeTo nodeDetail(String tempId,String levelCode) {
+        NodeTo node=hasOps.get(tempId, levelCode);
+        if(node!=null){
+            node.setBegin(node.getBegin().substring(0, 10));
+            node.setEnd(node.getEnd().substring(0, 10));
+        }else{
+            ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(),
+                    ErrorMessage._60003.getMsg());
+            logger.info("MonitorServiceImpl类的nodeDetail方法：==》"+ErrorMessage._60003.getMsg());
+        }
+        return node;
+    }
+    /***
+     * 保存节点详情
+     * @param 节点详情
+     * @return 节点的层级编码
+     * @author fangkun
+     */
+    @Override
+    public String saveNodeDetail(NodeTo nodeDetail) {
+        // TODO Auto-generated method stub
+        String key=nodeDetail.getKey();
+        String nodeNo=nodeDetail.getNodeNo();
+        String levelCode=nodeDetail.getLvlCode();
+        String endDate=nodeDetail.getEnd();
+        String beginDate=nodeDetail.getEnd();
+        if(StringUtil.isNullOrEmpty(nodeNo)){
+            logger.info("不存在当前节点信息！");
+            throw new ServiceException("不存在当前节点信息！");
+        }
+        //操作redis修改
+        hasOps.put(key, levelCode, nodeDetail);
+        //修改下级节点失效日期
+        List<NodeTo> list=new ArrayList<NodeTo>();
+        list.add(nodeDetail);
+        list.addAll(getChildOneLvNode(key, levelCode));
+        //一级子节点的时间修改影响  ==>返回剔除删除节点后的一级节点列表
+        List<NodeTo> listLv1=updateNodesByDate(beginDate,endDate,list,key);
+
+        //查询新的一级节点的子节点
+        List<NodeTo> listChildren=null;
+        if(listLv1!=null && listLv1.size()>0){
+            listChildren=new ArrayList<NodeTo>();
+            NodeTo node=null;
+            for(int i=0;i<listLv1.size();i++){
+                node=listLv1.get(i);
+                //查询子节点
+                List<NodeTo> listRet=getChildNode(node.getKey(), node.getLvlCode());
+                if(listRet!=null && listRet.size()>0){
+                    listChildren.addAll(listRet);
+                }
+            }
+        }
+        //如果存在子节点  则全部更新
+        if(listChildren!=null && listChildren.size()>0){
+            updateNodesByDate(beginDate,endDate,listChildren,key);
+        }
+        return levelCode;
+    }
+
+    private List<NodeTo> updateNodesByDate(String beginDate,String endDate,List<NodeTo> nodes,String key){
+        //遍历子节点，判断父节点修改时间对子节点的影响
+        String childBeginDate=null;
+        String childEndDate=null;
+        NodeTo node=null;
+        for(int i=nodes.size()-1;i>=0;i--){
+            node=nodes.get(i);
+            childBeginDate=node.getBegin();
+            childEndDate=node.getEnd();
+            Date cts=getDate(childBeginDate);
+            Date cte=getDate(childEndDate);
+            Date ts=getDate(beginDate);
+            Date te=getDate(endDate);
+            //-->修改父节点的失效日期
+            //2.修改的子节点失效日期小于等于子节点的生效日期==>子节点失效
+            if(!cts.before(te)){
+                deleteNode(key, node.getLvlCode(), 0);
+                nodes.remove(i);
+            }
+            else if(te.before(cte)){//1.子节点失效日期大于父节点修改的失效日期  ==>子节点失效日期=父节点失效日期
+                node.setEnd(endDate);
+                hasOps.put(key, node.getLvlCode(), node);
+            }
+            //-->修改父节点的生效日期
+            //2.如果父节点的生效日期大于等于子节点失效日期==>子节点失效
+            if(!ts.before(cte)){
+                deleteNode(key, node.getLvlCode(), 0);
+                nodes.remove(i);
+            }
+            else if(cts.before(ts)){//1.父节点生效日期>子节点生效日期时==>子节点生效日期=父节点生效日期
+                node.setBegin(beginDate);
+                hasOps.put(key, node.getLvlCode(), node);
+            }
+        }
+        return nodes;
+    }
+
+    /***
+     * 删除节点资源
+     * @param tempId 临时单ID
+     * @param levelCode 节点层及编码
+     * @param resourceId 资源ID
+     * @return 被删除的节点ID
+     */
+    @Override
+    public String deleteNodeResource(String tempId,String levelCode,String resourceId) {
+        // TODO Auto-generated method stub
+        NodeTo node=hasOps.get(tempId, levelCode);
+        if(node!=null){
+            List<ResourceTo> resourceList=node.getResources();
+            if(resourceList!=null && resourceList.size()>0){
+                for(int i=0;i<resourceList.size();i++){
+                    ResourceTo resource=resourceList.get(i);
+                    if(StringUtil.isEqual(resourceId,resource.getResId())){
+                        resourceList.remove(i);
+                        break;
+                    }
+                }
+                node.setResources(resourceList);
+            }else{
+                logger.info("deleteNodeResource方法==>层级编码为："+levelCode+"的节点下不存在资源!!!");
+                new ServiceException("deleteNodeResource方法==>层级编码为："+levelCode+"的节点下不存在资源!!!");
+            }
+        }else{
+            logger.info("deleteNodeResource方法==>未找到节点!!!");
+            new ServiceException("deleteNodeResource方法==>未找到节点!!!");
+        }
+
+        return resourceId;
+    }
+
+    /***
+     * 添加节点资源
+     * @param tempId 临时单ID
+     * @param levelCode 节点层级编码
+     * @param resourceId 资源ID
+     * @param resourceText 资源名称
+     * @return 资源ID
+     * @author fangkun 2017-10-24
+     */
+    @Override
+    public String addResource(String tempId,String levelCode,String resourceId,String resourceText) {
+        // TODO Auto-generated method stub
+        NodeTo node=hasOps.get(tempId, levelCode);
+        if(node!=null){
+            List<ResourceTo> resourceList=node.getResources();
+            resourceList=resourceList==null?new ArrayList<ResourceTo>():resourceList;
+            ResourceTo resource=new ResourceTo();
+            resource.setResId(resourceId);
+            resource.setText(resourceText);
+            resourceList.add(resource);
+        }else{
+            logger.info("addResource方法==>未找到节点!!!");
+            new ServiceException("addResource方法==>未找到节点!!!");
+        }
+        return resourceId;
+    }
+
+    /****
+     * 添加节点
+     * @param tempId 临时单ID
+     * @param levelCode 节点层级编码
+     * @return 新增节点的层级编码
+     * @author fangkun 2017-10-24
+     */
+    @Override
+    public String addNode(String tempId,String levelCode,int nodeType) {
+        //如果新增子节点==>获取下级所有子节点==》找到最大子节点==》生成子节点
+        //如果新增左节点==>获取本级所有节点==》找到当前节点的左节点==>生成左节点
+        //如果新增右节点==》获取本级节点==》找到当前节点的右节点==》生成右节点
+    	String newLvlCode=null;
+    	String beginDate="";
+    	String endDate="";
+    	NodeTo curNode=null;
+    	int level=0;//新节点的层级
+        switch(nodeType){
+            case 0://新增子节点
+            	level=levelCode.split(LVSPLIT).length+1;//层级加1;
+                curNode=hasOps.get(tempId, levelCode);
+                //取出当前节点的层级  开始日期和结束日期
+                beginDate=curNode.getBegin();
+                endDate=curNode.getEnd();
+            	newLvlCode=addChildNode(tempId, levelCode);
+                break;
+            case 1://新增左节点
+            	//本节点的层级编码前缀(即父节点层级编码)
+            	String plLvlCode=levelCode.substring(0,levelCode.lastIndexOf(LVSPLIT)+1);
+            	//取出当前节点父节点的  开始日期和结束日期
+                curNode=hasOps.get(tempId, plLvlCode);
+                beginDate=curNode.getBegin();
+                endDate=curNode.getEnd();
+                level=levelCode.split(LVSPLIT).length;//当前节点的层级
+            	newLvlCode=addLeftNode(tempId, levelCode,plLvlCode);
+                break;
+            case 2://新增右节点
+            	level=levelCode.split(LVSPLIT).length;
+            	//本节点的层级编码前缀(即父节点层级编码)
+                String pLvlCode=levelCode.substring(0,levelCode.lastIndexOf(",")+1);
+                //取出当前节点父节点的  开始日期和结束日期
+                curNode=hasOps.get(tempId, pLvlCode);
+                beginDate=curNode.getBegin();
+                endDate=curNode.getEnd();
+            	newLvlCode=addRightNode(tempId, levelCode,pLvlCode);
+                break;
+        }
+        createNewNode(tempId,level,newLvlCode,beginDate,endDate);
+        // TODO Auto-generated method stub
+        return newLvlCode;
+    }
+    private String addChildNode(String tempId,String levelCode){
+        String newLvlCode="";//新的节点层级编码
+        //查找一级子节点 并按照层级编码升序排序
+        List<NodeTo> listNodes=getChildOneLvNode(tempId, levelCode);
+        //取出排序后最大的子节点
+        if(listNodes!=null && listNodes.size()>0){
+            NodeTo maxNode=listNodes.get(listNodes.size()-1);
+            levelCode=maxNode.getLvlCode();//获取最大子节点的层级编码
+            int lastIndex=levelCode.lastIndexOf(LVSPLIT);
+            String lvlCodeEnd=levelCode.substring(lastIndex+1);//本节点的层级编码后缀
+            newLvlCode=levelCode+Double.parseDouble(lvlCodeEnd)+1+LVSPLIT;
+        }else{//不存在子节点 则直接在当前层级编码后面加,1
+            newLvlCode=levelCode+1+LVSPLIT;
+        }
+        return newLvlCode;
+    }
+    private String addLeftNode(String tempId,String levelCode,String pLvlCode){
+    	String newLvlCode="";//新增节点的层级编码
+        String lvlCodeEnd=levelCode.substring(levelCode.lastIndexOf(LVSPLIT)+1);//本节点的层级编码后缀
+        //取出父节点的层级编码==》查询出本层的所有节点
+        List<NodeTo> listNodes=getChildOneLvNode(tempId, pLvlCode);
+        /**找到当前节点左节点*/
+        int index=0;
+        //找出当前节点的索引
+        NodeTo node=null;
+        for(int i=0;i<listNodes.size();i++){
+            node=listNodes.get(i);
+            if(StringUtil.isEqual(levelCode, node.getLvlCode())){
+                index=i;
+            }
+        }
+        //取出新增节点的层级编码==>两个节点之间的随机数
+        Double ranNum=new Random().nextDouble();//生成0-1之间的随机双精小数
+        //如果index为0 ，代表当前节点为左边节点
+        if(index==0){
+            newLvlCode=pLvlCode+(Double.parseDouble(lvlCodeEnd)-1)+ranNum+",";//取0到当前节点编码之间的随机数 并且与层级编码前缀组合成新的层级编码
+        }else{
+            //取出当前节点的左节点
+            node=listNodes.get(index-1);
+            //取出当前节点的层级编码后缀
+            String lvlCodeEndPre=levelCode.substring(node.getLvlCode().lastIndexOf(LVSPLIT)+1);
+            newLvlCode=pLvlCode
+            +(Double.parseDouble(lvlCodeEnd)-Double.parseDouble(lvlCodeEndPre)-1+ranNum)
+            +LVSPLIT;
+        }
+        return newLvlCode;
+    }
+    private String addRightNode(String tempId,String levelCode,String pLvlCode){
+    	String newLvlCode="";//新增节点的层级编码
+        String lvlCodeEnd=levelCode.substring(levelCode.lastIndexOf(",")+1);//本节点的层级编码后缀
+        //取出父节点的层级编码==》查询出本层的所有节点
+        List<NodeTo> listNodes=getChildOneLvNode(tempId, pLvlCode);
+        /**找到当前节点右节点*/
+        int index=0;
+        //找出当前节点的索引
+        NodeTo node=null;
+        for(int i=0;i<listNodes.size();i++){
+            node=listNodes.get(i);
+            if(StringUtil.isEqual(levelCode, node.getLvlCode())){
+                index=i;
+            }
+        }
+        //取出新增节点的层级编码==>两个节点之间的随机数
+        Double ranNum=new Random().nextDouble();//生成0-1之间的随机双精小数
+        //如果index为0 ，代表当前节点左边节点
+        if(listNodes.size()==1){
+        	//如果没有右节点 则在当前结点后缀加1
+            newLvlCode=pLvlCode+(Double.parseDouble(lvlCodeEnd)+1)+",";
+        }else{
+            //取出当前节点的右节点
+            node=listNodes.get(index+1);
+            //取出当前节点的层级编码后缀
+            String lvlCodeEndPre=levelCode.substring(node.getLvlCode().lastIndexOf(",")+1);
+            newLvlCode=pLvlCode
+            +(Double.parseDouble(lvlCodeEndPre)-Double.parseDouble(lvlCodeEnd)-1+ranNum)
+            +",";
+        }
+        
+        return newLvlCode;
+    }
+    private void createNewNode(String tempId,int level,String newLvlCode,
+    		String beginDate,String endDate){
+    	//生成新节点
+        NodeTo newNode=new NodeTo();
+        newNode.setKey(tempId);
+        newNode.setLvl(level);
+        newNode.setLvlCode(newLvlCode);
+        newNode.setNodeName(DEFAULTNODENAME);
+        newNode.setType(ChangeType.ADD.getValue());
+        //判断时间 如果父级节点的生效日期小于当前日期  则设置为当天 否则跟父节点的生效日期一直
+        if(getDate(beginDate).before(new Date())){
+            SimpleDateFormat format=new SimpleDateFormat(DATE_TIME);
+            String nowDate=format.format(new Date());
+            newNode.setBegin(nowDate);
+        }else{
+        	newNode.setBegin(beginDate);
+        }
+        newNode.setEnd(endDate);
+        hasOps.put(tempId, newLvlCode, newNode);
+    }
+    /****
+     * 删除节点
+     * @param tempId 临时单ID
+     * @param levelCode 节点层级编码
+     * @param type 删除类型 0 失效 1删除
+     * @return levelCode 节点层级编码
+     * @author fangkun 2017-10-24
+     */
+    @Override
+    public String deleteNode(String tempId,String levelCode,int type) {
+        // TODO Auto-generated method stub
+        if(type==0){
+            NodeTo node=hasOps.get(tempId, levelCode);
+            node.setType(ChangeType.INVALID.getValue());
+            //删除原失效节点
+            hasOps.delete(tempId, levelCode);
+            //新增修改后的失效节点
+            hasOps.put(tempId, "D"+node.getLvlCode(), node);
+        }else{
+            //删除原失效节点
+            hasOps.delete(tempId, levelCode);
+        }
+        //删除节点下资源
+
+        //查询出子节点
+        List<NodeTo> nodes=getChildNode(tempId,levelCode);//查询子节点
+        if(nodes!=null && nodes.size()>0){//存在子节点
+            delNodes(tempId, nodes);
+        }
+        return levelCode;
+    }
+    /***
+     * 节点失效与删除
+     * 1.修改的节点 将节点的状态置为3 失效，并且层及编码前加上D==>原修改的节点数据删除==》新增修改后的节点数据
+     * 2.新增节点 直接删除
+     * @param tempId 临时单ID
+     * @param nodes 节点集合
+     * @return
+     */
+    private void delNodes(String tempId,List<NodeTo> nodes) {
+        // TODO Auto-generated method stub
+        NodeTo node=null;
+        List<String> addList=new ArrayList<String>();//新增的节点需要删除的集合
+        Map<String, NodeTo> updateNodes=new HashMap<String, NodeTo>();//失效节点集合
+        List<String> deleteList=new ArrayList<String>();//失效节点先删除集合
+        for(int i=0;i<nodes.size();i++){
+            node=nodes.get(i);
+            //将节点下面的资源清空
+            node.setResources(null);
+            if(node.getType()==ChangeType.UPDATE.getValue()){
+                deleteList.add(node.getLvlCode());
+                node.setType(ChangeType.INVALID.getValue());
+                updateNodes.put("D"+node.getLvlCode(), node);
+            }else{
+                addList.add(node.getLvlCode());
+            }
+
+        }
+        if(deleteList!=null && deleteList.size()>0){
+            hasOps.delete(tempId, deleteList);//删除失效节点
+            hasOps.putAll(tempId, updateNodes);//新增标志失效状态过后的失效节点
+        }
+        if(addList!=null && addList.size()>0){
+            hasOps.delete(tempId, addList);//删除新增节点
+        }
+    }
+    /***
+     * 移动节点
+     * @param tempId 临时单ID
+     * @param moveLvlcode 移动节点的层及编码
+     * @param desLvlcode 目的节点的层及编码
+     * @param type 0：创建子节点 1：创建左节点 2：创建右节点
+     * @return
+     */
+    @Override
+    public String moveNode(String tempId,String moveLvlcode,String desLvlcode,int type) {
+    	//取出目标节点  移动节点 以及移动节点的子节点
+    	String newLvlCode="";
+    	switch(type){
+    	case 0://移动成为目的节点的子节点
+    		
+    		newLvlCode=moveAsChild(tempId,moveLvlcode,desLvlcode);
+    		break;
+    	case 1://移动成为目的节点的左节点
+    		newLvlCode=moveAsLeft(tempId,moveLvlcode,desLvlcode);
+    		break;
+    	case 2://移动成为目的节点的右节点
+    		newLvlCode=moveAsRight(tempId,moveLvlcode,desLvlcode);
+    		break;	
+    	}
+        return newLvlCode; 
+    }
+    
+    private String moveAsChild(String tempId,String moveLvlcode,String desLvlcode){
+    	//获取父节点和移动节点信息 
+    	NodeTo desNode= hasOps.get(tempId, desLvlcode);
+    	NodeTo moveNode= hasOps.get(tempId, moveLvlcode);
+    	//如果移动节点的时间段在目标节点的时间段内
+    	if(!getDate(moveNode.getBegin()).before(getDate(desNode.getBegin()))
+    		&& !getDate(desNode.getEnd()).before(getDate(moveNode.getEnd()))
+    		){
+    	}else{//如果移动节点的时间段不在目标节点的时间段内, 则不允许拖动
+    		logger.info(ErrorMessage._60018.getMsg());
+    		ApplicationException.throwCodeMesg(ErrorMessage._60018.getCode(), 
+    				ErrorMessage._60018.getMsg());
+    	}
+    	//获取目标节点 和 移动节点的 层级
+    	int desLvl=desLvlcode.split(LVSPLIT).length;
+    	int moveLvl=moveLvlcode.split(LVSPLIT).length;
+    	//获取移动节点的新节点编码
+    	String newLevelCode=addChildNode(tempId, desLvlcode);
+    	//获取移动节点的层级编码
+    	String moveLvlCode=moveNode.getLvlCode();
+    	//获取移动节点的子节点
+    	List<NodeTo> listMoveChildren=getChildNode(tempId, moveLvlcode);
+        //新的节点集合
+        Map<String, NodeTo> map=new HashMap<String, NodeTo>();
+        //更新移动节点的层级编码
+        moveNode.setLvl(desLvl+1);
+        moveNode.setLvlCode(newLevelCode);
+        map.put(newLevelCode, moveNode);
+        if(listMoveChildren!=null && listMoveChildren.size()>0){
+            //更新移动节点子节点的节点层级和节点编码
+            for(int i=0;i<listMoveChildren.size();i++){
+            	NodeTo node=listMoveChildren.get(i);
+            	node.setLvl(node.getLvl()+desLvl-moveLvl+1);
+            	node.setLvlCode(node.getLvlCode().replaceFirst(moveLvlCode, newLevelCode));
+            	map.put(node.getLvlCode(), node);	
+            }
+        }
+        //更新到redis中
+        hasOps.putAll(tempId, map); 
+        return newLevelCode;
+    }
+    private String moveAsLeft(String tempId,String moveLvlcode,String desLvlcode){
+    	//获得父节点信息
+    	String pLvlCode=desLvlcode.substring(0, desLvlcode.lastIndexOf(LVSPLIT)+1);
+    	//获取父节点和移动节点信息
+    	NodeTo pNode= hasOps.get(tempId, pLvlCode);
+    	NodeTo moveNode= hasOps.get(tempId, moveLvlcode);
+    	
+    	//如果移动节点的时间段在目标节点的时间段内
+    	if(!getDate(moveNode.getBegin()).before(getDate(pNode.getBegin()))
+    		&& !getDate(pNode.getEnd()).before(getDate(moveNode.getEnd()))
+    		){
+    	}else{//如果移动节点的时间段不在目标节点的时间段内, 则不允许拖动
+    		logger.info(ErrorMessage._60018.getMsg());
+    		ApplicationException.throwCodeMesg(ErrorMessage._60018.getCode(), 
+    				ErrorMessage._60018.getMsg());
+    	}
+    	//获取目标节点 和 移动节点的 层级，以及层级差
+    	int desLvl=desLvlcode.split(LVSPLIT).length;
+    	int moveLvl=moveLvlcode.split(LVSPLIT).length;
+    	//获取移动节点新的节点编码
+    	String newLevelCode=addLeftNode(tempId, desLvlcode, pLvlCode);
+    	//获取移动节点的子节点
+    	List<NodeTo> listMoveChildren=getChildNode(tempId, moveLvlcode);
+    	//新的节点集合
+        Map<String, NodeTo> map=new HashMap<String, NodeTo>();
+        //更新移动节点的层级编码
+        moveNode.setLvl(desLvl);
+        moveNode.setLvlCode(newLevelCode);
+        map.put(newLevelCode, moveNode);
+        if(listMoveChildren!=null && listMoveChildren.size()>0){
+            //更新移动节点子节点的节点层级和节点编码
+            for(int i=0;i<listMoveChildren.size();i++){
+            	NodeTo node=listMoveChildren.get(i);
+            	node.setLvl(node.getLvl()+desLvl-moveLvl+1);
+            	node.setLvlCode(node.getLvlCode().replaceFirst(moveLvlcode, newLevelCode));
+            	map.put(node.getLvlCode(), node);	
+            }
+        }
+        //更新到redis中
+        hasOps.putAll(tempId, map); 
+        return newLevelCode;
+    }
+    private String moveAsRight(String tempId,String moveLvlcode,String desLvlcode){
+    	//获得父节点信息
+    	String pLvlCode=desLvlcode.substring(0, desLvlcode.lastIndexOf(LVSPLIT)+1);
+    	//获取父节点和移动节点信息
+    	NodeTo pNode= hasOps.get(tempId, pLvlCode);
+    	NodeTo moveNode= hasOps.get(tempId, moveLvlcode);
+    	
+    	//如果移动节点的时间段在目标节点的时间段内
+    	if(!getDate(moveNode.getBegin()).before(getDate(pNode.getBegin()))
+    		&& !getDate(pNode.getEnd()).before(getDate(moveNode.getEnd()))
+    		){
+    	}else{//如果移动节点的时间段不在目标节点的时间段内, 则不允许拖动
+    		logger.info(ErrorMessage._60018.getMsg());
+    		ApplicationException.throwCodeMesg(ErrorMessage._60018.getCode(), 
+    				ErrorMessage._60018.getMsg());
+    	}
+    	//获取目标节点 和 移动节点的 层级，以及层级差
+    	int desLvl=desLvlcode.split(LVSPLIT).length;
+    	int moveLvl=moveLvlcode.split(LVSPLIT).length;
+    	//获取移动节点新的层级编码
+    	String newLevelCode=addLeftNode(tempId, desLvlcode, pLvlCode);
+    	//获取移动节点的子节点
+    	List<NodeTo> listMoveChildren=getChildNode(tempId, moveLvlcode);
+        //新的节点集合
+        Map<String, NodeTo> map=new HashMap<String, NodeTo>();
+        //更新移动节点的层级编码
+        moveNode.setLvl(desLvl);
+        moveNode.setLvlCode(newLevelCode);
+        map.put(newLevelCode, moveNode);
+        if(listMoveChildren!=null && listMoveChildren.size()>0){
+            //更新移动节点子节点的节点层级和节点编码
+            for(int i=0;i<listMoveChildren.size();i++){
+            	NodeTo node=listMoveChildren.get(i);
+            	node.setLvl(node.getLvl()+desLvl-moveLvl+1);
+            	node.setLvlCode(node.getLvlCode().replaceFirst(moveLvlcode, newLevelCode));
+            	map.put(node.getLvlCode(), node);	
+            }
+        }
+        //更新到redis中
+        hasOps.putAll(tempId, map); 
+        return newLevelCode;
+    }
+    //根据层级编码查询所有子节点
+    public List<NodeTo> getChildNode(String key,String levelCode){
+        List<NodeTo> list=new ArrayList<NodeTo>();
+        Map<String, NodeTo> nodeMap=hasOps.entries(key);
+        for(Map.Entry<String, NodeTo> entry :nodeMap.entrySet()){
+            String field=entry.getKey();
+            if(!StringUtil.isNullOrEmpty(field) && field.startsWith(levelCode)){
+                list.add(nodeMap.get(field));
+            }
+        }
+        return list;
+    }
+    //根据层级编码查询下面第一级子节点
+    public List<NodeTo> getChildOneLvNode(String key,String levelCode){
+        List<NodeTo> list=new ArrayList<NodeTo>();
+        Map<String, NodeTo> nodeMap=hasOps.entries(key);
+        for(Map.Entry<String, NodeTo> entry :nodeMap.entrySet()){
+            String field=entry.getKey();
+            if(!StringUtil.isNullOrEmpty(field) 
+            	&& field.startsWith(levelCode)){
+            	//取下一级节点:下级节点层级编码的逗号个数减去当前节点层级编码的逗号个数
+                if(field.split(LVSPLIT).length-levelCode.split(LVSPLIT).length==1){
+                    list.add(nodeMap.get(field));
+                }
+            }
+        }
+        Collections.sort(list, new Comparator<NodeTo>() {//对节点按照层及编码升序排序
+            @Override
+            public int compare(NodeTo o1, NodeTo o2) {
+                // TODO Auto-generated method stub
+                return o1.getLvlCode().compareTo(o2.getLvlCode());
+            }
+        });
+        return list;
+    }
+    private  Date getDate(String str){
+        try {
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            return format.parse(str);
+        } catch (ParseException e) {
+            throw new RuntimeException("日期转换错误"+ str);
+        }
+    }
 }
