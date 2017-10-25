@@ -30,7 +30,9 @@ import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 public class NodeTo implements Serializable{
     
     private static final long serialVersionUID = 1L;
-
+    
+    private String tempId;
+    
     private String nodeNo;
     
     private String nodeName;
@@ -39,7 +41,35 @@ public class NodeTo implements Serializable{
     
     private String major;
     
-    private String assit;
+    private String majorText;
+    
+    public String getTempId() {
+		return tempId;
+	}
+
+	public void setTempId(String tempId) {
+		this.tempId = tempId;
+	}
+
+	public String getMajorText() {
+		return majorText;
+	}
+
+	public void setMajorText(String majorText) {
+		this.majorText = majorText;
+	}
+
+	public String getAssitText() {
+		return assitText;
+	}
+
+	public void setAssitText(String assitText) {
+		this.assitText = assitText;
+	}
+
+	private String assit;
+    
+    private String assitText;
     
     private String begin;
     
