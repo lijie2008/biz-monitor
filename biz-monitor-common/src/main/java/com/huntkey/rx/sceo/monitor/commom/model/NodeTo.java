@@ -9,16 +9,12 @@
 
 package com.huntkey.rx.sceo.monitor.commom.model;
 
-import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.ID;
-import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.PID;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 
 /**
  * ClassName:NodeDetail
@@ -202,8 +198,11 @@ public class NodeTo implements Serializable{
     }
     
     public static List<NodeTo> setValue(JSONArray orderNodes){
+        
         List<NodeTo> nodes = new ArrayList<NodeTo>();
+        
         for(int i = 0; i < orderNodes.size(); i++){
+            
             JSONObject to = orderNodes.getJSONObject(i);
             NodeTo node = new NodeTo();
             
