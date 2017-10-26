@@ -52,7 +52,7 @@ import com.huntkey.rx.sceo.serviceCenter.common.model.SortNode;
 @Service
 public class MonitorServiceImpl implements MonitorService {
     
-    private static final String ADDUSER = "admin";
+    private static final String CREUSER = "admin";
     private static final String LVSPLIT = ",";
     private static final String ROOT_LVL_CODE = "1,";
     private static final String REVOKE_KEY = "REVOKE";
@@ -572,7 +572,7 @@ public class MonitorServiceImpl implements MonitorService {
         node.put("mtor_relate_cnd", NULL);
         node.put("mtor_type", ChangeType.ADD.getValue());
         node.put("mtor_relate_id", NULL);
-        node.put("adduser", ADDUSER);
+        node.put("creuser", CREUSER);
         
         return node;
     }
@@ -718,7 +718,7 @@ public class MonitorServiceImpl implements MonitorService {
             node.put("mtor_lvl", to.getString("moni_lvl"));
             node.put("mtor_enum", to.getString("moni_enum"));
             node.put("mtor_relate_cnd", to.getString("moni_relate_cnd"));
-            node.put("adduser", ADDUSER);
+            node.put("creuser", CREUSER);
             if(type == ChangeType.ADD){
                 node.put("mtor_type", ChangeType.ADD.getValue());
                 node.put("mtor_beg", beginDate);
@@ -739,7 +739,7 @@ public class MonitorServiceImpl implements MonitorService {
                     JSONObject obj = new JSONObject();
                     obj.put("mtor_res_id", rr.getString("moni_res_id"));
                     obj.put("text", rr.getString("text"));
-                    obj.put("adduser", ADDUSER);
+                    obj.put("creuser", CREUSER);
                     mtorRes.add(obj);
                 }
                 node.put("mtor_res_set", mtorRes);
