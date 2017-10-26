@@ -1265,6 +1265,10 @@ public class MonitorServiceImpl implements MonitorService {
         //更新移动节点的层级编码
         moveNode.setLvl(desLvl);
         moveNode.setLvlCode(newLevelCode);
+        //获取节点后缀作为排序值
+        String[] arr=newLevelCode.split(LVSPLIT);
+        double seq=Double.parseDouble(arr[arr.length]);
+        moveNode.setSeq(seq);
         map.put(newLevelCode, moveNode);
         if(listMoveChildren!=null && listMoveChildren.size()>0){
             //更新移动节点子节点的节点层级和节点编码
@@ -1307,6 +1311,10 @@ public class MonitorServiceImpl implements MonitorService {
         //更新移动节点的层级编码
         moveNode.setLvl(desLvl);
         moveNode.setLvlCode(newLevelCode);
+        //获取节点后缀作为排序值
+        String[] arr=newLevelCode.split(LVSPLIT);
+        double seq=Double.parseDouble(arr[arr.length]);
+        moveNode.setSeq(seq);
         map.put(newLevelCode, moveNode);
         if(listMoveChildren!=null && listMoveChildren.size()>0){
             //更新移动节点子节点的节点层级和节点编码
