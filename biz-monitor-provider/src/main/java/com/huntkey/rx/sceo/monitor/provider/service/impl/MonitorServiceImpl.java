@@ -21,6 +21,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +70,7 @@ public class MonitorServiceImpl implements MonitorService {
     @Autowired
     private MonitorTreeService treeService;
     
-    @Autowired
+    @Resource(name="redisTemplate")
     private HashOperations<String, String, NodeTo> hasOps;
     
     @Value("${redis.key.timeout}")
@@ -774,14 +776,13 @@ public class MonitorServiceImpl implements MonitorService {
 
     /***
      * 查询节点详情
-     * @param tempId 临时单ID
-     * @param levelCode 节点层及编码
+     * @param key 临时单ID
+     * @param lvlCode 节点层及编码
      * @return 节点信息
      * @author fangkun 2017-10-21
      */
     @Override
     public NodeTo nodeDetail(String key,String lvlCode) {
-        // TODO Auto-generated method stub
         NodeTo node=hasOps.get(key, lvlCode);
         if(node!=null){
             node.setBegin(node.getBegin().substring(0, 10));
@@ -925,9 +926,8 @@ public class MonitorServiceImpl implements MonitorService {
      * @author fangkun 2017-10-24
      */
     @Override
-    public String addResource(String key,String levelCode,String resourceId,String resourceText) {
-        // TODO Auto-generated method stub
-        NodeTo node=hasOps.get(key, levelCode);
+    public String addResource(String key,String lvlCode,String resourceId,String resourceText) {
+        NodeTo node=hasOps.get(key, lvlCode);
         if(node!=null){
             List<ResourceTo> resourceList=node.getResources();
             resourceList=resourceList==null?new ArrayList<ResourceTo>():resourceList;
