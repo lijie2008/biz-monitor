@@ -805,19 +805,23 @@ public class MonitorServiceImpl implements MonitorService {
         // TODO Auto-generated method stub
         String key=nodeDetail.getKey();
         String nodeNo=nodeDetail.getNodeNo();
-        String levelCode=nodeDetail.getLvlCode();
+        String lvlCode=nodeDetail.getLvlCode();
         String endDate=nodeDetail.getEnd();
         String beginDate=nodeDetail.getEnd();
         if(StringUtil.isNullOrEmpty(nodeNo)){
             logger.info("不存在当前节点信息！");
             throw new ServiceException("不存在当前节点信息！");
         }
+        //获取到原节点资源 set进入新的节点详情
+        NodeTo oldNode=hasOps.get(key, lvlCode);
+        List<ResourceTo> resourceList=oldNode.getResources();
+        nodeDetail.setResources(resourceList);
         //操作redis修改
-        hasOps.put(key, levelCode, nodeDetail);
+        hasOps.put(key, lvlCode, nodeDetail);
         //修改下级节点失效日期
         List<NodeTo> list=new ArrayList<NodeTo>();
         list.add(nodeDetail);
-        list.addAll(getChildOneLvNode(key, levelCode));
+        list.addAll(getChildOneLvNode(key, lvlCode));
         //一级子节点的时间修改影响  ==>返回剔除删除节点后的一级节点列表
         List<NodeTo> listLv1=updateNodesByDate(beginDate,endDate,list,key);
 
@@ -839,7 +843,7 @@ public class MonitorServiceImpl implements MonitorService {
         if(listChildren!=null && listChildren.size()>0){
             updateNodesByDate(beginDate,endDate,listChildren,key);
         }
-        return levelCode;
+        return lvlCode;
     }
 
     private List<NodeTo> updateNodesByDate(String beginDate,String endDate,List<NodeTo> nodes,String key){
@@ -881,7 +885,7 @@ public class MonitorServiceImpl implements MonitorService {
 
     /***
      * 删除节点资源
-     * @param tempId 临时单ID
+     * @param key redis key
      * @param levelCode 节点层及编码
      * @param resourceId 资源ID
      * @return 被删除的节点ID
@@ -909,13 +913,12 @@ public class MonitorServiceImpl implements MonitorService {
             logger.info("deleteNodeResource方法==>未找到节点!!!");
             new ServiceException("deleteNodeResource方法==>未找到节点!!!");
         }
-
         return resourceId;
     }
 
     /***
      * 添加节点资源
-     * @param tempId 临时单ID
+     * @param key redis key
      * @param levelCode 节点层级编码
      * @param resourceId 资源ID
      * @param resourceText 资源名称
@@ -924,7 +927,6 @@ public class MonitorServiceImpl implements MonitorService {
      */
     @Override
     public String addResource(String key,String lvlCode,String resourceId,String resourceText) {
-        // TODO Auto-generated method stub
         NodeTo node=hasOps.get(key, lvlCode);
         if(node!=null){
             List<ResourceTo> resourceList=node.getResources();
@@ -942,13 +944,13 @@ public class MonitorServiceImpl implements MonitorService {
 
     /****
      * 添加节点
-     * @param tempId 临时单ID
+     * @param key redis key
      * @param levelCode 节点层级编码
      * @return 新增节点的层级编码
      * @author fangkun 2017-10-24
      */
     @Override
-    public String addNode(String key,String lvlCode,int nodeType) {
+    public String addNode(String key,String levelCode,int type) {
         //如果新增子节点==>获取下级所有子节点==》找到最大子节点==》生成子节点
         //如果新增左节点==>获取本级所有节点==》找到当前节点的左节点==>生成左节点
         //如果新增右节点==》获取本级节点==》找到当前节点的右节点==》生成右节点
@@ -957,60 +959,63 @@ public class MonitorServiceImpl implements MonitorService {
     	String endDate="";
     	NodeTo curNode=null;
     	int level=0;//新节点的层级
-        switch(nodeType){
+        switch(type){
             case 0://新增子节点
-            	level=lvlCode.split(LVSPLIT).length+1;//层级加1;
-                curNode=hasOps.get(key, lvlCode);
+            	level=levelCode.split(LVSPLIT).length+1;//层级加1;
+                curNode=hasOps.get(key, levelCode);
                 //取出当前节点的层级  开始日期和结束日期
                 beginDate=curNode.getBegin();
                 endDate=curNode.getEnd();
-            	newLvlCode=addChildNode(key, lvlCode);
+            	newLvlCode=addChildNode(key, levelCode);
                 break;
             case 1://新增左节点
             	//本节点的层级编码前缀(即父节点层级编码)
-            	String plLvlCode=lvlCode.substring(0,lvlCode.lastIndexOf(LVSPLIT)+1);
+            	String plLvlCode=levelCode.substring(0,levelCode.lastIndexOf(LVSPLIT)+1);
             	//取出当前节点父节点的  开始日期和结束日期
                 curNode=hasOps.get(key, plLvlCode);
                 beginDate=curNode.getBegin();
                 endDate=curNode.getEnd();
-                level=lvlCode.split(LVSPLIT).length;//当前节点的层级
-            	newLvlCode=addLeftNode(key, lvlCode,plLvlCode);
+                level=levelCode.split(LVSPLIT).length;//当前节点的层级
+            	newLvlCode=addLeftNode(key, levelCode,plLvlCode);
                 break;
             case 2://新增右节点
-            	level=lvlCode.split(LVSPLIT).length;
+            	level=levelCode.split(LVSPLIT).length;
             	//本节点的层级编码前缀(即父节点层级编码)
-                String pLvlCode=lvlCode.substring(0,lvlCode.lastIndexOf(",")+1);
+                String pLvlCode=levelCode.substring(0,levelCode.lastIndexOf(",")+1);
                 //取出当前节点父节点的  开始日期和结束日期
                 curNode=hasOps.get(key, pLvlCode);
                 beginDate=curNode.getBegin();
                 endDate=curNode.getEnd();
-            	newLvlCode=addRightNode(key, lvlCode,pLvlCode);
+            	newLvlCode=addRightNode(key, levelCode,pLvlCode);
                 break;
         }
-        createNewNode(lvlCode,level,newLvlCode,beginDate,endDate);
+        createNewNode(key,level,newLvlCode,beginDate,endDate);
         // TODO Auto-generated method stub
         return newLvlCode;
     }
-    private String addChildNode(String key,String lvlCode){
+    private String addChildNode(String tempId,String lvlCode){
         String newLvlCode="";//新的节点层级编码
-        //查找一级子节点 并按照层级编码升序排序
-        List<NodeTo> listNodes=getChildOneLvNode(key, lvlCode);
+        //查找一级子节点 并按照排序字段升序排序
+        List<NodeTo> listNodes=getChildOneLvNode(tempId, lvlCode);
         //取出排序后最大的子节点
         if(listNodes!=null && listNodes.size()>0){
             NodeTo maxNode=listNodes.get(listNodes.size()-1);
-            lvlCode=maxNode.getLvlCode();//获取最大子节点的层级编码
-            int lastIndex=lvlCode.lastIndexOf(LVSPLIT);
-            String lvlCodeEnd=lvlCode.substring(lastIndex+1);//本节点的层级编码后缀
-            newLvlCode=lvlCode+Double.parseDouble(lvlCodeEnd)+1+LVSPLIT;
+            String maxlvlCode=maxNode.getLvlCode();//获取最大子节点的层级编码
+            String[] arr=maxlvlCode.split(LVSPLIT);
+            String lvlCodeEnd=arr[arr.length-1];//最大节点的层级编码后缀
+            newLvlCode=lvlCode+(Double.parseDouble(lvlCodeEnd)+1)+LVSPLIT;
         }else{//不存在子节点 则直接在当前层级编码后面加,1
-            newLvlCode=lvlCode+1+LVSPLIT;
+            newLvlCode=lvlCode+"1"+LVSPLIT;
         }
         return newLvlCode;
     }
-    private String addLeftNode(String tempId,String levelCode,String pLvlCode){
-    	String newLvlCode="";//新增节点的层级编码
-        String lvlCodeEnd=levelCode.substring(levelCode.lastIndexOf(LVSPLIT)+1);//本节点的层级编码后缀
-        //取出父节点的层级编码==》查询出本层的所有节点
+    private String addLeftNode(String tempId,String lvlCode,String pLvlCode){
+    	//新增节点的层级编码
+    	String newLvlCode="";
+    	//本节点的层级编码后缀
+    	String[] arr=lvlCode.split(LVSPLIT);
+        String lvlCodeEnd=arr[arr.length-1];
+        //根据父节点的层级编码==》查询出本层的所有节点
         List<NodeTo> listNodes=getChildOneLvNode(tempId, pLvlCode);
         /**找到当前节点左节点*/
         int index=0;
@@ -1018,7 +1023,7 @@ public class MonitorServiceImpl implements MonitorService {
         NodeTo node=null;
         for(int i=0;i<listNodes.size();i++){
             node=listNodes.get(i);
-            if(StringUtil.isEqual(levelCode, node.getLvlCode())){
+            if(StringUtil.isEqual(lvlCode, node.getLvlCode())){
                 index=i;
             }
         }
@@ -1026,22 +1031,24 @@ public class MonitorServiceImpl implements MonitorService {
         Double ranNum=new Random().nextDouble();//生成0-1之间的随机双精小数
         //如果index为0 ，代表当前节点为左边节点
         if(index==0){
-            newLvlCode=pLvlCode+(Double.parseDouble(lvlCodeEnd)-1)+ranNum+",";//取0到当前节点编码之间的随机数 并且与层级编码前缀组合成新的层级编码
+            newLvlCode=pLvlCode+((Double.parseDouble(lvlCodeEnd)-1)+ranNum)+",";//取0到当前节点编码之间的随机数 并且与层级编码前缀组合成新的层级编码
         }else{
             //取出当前节点的左节点
             node=listNodes.get(index-1);
             //取出当前节点的层级编码后缀
-            String lvlCodeEndPre=levelCode.substring(node.getLvlCode().lastIndexOf(LVSPLIT)+1);
+            arr=node.getLvlCode().split(LVSPLIT);
+            String lvlCodeLeftEnd=arr[arr.length-1];
             newLvlCode=pLvlCode
-            +(Double.parseDouble(lvlCodeEnd)-Double.parseDouble(lvlCodeEndPre)-1+ranNum)
+            +(Double.parseDouble(lvlCodeEnd)-Double.parseDouble(lvlCodeLeftEnd)-1+ranNum)
             +LVSPLIT;
         }
         return newLvlCode;
     }
-    private String addRightNode(String tempId,String levelCode,String pLvlCode){
+    private String addRightNode(String tempId,String lvlCode,String pLvlCode){
     	String newLvlCode="";//新增节点的层级编码
-        String lvlCodeEnd=levelCode.substring(levelCode.lastIndexOf(",")+1);//本节点的层级编码后缀
-        //取出父节点的层级编码==》查询出本层的所有节点
+    	String arr[]=lvlCode.split(LVSPLIT);
+        String lvlCodeEnd=arr[arr.length-1];//本节点的层级编码后缀
+        //根据父节点的层级编码==》查询出本层的所有节点
         List<NodeTo> listNodes=getChildOneLvNode(tempId, pLvlCode);
         /**找到当前节点右节点*/
         int index=0;
@@ -1049,7 +1056,7 @@ public class MonitorServiceImpl implements MonitorService {
         NodeTo node=null;
         for(int i=0;i<listNodes.size();i++){
             node=listNodes.get(i);
-            if(StringUtil.isEqual(levelCode, node.getLvlCode())){
+            if(StringUtil.isEqual(lvlCode, node.getLvlCode())){
                 index=i;
             }
         }
@@ -1058,28 +1065,30 @@ public class MonitorServiceImpl implements MonitorService {
         //如果index为0 ，代表当前节点左边节点
         if(listNodes.size()==1){
         	//如果没有右节点 则在当前结点后缀加1
-            newLvlCode=pLvlCode+(Double.parseDouble(lvlCodeEnd)+1)+",";
+            newLvlCode=pLvlCode+(Double.parseDouble(lvlCodeEnd)+1)+LVSPLIT;
         }else{
             //取出当前节点的右节点
             node=listNodes.get(index+1);
             //取出当前节点的层级编码后缀
-            String lvlCodeEndPre=levelCode.substring(node.getLvlCode().lastIndexOf(",")+1);
+            arr=node.getLvlCode().split(LVSPLIT);
+            String lvlCodeEndPre=arr[arr.length];
             newLvlCode=pLvlCode
             +(Double.parseDouble(lvlCodeEndPre)-Double.parseDouble(lvlCodeEnd)-1+ranNum)
-            +",";
+            +LVSPLIT;
         }
-        
         return newLvlCode;
     }
-    private void createNewNode(String tempId,int level,String newLvlCode,
+    private void createNewNode(String key,int level,String newLvlCode,
     		String beginDate,String endDate){
+    	String[] arr=newLvlCode.split(LVSPLIT);
     	//生成新节点
         NodeTo newNode=new NodeTo();
-        newNode.setKey(tempId);
+        newNode.setKey(key);
         newNode.setLvl(level);
         newNode.setLvlCode(newLvlCode);
         newNode.setNodeName(DEFAULTNODENAME);
         newNode.setType(ChangeType.ADD.getValue());
+        newNode.setSeq(Double.parseDouble(arr[arr.length-1]));
         //判断时间 如果父级节点的生效日期小于当前日期  则设置为当天 否则跟父节点的生效日期一直
         if(getDate(beginDate).before(new Date())){
             SimpleDateFormat format=new SimpleDateFormat(DATE_TIME);
@@ -1089,36 +1098,36 @@ public class MonitorServiceImpl implements MonitorService {
         	newNode.setBegin(beginDate);
         }
         newNode.setEnd(endDate);
-        hasOps.put(tempId, newLvlCode, newNode);
+        hasOps.put(key, newLvlCode, newNode);
     }
     /****
      * 删除节点
-     * @param tempId 临时单ID
+     * @param key redis key
      * @param levelCode 节点层级编码
      * @param type 删除类型 0 失效 1删除
      * @return levelCode 节点层级编码
      * @author fangkun 2017-10-24
      */
     @Override
-    public String deleteNode(String tempId,String levelCode,int type) {
+    public String deleteNode(String key,String levelCode,int type) {
         // TODO Auto-generated method stub
         if(type==0){
-            NodeTo node=hasOps.get(tempId, levelCode);
+            NodeTo node=hasOps.get(key, levelCode);
             node.setType(ChangeType.INVALID.getValue());
             //删除原失效节点
-            hasOps.delete(tempId, levelCode);
+            hasOps.delete(key, levelCode);
             //新增修改后的失效节点
-            hasOps.put(tempId, "D"+node.getLvlCode(), node);
+            hasOps.put(key, "D"+node.getLvlCode(), node);
         }else{
             //删除原失效节点
-            hasOps.delete(tempId, levelCode);
+            hasOps.delete(key, levelCode);
         }
         //删除节点下资源
 
         //查询出子节点
-        List<NodeTo> nodes=getChildNode(tempId,levelCode);//查询子节点
+        List<NodeTo> nodes=getChildNode(key,levelCode);//查询子节点
         if(nodes!=null && nodes.size()>0){//存在子节点
-            delNodes(tempId, nodes);
+            delNodes(key, nodes);
         }
         return levelCode;
     }
@@ -1159,26 +1168,25 @@ public class MonitorServiceImpl implements MonitorService {
     }
     /***
      * 移动节点
-     * @param tempId 临时单ID
+     * @param key redis key
      * @param moveLvlcode 移动节点的层及编码
      * @param desLvlcode 目的节点的层及编码
      * @param type 0：创建子节点 1：创建左节点 2：创建右节点
      * @return
      */
     @Override
-    public String moveNode(String tempId,String moveLvlcode,String desLvlcode,int type) {
+    public String moveNode(String key,String moveLvlcode,String desLvlcode,int type) {
     	//取出目标节点  移动节点 以及移动节点的子节点
     	String newLvlCode="";
     	switch(type){
     	case 0://移动成为目的节点的子节点
-    		
-    		newLvlCode=moveAsChild(tempId,moveLvlcode,desLvlcode);
+    		newLvlCode=moveAsChild(key,moveLvlcode,desLvlcode);
     		break;
     	case 1://移动成为目的节点的左节点
-    		newLvlCode=moveAsLeft(tempId,moveLvlcode,desLvlcode);
+    		newLvlCode=moveAsLeft(key,moveLvlcode,desLvlcode);
     		break;
     	case 2://移动成为目的节点的右节点
-    		newLvlCode=moveAsRight(tempId,moveLvlcode,desLvlcode);
+    		newLvlCode=moveAsRight(key,moveLvlcode,desLvlcode);
     		break;	
     	}
         return newLvlCode; 
@@ -1211,6 +1219,10 @@ public class MonitorServiceImpl implements MonitorService {
         //更新移动节点的层级编码
         moveNode.setLvl(desLvl+1);
         moveNode.setLvlCode(newLevelCode);
+        //获取节点后缀作为排序值
+        String[] arr=newLevelCode.split(LVSPLIT);
+        double seq=Double.parseDouble(arr[arr.length]);
+        moveNode.setSeq(seq);
         map.put(newLevelCode, moveNode);
         if(listMoveChildren!=null && listMoveChildren.size()>0){
             //更新移动节点子节点的节点层级和节点编码
@@ -1253,6 +1265,10 @@ public class MonitorServiceImpl implements MonitorService {
         //更新移动节点的层级编码
         moveNode.setLvl(desLvl);
         moveNode.setLvlCode(newLevelCode);
+        //获取节点后缀作为排序值
+        String[] arr=newLevelCode.split(LVSPLIT);
+        double seq=Double.parseDouble(arr[arr.length]);
+        moveNode.setSeq(seq);
         map.put(newLevelCode, moveNode);
         if(listMoveChildren!=null && listMoveChildren.size()>0){
             //更新移动节点子节点的节点层级和节点编码
@@ -1295,6 +1311,10 @@ public class MonitorServiceImpl implements MonitorService {
         //更新移动节点的层级编码
         moveNode.setLvl(desLvl);
         moveNode.setLvlCode(newLevelCode);
+        //获取节点后缀作为排序值
+        String[] arr=newLevelCode.split(LVSPLIT);
+        double seq=Double.parseDouble(arr[arr.length]);
+        moveNode.setSeq(seq);
         map.put(newLevelCode, moveNode);
         if(listMoveChildren!=null && listMoveChildren.size()>0){
             //更新移动节点子节点的节点层级和节点编码
@@ -1339,7 +1359,7 @@ public class MonitorServiceImpl implements MonitorService {
             @Override
             public int compare(NodeTo o1, NodeTo o2) {
                 // TODO Auto-generated method stub
-                return o1.getLvlCode().compareTo(o2.getLvlCode());
+                return (int) Math.ceil(o2.getSeq()-o1.getSeq());
             }
         });
         return list;
