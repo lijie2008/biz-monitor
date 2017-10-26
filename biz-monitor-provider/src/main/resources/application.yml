@@ -7,3 +7,6 @@ spring:
     fallback-to-system-locale: false
 mybatis:
   mapperLocations: classpath:mapper/*.xml
+redis:
+  key:
+    timeout: 24
