@@ -950,73 +950,51 @@ public class MonitorServiceImpl implements MonitorService {
      * @author fangkun 2017-10-24
      */
     @Override
-    public String addNode(String key,String levelCode,int type) {
+    public String addNode(String key,String lvlCode,int type) {
         //如果新增子节点==>获取下级所有子节点==》找到最大子节点==》生成子节点
         //如果新增左节点==>获取本级所有节点==》找到当前节点的左节点==>生成左节点
         //如果新增右节点==》获取本级节点==》找到当前节点的右节点==》生成右节点
     	String newLvlCode=null;
     	String beginDate="";
     	String endDate="";
-    	NodeTo curNode=null;
     	int level=0;//新节点的层级
-        switch(type){
-            case 0://新增子节点
-            	level=levelCode.split(LVSPLIT).length+1;//层级加1;
-                curNode=hasOps.get(key, levelCode);
-                //取出当前节点的层级  开始日期和结束日期
-                beginDate=curNode.getBegin();
-                endDate=curNode.getEnd();
-            	newLvlCode=addChildNode(key, levelCode);
-                break;
-            case 1://新增左节点
-            	//本节点的层级编码前缀(即父节点层级编码)
-            	String plLvlCode=levelCode.substring(0,levelCode.lastIndexOf(LVSPLIT)+1);
-            	//取出当前节点父节点的  开始日期和结束日期
-                curNode=hasOps.get(key, plLvlCode);
-                beginDate=curNode.getBegin();
-                endDate=curNode.getEnd();
-                level=levelCode.split(LVSPLIT).length;//当前节点的层级
-            	newLvlCode=addLeftNode(key, levelCode,plLvlCode);
-                break;
-            case 2://新增右节点
-            	level=levelCode.split(LVSPLIT).length;
-            	//本节点的层级编码前缀(即父节点层级编码)
-                String pLvlCode=levelCode.substring(0,levelCode.lastIndexOf(",")+1);
-                //取出当前节点父节点的  开始日期和结束日期
-                curNode=hasOps.get(key, pLvlCode);
-                beginDate=curNode.getBegin();
-                endDate=curNode.getEnd();
-            	newLvlCode=addRightNode(key, levelCode,pLvlCode);
-                break;
-        }
+    	
+    	//找出父级节点信息
+    	String pLvlCode=(type==0?lvlCode:lvlCode.substring(
+    			0,lvlCode.substring(0, lvlCode.length()-1).lastIndexOf(",")+1));
+    	if(type==0){//新增子节点
+    		addChildNode(key, pLvlCode);
+    	}else {//新增左节点
+    		addLRNode(type,key, lvlCode, pLvlCode);
+    	}
+    	
         createNewNode(key,level,newLvlCode,beginDate,endDate);
         // TODO Auto-generated method stub
         return newLvlCode;
     }
-    private String addChildNode(String tempId,String lvlCode){
-        String newLvlCode="";//新的节点层级编码
-        //查找一级子节点 并按照排序字段升序排序
-        List<NodeTo> listNodes=getChildOneLvNode(tempId, lvlCode);
+    private String addChildNode(String key,String pLvlCode){
+    	//新的节点层级编码
+        String newLvlCode="";
+        //获取到父节点下面的一级节点
+    	List<NodeTo> listNodes=getChildOneLvNode(key, pLvlCode);
         //取出排序后最大的子节点
         if(listNodes!=null && listNodes.size()>0){
             NodeTo maxNode=listNodes.get(listNodes.size()-1);
-            String maxlvlCode=maxNode.getLvlCode();//获取最大子节点的层级编码
-            String[] arr=maxlvlCode.split(LVSPLIT);
-            String lvlCodeEnd=arr[arr.length-1];//最大节点的层级编码后缀
-            newLvlCode=lvlCode+(Double.parseDouble(lvlCodeEnd)+1)+LVSPLIT;
+            double seq=maxNode.getSeq();
+            newLvlCode=pLvlCode+(seq+1)+LVSPLIT;
         }else{//不存在子节点 则直接在当前层级编码后面加,1
-            newLvlCode=lvlCode+"1"+LVSPLIT;
+            newLvlCode=pLvlCode+"1"+LVSPLIT;
         }
         return newLvlCode;
     }
-    private String addLeftNode(String tempId,String lvlCode,String pLvlCode){
+    private String addLRNode(int type,String key,String lvlCode,String pLvlCode){
     	//新增节点的层级编码
     	String newLvlCode="";
+    	//获取到父节点下面的一级节点
+    	List<NodeTo> listNodes=getChildOneLvNode(key, pLvlCode);
     	//本节点的层级编码后缀
-    	String[] arr=lvlCode.split(LVSPLIT);
-        String lvlCodeEnd=arr[arr.length-1];
-        //根据父节点的层级编码==》查询出本层的所有节点
-        List<NodeTo> listNodes=getChildOneLvNode(tempId, pLvlCode);
+    	NodeTo curNode=hasOps.get(key, lvlCode);
+        double curNodeEnd=curNode.getSeq();
         /**找到当前节点左节点*/
         int index=0;
         //找出当前节点的索引
@@ -1027,54 +1005,35 @@ public class MonitorServiceImpl implements MonitorService {
                 index=i;
             }
         }
-        //取出新增节点的层级编码==>两个节点之间的随机数
-        Double ranNum=new Random().nextDouble();//生成0-1之间的随机双精小数
-        //如果index为0 ，代表当前节点为左边节点
-        if(index==0){
-            newLvlCode=pLvlCode+((Double.parseDouble(lvlCodeEnd)-1)+ranNum)+",";//取0到当前节点编码之间的随机数 并且与层级编码前缀组合成新的层级编码
-        }else{
-            //取出当前节点的左节点
-            node=listNodes.get(index-1);
-            //取出当前节点的层级编码后缀
-            arr=node.getLvlCode().split(LVSPLIT);
-            String lvlCodeLeftEnd=arr[arr.length-1];
-            newLvlCode=pLvlCode
-            +(Double.parseDouble(lvlCodeEnd)-Double.parseDouble(lvlCodeLeftEnd)-1+ranNum)
-            +LVSPLIT;
-        }
-        return newLvlCode;
-    }
-    private String addRightNode(String tempId,String lvlCode,String pLvlCode){
-    	String newLvlCode="";//新增节点的层级编码
-    	String arr[]=lvlCode.split(LVSPLIT);
-        String lvlCodeEnd=arr[arr.length-1];//本节点的层级编码后缀
-        //根据父节点的层级编码==》查询出本层的所有节点
-        List<NodeTo> listNodes=getChildOneLvNode(tempId, pLvlCode);
-        /**找到当前节点右节点*/
-        int index=0;
-        //找出当前节点的索引
-        NodeTo node=null;
-        for(int i=0;i<listNodes.size();i++){
-            node=listNodes.get(i);
-            if(StringUtil.isEqual(lvlCode, node.getLvlCode())){
-                index=i;
+        //生成0-1之间的随机双精小数
+        Double ranNum=new Random().nextDouble();
+        
+        if(type==1){//创建左节点
+	        //如果index为0 ，代表当前节点为左边节点
+	        if(index==0){
+	        	//取0到当前节点编码之间的随机数 并且与层级编码前缀组合成新的层级编码
+	            newLvlCode=pLvlCode+((curNodeEnd-1)+ranNum)+",";
+	        }else{
+	            //取出当前节点的左节点
+	            node=listNodes.get(index-1);
+	            //取出当前节点的层级编码后缀
+	            double lvlCodeLeftEnd=node.getSeq();
+	            newLvlCode=pLvlCode
+	            +(curNodeEnd-lvlCodeLeftEnd-1+ranNum)
+	            +LVSPLIT;
+	        }
+        }else{//常见右节点
+        	//如果index为最大的 ，代表当前节点没有右边
+            if(index==listNodes.size()-1){
+            	//如果没有右节点 则在当前结点后缀加1
+                newLvlCode=pLvlCode+(curNodeEnd+1)+LVSPLIT;
+            }else{
+                //取出当前节点的右节点
+                node=listNodes.get(index+1);
+                newLvlCode=pLvlCode
+                +(node.getSeq()-curNodeEnd-1+ranNum)
+                +LVSPLIT;
             }
-        }
-        //取出新增节点的层级编码==>两个节点之间的随机数
-        Double ranNum=new Random().nextDouble();//生成0-1之间的随机双精小数
-        //如果index为0 ，代表当前节点左边节点
-        if(listNodes.size()==1){
-        	//如果没有右节点 则在当前结点后缀加1
-            newLvlCode=pLvlCode+(Double.parseDouble(lvlCodeEnd)+1)+LVSPLIT;
-        }else{
-            //取出当前节点的右节点
-            node=listNodes.get(index+1);
-            //取出当前节点的层级编码后缀
-            arr=node.getLvlCode().split(LVSPLIT);
-            String lvlCodeEndPre=arr[arr.length];
-            newLvlCode=pLvlCode
-            +(Double.parseDouble(lvlCodeEndPre)-Double.parseDouble(lvlCodeEnd)-1+ranNum)
-            +LVSPLIT;
         }
         return newLvlCode;
     }
@@ -1178,157 +1137,50 @@ public class MonitorServiceImpl implements MonitorService {
     public String moveNode(String key,String moveLvlcode,String desLvlcode,int type) {
     	//取出目标节点  移动节点 以及移动节点的子节点
     	String newLvlCode="";
-    	switch(type){
-    	case 0://移动成为目的节点的子节点
-    		newLvlCode=moveAsChild(key,moveLvlcode,desLvlcode);
-    		break;
-    	case 1://移动成为目的节点的左节点
-    		newLvlCode=moveAsLeft(key,moveLvlcode,desLvlcode);
-    		break;
-    	case 2://移动成为目的节点的右节点
-    		newLvlCode=moveAsRight(key,moveLvlcode,desLvlcode);
-    		break;	
+    	//找出父级节点信息
+    	String pLvlCode=(type==0?desLvlcode:desLvlcode.substring(
+    			0,desLvlcode.substring(0, desLvlcode.length()-1).lastIndexOf(",")+1));
+    	//获取父节点信息
+    	NodeTo nodeP=hasOps.get(key, pLvlCode);
+    	//获取移动节点信息
+    	NodeTo moveNode=hasOps.get(key, moveLvlcode);
+    	//如果移动节点的时间段在目标节点的时间段内
+    	if(!getDate(moveNode.getBegin()).before(getDate(nodeP.getBegin()))
+    		&& !getDate(nodeP.getEnd()).before(getDate(nodeP.getEnd()))
+    		){
+    	}else{//如果移动节点的时间段不在目标节点的时间段内, 则不允许拖动
+    		logger.info(ErrorMessage._60018.getMsg());
+    		ApplicationException.throwCodeMesg(ErrorMessage._60018.getCode(), 
+    				ErrorMessage._60018.getMsg());
     	}
+    	//生成新节点
+    	newLvlCode=addNode(key, desLvlcode, type);
+    	//用生成的新节点替换所有节点
+    	NodeTo newNode=hasOps.get(key, newLvlCode);
+    	//新老节点层级差值
+    	int lvlGap=newNode.getLvl()-moveNode.getLvl();
+    	//变更移动节点的层级 层级编码 排序字段参数
+    	Map<String, NodeTo> map=new HashMap<String, NodeTo>();
+    	moveNode.setLvl(newNode.getLvl());
+    	moveNode.setLvlCode(newLvlCode);
+    	moveNode.setSeq(newNode.getSeq());
+    	map.put(newLvlCode, moveNode);
+    	
+    	//获取移动节点的所有子节点
+    	List<NodeTo> listChildren=getChildNode(key, moveLvlcode);
+    	if(listChildren!=null && listChildren.size()>0){
+    		//更新移动节点子节点的节点层级和节点编码
+            for(int i=0;i<listChildren.size();i++){
+            	NodeTo node=listChildren.get(i);
+            	node.setLvl(node.getLvl()+lvlGap);
+            	node.setLvlCode(node.getLvlCode().replaceFirst(moveLvlcode, newLvlCode));
+            	map.put(node.getLvlCode(), node);	
+            }
+    	}
+    	
         return newLvlCode; 
     }
     
-    private String moveAsChild(String tempId,String moveLvlcode,String desLvlcode){
-    	//获取父节点和移动节点信息 
-    	NodeTo desNode= hasOps.get(tempId, desLvlcode);
-    	NodeTo moveNode= hasOps.get(tempId, moveLvlcode);
-    	//如果移动节点的时间段在目标节点的时间段内
-    	if(!getDate(moveNode.getBegin()).before(getDate(desNode.getBegin()))
-    		&& !getDate(desNode.getEnd()).before(getDate(moveNode.getEnd()))
-    		){
-    	}else{//如果移动节点的时间段不在目标节点的时间段内, 则不允许拖动
-    		logger.info(ErrorMessage._60018.getMsg());
-    		ApplicationException.throwCodeMesg(ErrorMessage._60018.getCode(), 
-    				ErrorMessage._60018.getMsg());
-    	}
-    	//获取目标节点 和 移动节点的 层级
-    	int desLvl=desLvlcode.split(LVSPLIT).length;
-    	int moveLvl=moveLvlcode.split(LVSPLIT).length;
-    	//获取移动节点的新节点编码
-    	String newLevelCode=addChildNode(tempId, desLvlcode);
-    	//获取移动节点的层级编码
-    	String moveLvlCode=moveNode.getLvlCode();
-    	//获取移动节点的子节点
-    	List<NodeTo> listMoveChildren=getChildNode(tempId, moveLvlcode);
-        //新的节点集合
-        Map<String, NodeTo> map=new HashMap<String, NodeTo>();
-        //更新移动节点的层级编码
-        moveNode.setLvl(desLvl+1);
-        moveNode.setLvlCode(newLevelCode);
-        //获取节点后缀作为排序值
-        String[] arr=newLevelCode.split(LVSPLIT);
-        double seq=Double.parseDouble(arr[arr.length]);
-        moveNode.setSeq(seq);
-        map.put(newLevelCode, moveNode);
-        if(listMoveChildren!=null && listMoveChildren.size()>0){
-            //更新移动节点子节点的节点层级和节点编码
-            for(int i=0;i<listMoveChildren.size();i++){
-            	NodeTo node=listMoveChildren.get(i);
-            	node.setLvl(node.getLvl()+desLvl-moveLvl+1);
-            	node.setLvlCode(node.getLvlCode().replaceFirst(moveLvlCode, newLevelCode));
-            	map.put(node.getLvlCode(), node);	
-            }
-        }
-        //更新到redis中
-        hasOps.putAll(tempId, map); 
-        return newLevelCode;
-    }
-    private String moveAsLeft(String tempId,String moveLvlcode,String desLvlcode){
-    	//获得父节点信息
-    	String pLvlCode=desLvlcode.substring(0, desLvlcode.lastIndexOf(LVSPLIT)+1);
-    	//获取父节点和移动节点信息
-    	NodeTo pNode= hasOps.get(tempId, pLvlCode);
-    	NodeTo moveNode= hasOps.get(tempId, moveLvlcode);
-    	
-    	//如果移动节点的时间段在目标节点的时间段内
-    	if(!getDate(moveNode.getBegin()).before(getDate(pNode.getBegin()))
-    		&& !getDate(pNode.getEnd()).before(getDate(moveNode.getEnd()))
-    		){
-    	}else{//如果移动节点的时间段不在目标节点的时间段内, 则不允许拖动
-    		logger.info(ErrorMessage._60018.getMsg());
-    		ApplicationException.throwCodeMesg(ErrorMessage._60018.getCode(), 
-    				ErrorMessage._60018.getMsg());
-    	}
-    	//获取目标节点 和 移动节点的 层级，以及层级差
-    	int desLvl=desLvlcode.split(LVSPLIT).length;
-    	int moveLvl=moveLvlcode.split(LVSPLIT).length;
-    	//获取移动节点新的节点编码
-    	String newLevelCode=addLeftNode(tempId, desLvlcode, pLvlCode);
-    	//获取移动节点的子节点
-    	List<NodeTo> listMoveChildren=getChildNode(tempId, moveLvlcode);
-    	//新的节点集合
-        Map<String, NodeTo> map=new HashMap<String, NodeTo>();
-        //更新移动节点的层级编码
-        moveNode.setLvl(desLvl);
-        moveNode.setLvlCode(newLevelCode);
-        //获取节点后缀作为排序值
-        String[] arr=newLevelCode.split(LVSPLIT);
-        double seq=Double.parseDouble(arr[arr.length]);
-        moveNode.setSeq(seq);
-        map.put(newLevelCode, moveNode);
-        if(listMoveChildren!=null && listMoveChildren.size()>0){
-            //更新移动节点子节点的节点层级和节点编码
-            for(int i=0;i<listMoveChildren.size();i++){
-            	NodeTo node=listMoveChildren.get(i);
-            	node.setLvl(node.getLvl()+desLvl-moveLvl+1);
-            	node.setLvlCode(node.getLvlCode().replaceFirst(moveLvlcode, newLevelCode));
-            	map.put(node.getLvlCode(), node);	
-            }
-        }
-        //更新到redis中
-        hasOps.putAll(tempId, map); 
-        return newLevelCode;
-    }
-    private String moveAsRight(String tempId,String moveLvlcode,String desLvlcode){
-    	//获得父节点信息
-    	String pLvlCode=desLvlcode.substring(0, desLvlcode.lastIndexOf(LVSPLIT)+1);
-    	//获取父节点和移动节点信息
-    	NodeTo pNode= hasOps.get(tempId, pLvlCode);
-    	NodeTo moveNode= hasOps.get(tempId, moveLvlcode);
-    	
-    	//如果移动节点的时间段在目标节点的时间段内
-    	if(!getDate(moveNode.getBegin()).before(getDate(pNode.getBegin()))
-    		&& !getDate(pNode.getEnd()).before(getDate(moveNode.getEnd()))
-    		){
-    	}else{//如果移动节点的时间段不在目标节点的时间段内, 则不允许拖动
-    		logger.info(ErrorMessage._60018.getMsg());
-    		ApplicationException.throwCodeMesg(ErrorMessage._60018.getCode(), 
-    				ErrorMessage._60018.getMsg());
-    	}
-    	//获取目标节点 和 移动节点的 层级，以及层级差
-    	int desLvl=desLvlcode.split(LVSPLIT).length;
-    	int moveLvl=moveLvlcode.split(LVSPLIT).length;
-    	//获取移动节点新的层级编码
-    	String newLevelCode=addLeftNode(tempId, desLvlcode, pLvlCode);
-    	//获取移动节点的子节点
-    	List<NodeTo> listMoveChildren=getChildNode(tempId, moveLvlcode);
-        //新的节点集合
-        Map<String, NodeTo> map=new HashMap<String, NodeTo>();
-        //更新移动节点的层级编码
-        moveNode.setLvl(desLvl);
-        moveNode.setLvlCode(newLevelCode);
-      //获取节点后缀作为排序值
-        String[] arr=newLevelCode.split(LVSPLIT);
-        double seq=Double.parseDouble(arr[arr.length]);
-        moveNode.setSeq(seq);
-        map.put(newLevelCode, moveNode);
-        if(listMoveChildren!=null && listMoveChildren.size()>0){
-            //更新移动节点子节点的节点层级和节点编码
-            for(int i=0;i<listMoveChildren.size();i++){
-            	NodeTo node=listMoveChildren.get(i);
-            	node.setLvl(node.getLvl()+desLvl-moveLvl+1);
-            	node.setLvlCode(node.getLvlCode().replaceFirst(moveLvlcode, newLevelCode));
-            	map.put(node.getLvlCode(), node);	
-            }
-        }
-        //更新到redis中
-        hasOps.putAll(tempId, map); 
-        return newLevelCode;
-    }
     //根据层级编码查询所有子节点
     public List<NodeTo> getChildNode(String key,String levelCode){
         List<NodeTo> list=new ArrayList<NodeTo>();
