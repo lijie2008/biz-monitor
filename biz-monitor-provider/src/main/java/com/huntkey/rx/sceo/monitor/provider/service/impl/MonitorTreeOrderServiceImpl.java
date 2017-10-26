@@ -183,8 +183,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         }
     }
     
-    @Override
-    public JSONArray getResourceText(JSONArray resources, String classId, String edmId){
+    private JSONArray getResourceText(JSONArray resources, String classId, String edmId){
         
         JSONArray textRes = new JSONArray();
         

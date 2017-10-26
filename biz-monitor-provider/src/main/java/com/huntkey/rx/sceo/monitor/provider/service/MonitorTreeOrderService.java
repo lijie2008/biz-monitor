@@ -30,12 +30,10 @@ public interface MonitorTreeOrderService {
     
     String addOtherNode(String key);
 
-    String store(String key);
-
     String save(String key);
-
-    RevokedTo revoke(String key);
     
-    JSONArray getResourceText(JSONArray resources, String classId, String edmId);
+    RevokedTo revoke(String key);
+
+    String store(String key);
 }
 

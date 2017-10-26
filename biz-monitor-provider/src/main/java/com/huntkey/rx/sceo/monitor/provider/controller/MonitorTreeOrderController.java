@@ -118,8 +118,8 @@ public class MonitorTreeOrderController {
      * @param key 临时单Key
      * @return
      */
-    @GetMapping("/other")
     @Revoked(type=OperateType.NODE)
+    @GetMapping("/other")
     public Result addOtherNode(@RequestParam @NotBlank(message="临时单Key不能为空") 
                                @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单Key格式不正确") @Revoked(key="key") String key){
        

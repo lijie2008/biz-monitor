@@ -82,6 +82,7 @@ public class RevokedAspect {
         if(revoked.type() == OperateType.QUERY){
             data.put("data", result.getData());
             data.put("revoke", hashOps.size(key+REVOKE_KEY));
+            result.setData(data);
             return;
         }
         String lvlCode = args.getString(LVLCODE);
@@ -99,9 +100,11 @@ public class RevokedAspect {
         
         listOps.leftPush(key+REVOKE_KEY, to);
         
-        data.put("data", result.getData());
-        data.put("revoke", hashOps.size(key+REVOKE_KEY));
-        result.setData(data);
+        if(OperateType.DETAIL == revoked.type()){
+            data.put("data", result.getData());
+            data.put("revoke", hashOps.size(key+REVOKE_KEY));
+            result.setData(data);
+        }
     }
     
     /**
@@ -126,7 +129,7 @@ public class RevokedAspect {
                     Revoked revoked = (Revoked)types[i][j];
                     Object arg = point.getArgs()[i];
                     
-                    if(arg instanceof java.lang.String){
+                    if(!StringUtil.isNullOrEmpty(revoked.key())){
                         obj.put(revoked.key(), (String)point.getArgs()[i]);
                     }else{
                         JSONObject node = JSON.parseObject(JSON.toJSONString(arg));
