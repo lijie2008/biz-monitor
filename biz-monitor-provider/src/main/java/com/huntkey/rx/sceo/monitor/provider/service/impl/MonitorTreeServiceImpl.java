@@ -86,8 +86,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                     JSONObject temp = versionArray.getJSONObject(i);
                     JSONObject version = new JSONObject();
                     version.put("versionCode", temp.getString("motr_ver_code"));
-                    version.put("beginTime", formatDateStr(temp.getString("motr_beg"),Constant.YYYY_MM_DD));
-                    version.put("endTime", formatDateStr(temp.getString("motr_end"),Constant.YYYY_MM_DD));
+                    version.put("beginTime", formatDateStr(new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(temp.getLong("motr_beg"))),Constant.YYYY_MM_DD));
+                    version.put("endTime", formatDateStr(new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(temp.getLong("motr_end"))),Constant.YYYY_MM_DD));
                     version.put("rootNodeId", temp.getString("motr_root_id"));
                     versions.add(version);
                 }
@@ -107,22 +107,25 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             for(String edmName : edmNames){
                 SearchParam requestParams = new SearchParam(edmName);
                 
-                String characters[] = new String[] { "moni_node_no", "moni_node_name", "moni_beg", "moni_end" };
+                String characters[] = new String[] { "id","moni_node_no", "moni_node_name", "moni_beg", "moni_end" };
                 requestParams.addColumns(characters);
-                requestParams.addSortParam(new SortNode("moni_end",SortType.ASC));
-                requestParams.addCondition(new ConditionNode("moni_lvl_code", OperatorType.Equals, ROOT_LVL_CODE));
-                requestParams.addCondition(new ConditionNode("moni_lvl", OperatorType.Equals, ROOT_LVL));
-                requestParams.addCondition(new ConditionNode("moni_beg",OperatorType.LessEquals,versions.getJSONObject(i).getString("motr_beg")));
-                requestParams.addCondition(new ConditionNode("moni_end", OperatorType.GreaterEquals, versions.getJSONObject(i).getString("motr_end")));
-                
+                requestParams
+                .addSortParam(new SortNode("moni_end",SortType.ASC))
+                .addCond_equals("moni_lvl_code", ROOT_LVL_CODE)
+                .addCond_equals("moni_lvl", ROOT_LVL);
 
                 if (!StringUtil.isNullOrEmpty(treeName)) 
-                    requestParams.addCondition(new ConditionNode("moni_node_name", OperatorType.Like, treeName));
+                    requestParams.addCond_like("moni_node_name", treeName);
                 
                 // ORM暂不支持or查询，先只根据失效时间过滤
                 if (!StringUtil.isNullOrEmpty(endTime)) {
-                    requestParams.addCondition(new ConditionNode("moni_beg",OperatorType.LessEquals,endTime));
-                    requestParams.addCondition(new ConditionNode("moni_end", OperatorType.GreaterEquals, endTime));
+                    requestParams
+                    .addCond_lessOrEquals("moni_beg", endTime)
+                    .addCond_greaterOrEquals("moni_end", endTime);
+                }else{
+                    requestParams
+                    .addCond_greaterOrEquals("moni_beg", versions.getJSONObject(i).getString("beginTime") + Constant.STARTTIME)
+                    .addCond_lessOrEquals("moni_end", versions.getJSONObject(i).getString("endTime")+Constant.ENDTIME);
                 }
                 
                 Result treesResult = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
@@ -137,15 +140,15 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                             JSONObject tree = new JSONObject();
                             tree.put("rootNodeId", temp.getString("id"));
                             tree.put("rootNodeName", temp.getString("moni_node_name"));
-                            tree.put("beginTime", formatDateStr(temp.getString("moni_beg"),Constant.YYYY_MM_DD));
-                            tree.put("endTime", formatDateStr(temp.getString("moni_end"),Constant.YYYY_MM_DD));
+                            tree.put("beginTime", formatDateStr(new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(temp.getLong("moni_beg"))),Constant.YYYY_MM_DD));
+                            tree.put("endTime", formatDateStr(new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(temp.getLong("moni_end"))),Constant.YYYY_MM_DD));
                             tree.put("rootEdmcNameEn", edmName);
                             
                             JSONArray rootNodes = version.getJSONArray("rootNodes") == null ? new JSONArray():version.getJSONArray("rootNodes");
                             rootNodes.add(tree);
                             version.put("rootNodes", rootNodes);
 
-                            if(temp.getString("id").equals(version.getString("rootNodeId")))
+                            if(version.getString("rootNodeId").equals(temp.getString("id")))
                                 version.put("rootNodeName", temp.getString("moni_node_name"));
                         }
                     }
@@ -173,13 +176,13 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         return monitorClassesResult;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public JSONObject getMonitorTreeNodes(String rootEdmcNameEn, String searchDate, String rootNodeId) {
         
         JSONObject nodeRet = new JSONObject();
         
-    	searchDate=searchDate+" 00:00:00";
+    	searchDate=searchDate+Constant.STARTTIME;
+    	
     	// 需要确定必须从哪里开始查-- 有根节点id 必须根据edmcNameEn 查一次就可以
     	String[] edmNames = null;
     	if(StringUtil.isNullOrEmpty(rootNodeId))
@@ -196,16 +199,16 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             .addColumns(characters)
             .addSortParam(new SortNode("moni_lvl",SortType.ASC))
             .addSortParam(new SortNode("moni_lvl_code",SortType.ASC))
-            .addCondition(new ConditionNode("moni_beg", OperatorType.LessEquals, searchDate))
-            .addCondition(new ConditionNode("moni_end", OperatorType.Greater, searchDate));
+            .addCond_lessOrEquals("moni_beg", searchDate)
+            .addCond_greater("moni_end", searchDate);
             
             if (StringUtil.isNullOrEmpty(rootNodeId)) 
                 requestParams
-                .addCondition(new ConditionNode("moni_lvl", OperatorType.Equals, ROOT_LVL))
-                .addCondition(new ConditionNode("moni_lvl_code", OperatorType.Equals, ROOT_LVL_CODE));
-                       
+                .addCond_equals("moni_lvl", ROOT_LVL)
+                .addCond_equals("moni_lvl_code", ROOT_LVL_CODE);
             else 
-                requestParams.addCondition(new ConditionNode("id", OperatorType.Equals, rootNodeId));
+                requestParams
+                .addCond_equals(Constant.ID, rootNodeId);
 
             Result rootNodeResult = serviceCenterClient
                     .queryServiceCenter(requestParams.toJSONString());
@@ -226,8 +229,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                     .addColumns(characters)
                     .addSortParam(new SortNode("moni_lvl",SortType.ASC))
                     .addSortParam(new SortNode("moni_lvl_code",SortType.ASC))
-                    .addCondition(new ConditionNode("moni_beg", OperatorType.LessEquals, searchDate))
-                    .addCondition(new ConditionNode("moni_end", OperatorType.Greater, searchDate))
+                    .addCond_lessOrEquals("moni_beg", searchDate)
+                    .addCond_greater("moni_end", searchDate)
                     .addCond_like("moni_lvl_code", ROOT_LVL_CODE);
                     
                     Result allResult = serviceCenterClient.queryServiceCenter(params.toJSONString());
@@ -236,7 +239,10 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                         throw new ServiceException(allResult.getErrMsg());
                     } else {
                         nodeRet.put("edmName", edmName);
-                        nodeRet.put("nodes", new JSONArray((List<Object>) allResult.getData()));
+                        if(allResult.getData() != null)
+                            nodeRet.put("nodes", JSONObject.parseObject(JSONObject.toJSONString(allResult.getData())).getJSONArray("dataset"));
+                        else
+                            nodeRet.put("nodes", null);
                         return nodeRet;
                     }
 
