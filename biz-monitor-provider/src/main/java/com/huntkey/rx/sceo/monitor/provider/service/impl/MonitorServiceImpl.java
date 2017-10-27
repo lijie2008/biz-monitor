@@ -240,7 +240,7 @@ public class MonitorServiceImpl implements MonitorService {
                 JSONArray arry = JSONObject.parseObject(JSONObject.toJSONString(orderRes.getData()))
                         .getJSONArray(Constant.DATASET);
                 if(arry != null && arry.size() == 1)
-                    classId = arry.getJSONObject(0).getString(ID);
+                    classId = arry.getJSONObject(0).getString("mtor_cls_id");
             }
         }else
             new ServiceException(orderRes.getErrMsg());
@@ -264,7 +264,7 @@ public class MonitorServiceImpl implements MonitorService {
                     reParams.addCond_greater("mtor_end", validDate);
                 }
                 
-                Result nodesRes = client.queryServiceCenter(params.toJSONString());
+                Result nodesRes = client.queryServiceCenter(reParams.toJSONString());
                 
                 JSONArray nodes = null;
                 if(nodesRes.getRetCode() == Result.RECODE_SUCCESS){

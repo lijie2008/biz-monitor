@@ -55,7 +55,7 @@ public class NodeTo implements Serializable{
     
     private int lvl;
     
-    private int mtorEnum;
+    private String mtorEnum;
     
     private List<ResourceTo> resources;
     
@@ -147,11 +147,11 @@ public class NodeTo implements Serializable{
         this.lvl = lvl;
     }
 
-    public int getMtorEnum() {
+    public String getMtorEnum() {
         return mtorEnum;
     }
 
-    public void setMtorEnum(int mtorEnum) {
+    public void setMtorEnum(String mtorEnum) {
         this.mtorEnum = mtorEnum;
     }
 
@@ -244,7 +244,7 @@ public class NodeTo implements Serializable{
             node.setAssit(to.getString("mtor_assit"));
             node.setIndexConf(to.getString("mtor_index_conf"));
             node.setSeq(Double.valueOf(to.getString("mtor_seq")));
-            node.setMtorEnum(Integer.valueOf(to.getString("mtor_enum")));
+            node.setMtorEnum(to.getString("mtor_enum"));
             node.setLvl(Integer.valueOf(to.getString("mtor_lvl")));
             node.setLvlCode(to.getString("mtor_lvl_code"));
             node.setRelateCnd(to.getString("mtor_relate_cnd"));
