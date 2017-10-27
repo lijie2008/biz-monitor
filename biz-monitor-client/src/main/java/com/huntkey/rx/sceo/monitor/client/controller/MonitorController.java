@@ -56,7 +56,7 @@ public class MonitorController {
     @RequestMapping(value = "/checkOrder")
     public Result checkOrder(@RequestParam(value = "classId") @NotBlank(message="监管类ID不能为空") String classId,
                              @RequestParam(value = "rootId",defaultValue="") String rootId,
-                             @RequestParam(value = "type") @Range(min=1,max=2) @NotBlank(message="操作类型不能为空") int type){
+                             @RequestParam(value = "type") @Range(min=1,max=2)  int type){
         return monitorClient.checkOrder(classId,rootId,type);
     }
     
