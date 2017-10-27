@@ -360,6 +360,25 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         return formatDateStr;
     }
     
+    @Override
+    public JSONArray searchResourceObj(String resourceClassId, String resourceValue) {
+        Result resourcesResult = serviceCenterClient.searchResourceObj(resourceClassId,
+                resourceValue);
+        if (resourcesResult.getRetCode() == Result.RECODE_SUCCESS) {
+            if (resourcesResult.getData() != null) {
+                @SuppressWarnings("unchecked")
+                JSONArray childrenArray = new JSONArray((List<Object>) resourcesResult.getData());
+                return childrenArray;
+            } else {
+            	return null;
+            }
+        } else {
+        	LOG.info(resourcesResult.getErrMsg());
+            throw new ServiceException(resourcesResult.getErrMsg());
+        }
+    }
+    
+    
     
     /**
      * getChileNodes:根据节点id查询其子节点信息
@@ -409,22 +428,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
 
         return null;
     }
-
-    @Override
-    public JSONArray searchResourceObj(String resourceClassId, String resourceValue) {
-        Result resourcesResult = serviceCenterClient.searchResourceObj(resourceClassId,
-                resourceValue);
-        if (resourcesResult.getRetCode() == Result.RECODE_SUCCESS) {
-            if (resourcesResult.getData() != null) {
-                @SuppressWarnings("unchecked")
-                JSONArray childrenArray = new JSONArray((List<Object>) resourcesResult.getData());
-                return childrenArray;
-            } else {
-            	return null;
-            }
-        } else {
-        	LOG.info(resourcesResult.getErrMsg());
-            throw new ServiceException(resourcesResult.getErrMsg());
-        }
-    }
+    
+    
+    
+    
 }
