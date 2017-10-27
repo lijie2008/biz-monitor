@@ -111,8 +111,9 @@ public class MonitorServiceImpl implements MonitorService {
                 if(arry != null && arry.size() == 1)
                     order = arry.getJSONObject(0);
 	        }
-	    }else
-	        new ServiceException(result.getErrMsg());
+	    }else{
+	     throw new ServiceException(result.getErrMsg());
+	    }
 	    
 	    // 单据中不存在当前树的临时单
 	    if(order == null)
@@ -157,12 +158,14 @@ public class MonitorServiceImpl implements MonitorService {
 	                            }
 	                        }else
                                 ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(), ErrorMessage._60003.getMsg());
-	                    }else
-	                        new ServiceException(nodes.getErrMsg());
+	                    }else{
+	                    	throw new ServiceException(nodes.getErrMsg());
+	                    }
 	                }
 	            }
-	    }else
-	        new ServiceException(rootNode.getErrMsg());
+	    }else{
+	    	throw new ServiceException(rootNode.getErrMsg());
+	    }
 	    
 	    String key = order.getString(ID)+KEY_SEP+classId;
 	    String revokeKey = key + REVOKE_KEY;
@@ -242,8 +245,9 @@ public class MonitorServiceImpl implements MonitorService {
                 if(arry != null && arry.size() == 1)
                     classId = arry.getJSONObject(0).getString("mtor_cls_id");
             }
-        }else
-            new ServiceException(orderRes.getErrMsg());
+        }else{
+        	throw new ServiceException(orderRes.getErrMsg());
+        }
         
         if(StringUtil.isNullOrEmpty(classId))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), ErrorMessage._60005.getMsg());
@@ -272,8 +276,9 @@ public class MonitorServiceImpl implements MonitorService {
                         nodes = JSONObject.parseObject(JSONObject.toJSONString(nodesRes.getData()))
                                 .getJSONArray(Constant.DATASET);
                     }
-                }else
-                    new ServiceException(nodesRes.getErrMsg());
+                }else{
+                	throw new ServiceException(nodesRes.getErrMsg());
+                }
                 
                 if(nodes == null || nodes.isEmpty())
                     return list;
@@ -324,8 +329,9 @@ public class MonitorServiceImpl implements MonitorService {
                             if(bk_set != null && !bk_set.isEmpty())
                                 to.put("mtor_bk_set", bk_set);
                         }
-                    }else
-                        new ServiceException(mtor_bk_set.getErrMsg());
+                    }else{
+                    	throw new ServiceException(mtor_bk_set.getErrMsg());
+                    }
                 }
                 
                 list = NodeTo.setValue(nodes);
@@ -378,9 +384,7 @@ public class MonitorServiceImpl implements MonitorService {
         String rootId=StringUtil.isNullOrEmpty(addMonitorTreeTo.getRootId()) ? NULL : addMonitorTreeTo.getRootId();
         String rootEdmcNameEn = addMonitorTreeTo.getRootEdmcNameEn();
         String tempId=createTemp(classId,ChangeType.ADD.getValue(),"");
-        
         JSONArray nodes = new JSONArray();
-        
         switch(type){
             
             case 1:
@@ -435,8 +439,9 @@ public class MonitorServiceImpl implements MonitorService {
                 params.addAllData(nodes);
                 Result result = client.add(params.toJSONString());
                 
-                if(result.getRetCode() != Result.RECODE_SUCCESS)
-                    new ServiceException(result.getErrMsg());
+                if(result.getRetCode() != Result.RECODE_SUCCESS){
+                	throw new ServiceException(result.getErrMsg());
+                }
             }
         });
         
@@ -460,8 +465,9 @@ public class MonitorServiceImpl implements MonitorService {
                 if(arry != null && arry.size() == 1)
                     return arry.getJSONObject(0).getString(ID)+KEY_SEP+classId;
             }
-        }else
-            new ServiceException(result.getErrMsg());
+        }else{
+        	throw new ServiceException(result.getErrMsg());
+        }
         
         String tempId=createTemp(classId,ChangeType.UPDATE.getValue(),rootId);
         
@@ -506,8 +512,9 @@ public class MonitorServiceImpl implements MonitorService {
                 
                 Result ret = client.add(params.toJSONString());
                 
-                if(ret.getRetCode() != Result.RECODE_SUCCESS)
-                    new ServiceException(ret.getErrMsg());
+                if(ret.getRetCode() != Result.RECODE_SUCCESS){
+                	throw new ServiceException(ret.getErrMsg());
+                }
             }
         });
         
@@ -529,7 +536,7 @@ public class MonitorServiceImpl implements MonitorService {
         temp.put("mtor_order_type", changeType);
         temp.put("mtor_cls_id", classId);
         temp.put("mtor_order_root", rootId);
-        temp.put("adduser", "admin");
+        temp.put("creuser", "admin");
         
         MergeParam params = new MergeParam(MONITORTREEORDER);
         params.addData(temp);
@@ -537,11 +544,14 @@ public class MonitorServiceImpl implements MonitorService {
         Result result = client.add(params.toJSONString());
         
         if(result.getRetCode() == Result.RECODE_SUCCESS){
-            if(result.getData() != null)
-                return JSONObject.toJSONString(result.getData());
-        }else
-            new ServiceException(result.getErrMsg());
-        
+            if(result.getData() != null){
+            	@SuppressWarnings("unchecked")
+				List<String> listRet= (List<String>) result.getData();
+                return listRet!=null?listRet.get(0):"";
+            }
+        }else{
+            throw new ServiceException(result.getErrMsg());
+        }
         return null;
     }
 	
@@ -600,8 +610,9 @@ public class MonitorServiceImpl implements MonitorService {
                 if(nodes != null && nodes.size() == 1)
                     rootNode = nodes.getJSONObject(0);
             }
-        }else
-            new ServiceException(rootResult.getErrMsg());
+        }else{
+        	throw new ServiceException(rootResult.getErrMsg());
+        }
         
         if(rootNode == null)
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), ErrorMessage._60005.getMsg());
@@ -658,8 +669,9 @@ public class MonitorServiceImpl implements MonitorService {
                 nodes = JSONObject.parseObject(JSONObject.toJSONString(result.getData()))
                         .getJSONArray(Constant.DATASET);
             }
-        }else
-            new ServiceException(result.getErrMsg());
+        }else{
+        	throw new ServiceException(result.getErrMsg());
+        }
         
         if(nodes == null || nodes.isEmpty())
             return nodes;
@@ -907,11 +919,11 @@ public class MonitorServiceImpl implements MonitorService {
                 node.setResources(resourceList);
             }else{
                 logger.info("deleteNodeResource方法==>层级编码为："+lvlCode+"的节点下不存在资源!!!");
-                new ServiceException("deleteNodeResource方法==>层级编码为："+lvlCode+"的节点下不存在资源!!!");
+                throw new ServiceException("deleteNodeResource方法==>层级编码为："+lvlCode+"的节点下不存在资源!!!");
             }
         }else{
             logger.info("deleteNodeResource方法==>未找到节点!!!");
-            new ServiceException("deleteNodeResource方法==>未找到节点!!!");
+            throw new ServiceException("deleteNodeResource方法==>未找到节点!!!");
         }
         return resourceId;
     }
@@ -937,7 +949,7 @@ public class MonitorServiceImpl implements MonitorService {
             resourceList.add(resource);
         }else{
             logger.info("addResource方法==>未找到节点!!!");
-            new ServiceException("addResource方法==>未找到节点!!!");
+            throw new ServiceException("addResource方法==>未找到节点!!!");
         }
         return resourceId;
     }
