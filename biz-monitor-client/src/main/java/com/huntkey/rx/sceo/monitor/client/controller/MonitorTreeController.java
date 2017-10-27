@@ -33,7 +33,7 @@ public class MonitorTreeController {
     @GetMapping("/trees")
     public Result getMonitorTrees(@RequestParam(required = false) String treeName,
                                   @RequestParam @NotBlank(message = "类英文名不能为空") String edmcNameEn,
-                                  @RequestParam @NotBlank(message = "edmid 不能为空") String edmId,
+                                  @RequestParam @NotBlank(message = "edmId 不能为空") String edmId,
                                   @RequestParam(required = false) String beginTime,
                                   @RequestParam(required = false) String endTime) {
         Result result = treeClient.getMonitorTrees(treeName, edmcNameEn, edmId, beginTime, endTime);
