@@ -384,9 +384,7 @@ public class MonitorServiceImpl implements MonitorService {
         String rootId=StringUtil.isNullOrEmpty(addMonitorTreeTo.getRootId()) ? NULL : addMonitorTreeTo.getRootId();
         String rootEdmcNameEn = addMonitorTreeTo.getRootEdmcNameEn();
         String tempId=createTemp(classId,ChangeType.ADD.getValue(),"");
-        
         JSONArray nodes = new JSONArray();
-        
         switch(type){
             
             case 1:
@@ -546,12 +544,14 @@ public class MonitorServiceImpl implements MonitorService {
         Result result = client.add(params.toJSONString());
         
         if(result.getRetCode() == Result.RECODE_SUCCESS){
-            if(result.getData() != null)
-                return JSONObject.toJSONString(result.getData());
+            if(result.getData() != null){
+            	@SuppressWarnings("unchecked")
+				List<String> listRet= (List<String>) result.getData();
+                return listRet!=null?listRet.get(0):"";
+            }
         }else{
             throw new ServiceException(result.getErrMsg());
         }
-        
         return null;
     }
 	
