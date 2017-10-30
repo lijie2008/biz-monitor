@@ -478,9 +478,8 @@ public class MonitorServiceImpl implements MonitorService {
                 if(arry != null && arry.size() == 1)
                     return arry.getJSONObject(0).getString(ID)+KEY_SEP+classId;
             }
-        }else{
+        }else
         	throw new ServiceException(result.getErrMsg());
-        }
         
         String tempId=createTemp(classId,ChangeType.UPDATE.getValue(),rootId);
         

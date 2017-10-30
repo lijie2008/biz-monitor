@@ -238,10 +238,11 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     
                     String txt = format.toLowerCase();
                     
-                    for (String fieldName : resourceFields) 
-                        txt = txt.replace(fieldName,
-                                ((JSONObject)s).getString(fieldName));
-                    
+                    for (String fieldName : resourceFields){
+                        String f_str = StringUtil.isNullOrEmpty(((JSONObject)s).getString(fieldName))?""
+                                :((JSONObject)s).getString(fieldName);
+                        txt = txt.replace(fieldName,f_str);
+                    }
                     
                     text.put("text",txt);
                     textRes.add(text);

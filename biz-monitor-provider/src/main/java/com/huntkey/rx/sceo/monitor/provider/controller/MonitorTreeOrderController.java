@@ -53,8 +53,7 @@ public class MonitorTreeOrderController {
      * @return
      */
     @GetMapping("/resource")
-    public Result queryNotUsingResource(@RequestParam @NotBlank(message = "临时单Key不能为空")
-                                        @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单key格式不正确") String key,
+    public Result queryNotUsingResource(@RequestParam @NotBlank(message = "临时单Key不能为空") String key,
                                         @RequestParam @NotBlank(message = "节点层级编码不能为空") String lvlCode,
                                         @RequestParam(defaultValue = "1",required=false) int currentPage, 
                                         @RequestParam(defaultValue="20",required=false) int pageSize){
