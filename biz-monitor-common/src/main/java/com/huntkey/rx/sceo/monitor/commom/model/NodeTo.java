@@ -10,11 +10,14 @@
 package com.huntkey.rx.sceo.monitor.commom.model;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 
 /**
  * ClassName:NodeDetail
@@ -250,8 +253,9 @@ public class NodeTo implements Serializable{
             node.setRelateCnd(to.getString("mtor_relate_cnd"));
             node.setType(Integer.valueOf(to.getString("mtor_type")));
             node.setRelateId(to.getString("mtor_relate_id"));
-            node.setBegin(to.getString("mtor_beg"));
-            node.setEnd(to.getString("mtor_end"));
+            
+            node.setBegin(new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(to.getLong("mtor_beg"))));
+            node.setEnd(new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(to.getLong("mtor_end"))));
             
             //TODO 主管人 协管人赋值
             node.setAssitText(null);

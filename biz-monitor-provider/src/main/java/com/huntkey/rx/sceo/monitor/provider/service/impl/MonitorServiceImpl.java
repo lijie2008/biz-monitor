@@ -56,7 +56,6 @@ public class MonitorServiceImpl implements MonitorService {
     private static final String LVSPLIT = ",";
     private static final String ROOT_LVL_CODE = "1,";
     private static final String REVOKE_KEY = "REVOKE";
-    private static final String DATE_TIME = "yyyy-MM-dd HH:mm:ss";
     private static final String MTOR_NODES_EDM = "monitortreeorder.mtor_node_set";
     private static final String KEY_SEP = "-";
     
@@ -110,10 +109,11 @@ public class MonitorServiceImpl implements MonitorService {
                         .getJSONArray(Constant.DATASET);
                 if(arry != null && arry.size() == 1)
                     order = arry.getJSONObject(0);
+                else if(arry != null && arry.size() > 1)
+                    ApplicationException.throwCodeMesg(ErrorMessage._60019.getCode(), ErrorMessage._60019.getMsg());
 	        }
-	    }else{
+	    }else
 	     throw new ServiceException(result.getErrMsg());
-	    }
 	    
 	    // 单据中不存在当前树的临时单
 	    if(order == null)
@@ -145,15 +145,24 @@ public class MonitorServiceImpl implements MonitorService {
 	                            JSONArray nodeIds = JSONObject.parseObject(JSONObject.toJSONString(nodes.getData()))
 	                                    .getJSONArray(Constant.DATASET);
 	                            if(nodeIds != null && !nodeIds.isEmpty()){
+	                                // 删除节点和资源
 	                                MergeParam delNode = new MergeParam(MTOR_NODES_EDM);
 	                                delNode.addAllData(nodeIds);
-	                                client.delete(delNode.toJSONString());
+	                                Result delRet = client.delete(delNode.toJSONString());
+	                                if(delRet.getRetCode() != Result.RECODE_SUCCESS)
+	                                    throw new ServiceException(delRet.getErrMsg());
 	                                
+	                                // 删除临时单
 	                                MergeParam delOrder = new MergeParam(MONITORTREEORDER);
 	                                delOrder.addData(order);
-	                                client.delete(delOrder.toJSONString());
+	                                Result delOr = client.delete(delOrder.toJSONString());
+	                                if(delOr.getRetCode() != Result.RECODE_SUCCESS)
+	                                     throw new ServiceException(delOr.getErrMsg());
+	                                
+	                                // 删除redis中现存的数据
 	                                hasOps.getOperations().delete(order.getString(ID)+ KEY_SEP +classId);
 	                                hasOps.getOperations().delete(order.getString(ID)+ KEY_SEP +classId + REVOKE_KEY);
+	                                
 	                                return obj;
 	                            }
 	                        }else
@@ -163,9 +172,8 @@ public class MonitorServiceImpl implements MonitorService {
 	                    }
 	                }
 	            }
-	    }else{
+	    }else
 	    	throw new ServiceException(rootNode.getErrMsg());
-	    }
 	    
 	    String key = order.getString(ID)+KEY_SEP+classId;
 	    String revokeKey = key + REVOKE_KEY;
@@ -173,13 +181,14 @@ public class MonitorServiceImpl implements MonitorService {
 	    NodeTo root = hasOps.get(key, ROOT_LVL_CODE);
 
 	    // redis中数据 过期 || redis中没有 数据
-	    if(root == null || !getDate(root.getEnd(),DATE_TIME).after(new Date())){
+	    if(root == null || !getDate(root.getEnd(),Constant.YYYY_MM_DD_HH_MM_SS).after(new Date())){
 	        hasOps.getOperations().delete(key);
 	        hasOps.getOperations().delete(revokeKey);
 	        // 临时单中数据同步到redis中
 	        List<NodeTo> list = tempTree(key, "", 1, true);
 	        Map<String,NodeTo> map = new HashMap<String,NodeTo>();
 	        list.stream().forEach(s->{
+	            s.setKey(key);
 	            map.put(s.getLvlCode(), s);
 	        });
 	        
@@ -214,6 +223,7 @@ public class MonitorServiceImpl implements MonitorService {
         List<NodeTo> list = tempTree(key, "", 1, true);
         Map<String,NodeTo> map = new HashMap<String,NodeTo>();
         list.stream().forEach(s->{
+            s.setKey(key);
             map.put(s.getLvlCode(), s);
         });
         
@@ -346,15 +356,15 @@ public class MonitorServiceImpl implements MonitorService {
                 
                 for(String field : fields){
                     NodeTo to= hasOps.get(key, field);
-                    Date begin = getDate(to.getBegin(),DATE_TIME);
-                    Date end = getDate(to.getEnd(),DATE_TIME);
+                    Date begin = getDate(to.getBegin(),Constant.YYYY_MM_DD_HH_MM_SS);
+                    Date end = getDate(to.getEnd(),Constant.YYYY_MM_DD_HH_MM_SS);
                     if(StringUtil.isNullOrEmpty(validDate)){
-                        Date now = getDate(new SimpleDateFormat(YYYY_MM_DD).format(new Date()) + STARTTIME, DATE_TIME);
+                        Date now = getDate(new SimpleDateFormat(YYYY_MM_DD).format(new Date()) + STARTTIME, Constant.YYYY_MM_DD_HH_MM_SS);
                         if(end.after(now))
                             list.add(to);
                     }else{
                         validDate+=" 00:00:00";
-                        Date now = getDate(validDate, DATE_TIME);
+                        Date now = getDate(validDate, Constant.YYYY_MM_DD_HH_MM_SS);
                         if(!begin.after(now) && end.after(now))
                             list.add(to);
                     }
@@ -384,7 +394,9 @@ public class MonitorServiceImpl implements MonitorService {
         String rootId=StringUtil.isNullOrEmpty(addMonitorTreeTo.getRootId()) ? NULL : addMonitorTreeTo.getRootId();
         String rootEdmcNameEn = addMonitorTreeTo.getRootEdmcNameEn();
         String tempId=createTemp(classId,ChangeType.ADD.getValue(),"");
+        
         JSONArray nodes = new JSONArray();
+        
         switch(type){
             
             case 1:
@@ -411,6 +423,7 @@ public class MonitorServiceImpl implements MonitorService {
         Map<String, NodeTo> map = new HashMap<String,NodeTo>();
         
         list.stream().forEach(s->{
+            s.setKey(key);
             map.put(s.getLvlCode(), s);
         });
         
@@ -474,7 +487,7 @@ public class MonitorServiceImpl implements MonitorService {
         JSONArray nodes = copyTree(rootEdmcNameEn,classId, rootId,tempId,ChangeType.UPDATE.getValue(),null,null);
         
         // 将nodes数据放入到redis中
-        String key = tempId + "-" + classId;
+        String key = tempId + KEY_SEP + classId;
         String revokedKey = key + REVOKE_KEY;
         
         List<NodeTo> list = NodeTo.setValue(nodes);
@@ -485,6 +498,7 @@ public class MonitorServiceImpl implements MonitorService {
         Map<String, NodeTo> map = new HashMap<String,NodeTo>();
         
         list.stream().forEach(s->{
+            s.setKey(key);
             map.put(s.getLvlCode(), s);
         });
         
@@ -547,11 +561,11 @@ public class MonitorServiceImpl implements MonitorService {
             if(result.getData() != null){
             	@SuppressWarnings("unchecked")
 				List<String> listRet= (List<String>) result.getData();
-                return listRet!=null?listRet.get(0):"";
+                return listRet!=null ? listRet.get(0) : "";
             }
-        }else{
+        }else
             throw new ServiceException(result.getErrMsg());
-        }
+        
         return null;
     }
 	
@@ -572,8 +586,8 @@ public class MonitorServiceImpl implements MonitorService {
         node.put("mtor_node_def", "未命名节点");
         node.put("mtor_major", NULL);
         node.put("mtor_assit", NULL);
-        node.put("mtor_beg", beginDate);
-        node.put("mtor_end", endDate);
+        node.put("mtor_beg", getDate(beginDate, Constant.YYYY_MM_DD_HH_MM_SS).getTime());
+        node.put("mtor_end", getDate(endDate, Constant.YYYY_MM_DD_HH_MM_SS).getTime());
         node.put("mtor_index_conf", NULL);
         node.put("mtor_seq", 1);
         node.put("mtor_lvl_code", ROOT_LVL_CODE);
@@ -617,8 +631,8 @@ public class MonitorServiceImpl implements MonitorService {
         if(rootNode == null)
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), ErrorMessage._60005.getMsg());
         
-        Date rootBegin = getDate(rootNode.getString("moni_beg"),DATE_TIME);
-        Date rootEnd = getDate(rootNode.getString("moni_end"),DATE_TIME);
+        Date rootBegin = new Date(rootNode.getLong("moni_beg"));
+        Date rootEnd = new Date(rootNode.getLong("moni_end"));
         
         if(!rootBegin.before(rootEnd))
             ApplicationException.throwCodeMesg(ErrorMessage._60009.getCode(), ErrorMessage._60009.getMsg());
@@ -628,18 +642,21 @@ public class MonitorServiceImpl implements MonitorService {
         
         ChangeType type = ChangeType.valueOf(changeType);
         
-        Date now = getDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date())+STARTTIME,DATE_TIME);
+        Date now = getDate(new SimpleDateFormat(Constant.YYYY_MM_DD).format(new Date())+STARTTIME,Constant.YYYY_MM_DD_HH_MM_SS);
         
         switch (type) {
             
             case ADD:
                 // 正在生效的树复制                      moni_beg  <= now < moni_end
-                if(!rootBegin.after(new Date()) && rootEnd.after(new Date())){
-                    params.addCond_lessOrEquals("moni_beg", new SimpleDateFormat("yyyy-MM-dd").format(new Date())+STARTTIME);
-                    params.addCond_greater("moni_end", new SimpleDateFormat("yyyy-MM-dd").format(new Date())+STARTTIME);
+                if(!rootBegin.after(now) && rootEnd.after(now)){
+                    params.addCond_lessOrEquals("moni_beg", new SimpleDateFormat(Constant.YYYY_MM_DD)
+                            .format(new Date())+STARTTIME);
+                    params.addCond_greater("moni_end", new SimpleDateFormat(Constant.YYYY_MM_DD)
+                            .format(new Date())+STARTTIME);
                 }else{
                     // 历史树和 未来树复制  需要  moni_end = 根节点失效时间
-                    params.addCond_equals("moni_end", rootNode.getString("moni_end"));
+                    params.addCond_equals("moni_end", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
+                            .format(new Date(rootNode.getLong("moni_end"))));
                 }
                 break;
                 
@@ -647,19 +664,21 @@ public class MonitorServiceImpl implements MonitorService {
                 if(!rootEnd.after(now))
                     ApplicationException.throwCodeMesg(ErrorMessage._60009.getCode(), "历史树不能维护");
                 // 维护 时 复制 需要 moni_end > 当前时间
-                params.addCond_greater("moni_end", new SimpleDateFormat("yyyy-MM-dd").format(new Date())+STARTTIME);
+                params.addCond_greater("moni_end", new SimpleDateFormat(Constant.YYYY_MM_DD)
+                        .format(new Date())+STARTTIME);
                 break;
 
             default:
                 ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(), "type类型[" + changeType +"]" +ErrorMessage._60004.getMsg());
         }
         
-        params.addCond_greaterOrEquals("moni_beg", rootNode.getString("moni_beg"));
-        params.addCond_lessOrEquals("moni_end", rootNode.getString("moni_end"));
+        params.addCond_greaterOrEquals("moni_beg", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
+                .format(new Date(rootNode.getLong("moni_beg"))));
+        params.addCond_lessOrEquals("moni_end", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
+                .format(new Date(rootNode.getLong("moni_end"))));
         params.addCond_like("moni_lvl_code", ROOT_LVL_CODE);
         params.addSortParam(new SortNode("moni_lvl", SortType.ASC));
         params.addSortParam(new SortNode("moni_lvl_code", SortType.ASC));
-        
         Result result = client.queryServiceCenter(params.toJSONString());
         
         JSONArray nodes = null;
@@ -733,13 +752,13 @@ public class MonitorServiceImpl implements MonitorService {
             node.put("creuser", CREUSER);
             if(type == ChangeType.ADD){
                 node.put("mtor_type", ChangeType.ADD.getValue());
-                node.put("mtor_beg", beginDate);
-                node.put("mtor_end", endDate);
+                node.put("mtor_beg", getDate(beginDate,Constant.YYYY_MM_DD_HH_MM_SS).getTime());
+                node.put("mtor_end", getDate(endDate,Constant.YYYY_MM_DD_HH_MM_SS).getTime());
             }else{
                 node.put("mtor_type", ChangeType.UPDATE.getValue());
                 node.put("mtor_relate_id", to.getString(ID));
-                node.put("mtor_beg", to.getString("moni_beg"));
-                node.put("mtor_end", to.getString("moni_end"));
+                node.put("mtor_beg", to.getLong("moni_beg"));
+                node.put("mtor_end", to.getLong("moni_end"));
             }
             
             // 资源集 
@@ -1062,7 +1081,7 @@ public class MonitorServiceImpl implements MonitorService {
         newNode.setSeq(Double.parseDouble(arr[arr.length-1]));
         //判断时间 如果父级节点的生效日期小于当前日期  则设置为当天 否则跟父节点的生效日期一直
         if(getDate(beginDate).before(new Date())){
-            SimpleDateFormat format=new SimpleDateFormat(DATE_TIME);
+            SimpleDateFormat format=new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS);
             String nowDate=format.format(new Date());
             newNode.setBegin(nowDate);
         }else{
