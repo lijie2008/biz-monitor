@@ -980,7 +980,7 @@ public class MonitorServiceImpl implements MonitorService {
      * @return 新增节点的层级编码
      * @author fangkun 2017-10-24
      */
-    @Override
+	@Override
     public String addNode(String key,String lvlCode,int type) {
         //如果新增子节点==>获取下级所有子节点==》找到最大子节点==》生成子节点
         //如果新增左节点==>获取本级所有节点==》找到当前节点的左节点==>生成左节点
@@ -988,18 +988,19 @@ public class MonitorServiceImpl implements MonitorService {
     	String newLvlCode=null;
     	String beginDate="";
     	String endDate="";
-    	int level=0;//新节点的层级
-    	
     	//找出父级节点信息
     	String pLvlCode=(type==0?lvlCode:lvlCode.substring(
     			0,lvlCode.substring(0, lvlCode.length()-1).lastIndexOf(",")+1));
+    	NodeTo pNode=hasOps.get(key, pLvlCode);
+    	beginDate=pNode.getBegin();
+    	endDate=pNode.getEnd();
     	if(type==0){//新增子节点
-    		addChildNode(key, pLvlCode);
+    		newLvlCode=addChildNode(key, pLvlCode);
     	}else {//新增左节点
-    		addLRNode(type,key, lvlCode, pLvlCode);
+    		newLvlCode=addLRNode(type,key, lvlCode, pLvlCode);
     	}
     	
-        createNewNode(key,level,newLvlCode,beginDate,endDate);
+        createNewNode(key,newLvlCode.split(LVSPLIT).length,newLvlCode,beginDate,endDate);
         // TODO Auto-generated method stub
         return newLvlCode;
     }
@@ -1012,11 +1013,17 @@ public class MonitorServiceImpl implements MonitorService {
         if(listNodes!=null && listNodes.size()>0){
             NodeTo maxNode=listNodes.get(listNodes.size()-1);
             double seq=maxNode.getSeq();
-            newLvlCode=pLvlCode+(seq+1)+LVSPLIT;
+            newLvlCode=pLvlCode+numberFormat(seq+1)+LVSPLIT;
         }else{//不存在子节点 则直接在当前层级编码后面加,1
             newLvlCode=pLvlCode+"1"+LVSPLIT;
         }
         return newLvlCode;
+    }
+    private String numberFormat(double num){
+    	if(Math.floor(num)==num){
+    		return String.valueOf((int)num);
+    	}
+    	return String.valueOf(num);
     }
     private String addLRNode(int type,String key,String lvlCode,String pLvlCode){
     	//新增节点的层级编码
@@ -1043,14 +1050,14 @@ public class MonitorServiceImpl implements MonitorService {
 	        //如果index为0 ，代表当前节点为左边节点
 	        if(index==0){
 	        	//取0到当前节点编码之间的随机数 并且与层级编码前缀组合成新的层级编码
-	            newLvlCode=pLvlCode+((curNodeEnd-1)+ranNum)+",";
+	            newLvlCode=pLvlCode+numberFormat(curNodeEnd-1+ranNum)+",";
 	        }else{
 	            //取出当前节点的左节点
 	            node=listNodes.get(index-1);
 	            //取出当前节点的层级编码后缀
 	            double lvlCodeLeftEnd=node.getSeq();
 	            newLvlCode=pLvlCode
-	            +(curNodeEnd-lvlCodeLeftEnd-1+ranNum)
+	            +numberFormat(curNodeEnd-lvlCodeLeftEnd-1+ranNum)
 	            +LVSPLIT;
 	        }
         }else{//常见右节点
@@ -1062,7 +1069,7 @@ public class MonitorServiceImpl implements MonitorService {
                 //取出当前节点的右节点
                 node=listNodes.get(index+1);
                 newLvlCode=pLvlCode
-                +(node.getSeq()-curNodeEnd-1+ranNum)
+                +numberFormat(node.getSeq()-curNodeEnd-1+ranNum)
                 +LVSPLIT;
             }
         }
@@ -1081,8 +1088,8 @@ public class MonitorServiceImpl implements MonitorService {
         newNode.setSeq(Double.parseDouble(arr[arr.length-1]));
         //判断时间 如果父级节点的生效日期小于当前日期  则设置为当天 否则跟父节点的生效日期一直
         if(getDate(beginDate).before(new Date())){
-            SimpleDateFormat format=new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS);
-            String nowDate=format.format(new Date());
+            SimpleDateFormat format=new SimpleDateFormat(Constant.YYYY_MM_DD);
+            String nowDate=format.format(new Date())+" 00:00:00";
             newNode.setBegin(nowDate);
         }else{
         	newNode.setBegin(beginDate);

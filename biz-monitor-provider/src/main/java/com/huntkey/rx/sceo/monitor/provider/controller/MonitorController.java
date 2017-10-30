@@ -67,9 +67,8 @@ public class MonitorController {
      * @param type 1 - 从redis中查询 2 - 从临时单表查询
      * @return
      */
-    @Revoked
     @RequestMapping(value = "/tempTree")
-    public Result tempTree(@RequestParam(value = "key") @Revoked(key="key") String key,
+    public Result tempTree(@RequestParam(value = "key")  String key,
                            @RequestParam(value = "validDate") String validDate, 
                            @RequestParam(value = "type", defaultValue="1") int type,
                            @RequestParam(value = "flag", defaultValue="false") boolean flag) {
