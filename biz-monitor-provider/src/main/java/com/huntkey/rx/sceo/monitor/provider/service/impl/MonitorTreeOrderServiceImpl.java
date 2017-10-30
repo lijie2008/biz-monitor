@@ -234,7 +234,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     
                     JSONObject text = new JSONObject();
                     
-                    text.put("id", ((JSONObject)s).getString("id"));
+                    text.put("resId", ((JSONObject)s).getString(Constant.ID));
                     
                     String txt = format.toLowerCase();
                     
@@ -447,7 +447,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         resourceTxt.stream().forEach(s->{
             ResourceTo re = new ResourceTo();
-            re.setResId(((JSONObject)s).getString("id"));
+            re.setResId(((JSONObject)s).getString("resId"));
             re.setText(((JSONObject)s).getString("text"));
             resources.add(re);
         });
