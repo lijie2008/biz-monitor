@@ -167,15 +167,15 @@ public class MonitorTreeOrderController {
      * 
      * store: 临时单入库
      * @author lijie
-     * @param key 临时单Key
+     * @param orderId 临时单orderId
      * @return
      */
-    @RequestMapping("/{key}")
-    public Result store(@PathVariable(value="key") @NotBlank(message="临时单Key不能为空") String key){
+    @RequestMapping("/{orderId}")
+    public Result store(@PathVariable(value="orderId") @NotBlank(message="临时单Id不能为空") String orderId){
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(service.store(key));
+        result.setData(service.store(orderId));
         return result;
     }
     

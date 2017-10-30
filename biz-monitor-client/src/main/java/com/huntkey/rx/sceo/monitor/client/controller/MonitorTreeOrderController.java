@@ -127,9 +127,9 @@ public class MonitorTreeOrderController {
      * @param key 临时单key
      * @return
      */
-    @GetMapping(value="/{key}")
-    public Result store(@PathVariable(value="key") @NotBlank(message="临时单ID不能为空") String key){
-        return service.store(key);
+    @GetMapping(value="/{orderId}")
+    public Result store(@PathVariable(value="orderId") @NotBlank(message="临时单ID不能为空") String orderId){
+        return service.store(orderId);
     }
     
 }

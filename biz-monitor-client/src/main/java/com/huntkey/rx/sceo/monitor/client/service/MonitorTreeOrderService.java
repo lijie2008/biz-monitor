@@ -75,11 +75,11 @@ public interface MonitorTreeOrderService {
      * 
      * store: 临时单入库
      * @author lijie
-     * @param key 临时单key
+     * @param orderId 临时单orderId
      * @return
      */
-    @RequestMapping(value="/nodes/{key}")
-    public Result store(@PathVariable(value="key") String key);
+    @RequestMapping(value="/nodes/{orderId}")
+    public Result store(@PathVariable(value="orderId") String orderId);
     
     /**
      * 

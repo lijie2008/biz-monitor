@@ -114,6 +114,8 @@ public class RevokedAspect {
         
         listOps.leftPush(key+REVOKE_KEY, (RevokedTo)originalMap.get(key+lvlCode));
         
+        originalMap.remove(key+lvlCode);
+        
         if(OperateType.DETAIL == revoked.type()){
             data.put("data", result.getData());
             data.put("revoke", hashOps.size(key+REVOKE_KEY));
