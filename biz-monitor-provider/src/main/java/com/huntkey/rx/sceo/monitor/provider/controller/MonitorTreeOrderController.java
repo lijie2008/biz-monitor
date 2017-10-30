@@ -9,10 +9,12 @@
 
 package com.huntkey.rx.sceo.monitor.provider.controller;
 
+import javax.annotation.Resource;
 import javax.validation.constraints.Pattern;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.ListOperations;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +26,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.constant.ValidBean;
 import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
+import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.provider.config.Revoked;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
 
@@ -41,6 +44,9 @@ public class MonitorTreeOrderController {
     
     @Autowired
     private MonitorTreeOrderService service;
+    
+    @Resource(name="redisTemplate")
+    private ListOperations<String, NodeTo> opsList;
     
     /**
      * 
@@ -133,8 +139,7 @@ public class MonitorTreeOrderController {
      * @return
      */
     @RequestMapping("/save/{key}")
-    public Result save(@PathVariable(value="key") @NotBlank(message="临时单Key不能为空") 
-                        @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单Key格式不正确") String key){
+    public Result save(@PathVariable(value="key") @NotBlank(message="临时单Key不能为空") String key){
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
@@ -150,8 +155,7 @@ public class MonitorTreeOrderController {
      * @return
      */
     @GetMapping("/revoke/{key}")
-    public Result revoked(@PathVariable(value="key") @NotBlank(message="临时单Key不能为空") 
-                          @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单Key格式不正确") String key){
+    public Result revoked(@PathVariable(value="key") @NotBlank(message="临时单Key不能为空") String key){
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
@@ -167,12 +171,47 @@ public class MonitorTreeOrderController {
      * @return
      */
     @RequestMapping("/{key}")
-    public Result store(@PathVariable(value="key") @NotBlank(message="临时单Key不能为空") 
-                        @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单Key格式不正确") String key){
+    public Result store(@PathVariable(value="key") @NotBlank(message="临时单Key不能为空") String key){
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(service.store(key));
+        return result;
+    }
+    
+    
+    
+    // --------------------------------------------redis操作----------------------------------
+    
+    /**
+     * 
+     * : 查询revoke
+     * @author lijie
+     * @param key 临时单Key
+     * @return
+     */
+    @GetMapping("/key")
+    public Result query(@RequestParam(value="key") @NotBlank(message="临时单Key不能为空") String key){
+       
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(opsList.range(key, 0, opsList.size(key)));
+        return result;
+    }
+    
+    /**
+     * 
+     * : 删除revoke
+     * @author lijie
+     * @param key 临时单Key
+     * @return
+     */
+    @GetMapping("/del")
+    public Result del(@RequestParam(value="key") @NotBlank(message="临时单Key不能为空") String key){
+       
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        opsList.getOperations().delete(key);
         return result;
     }
 }

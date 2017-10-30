@@ -12,11 +12,14 @@ package com.huntkey.rx.sceo.monitor.provider.config;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Resource;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -33,6 +36,7 @@ import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
+import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 
 /**
  * ClassName:RevokedAspect 与撤销有关的切面信息
@@ -49,6 +53,8 @@ public class RevokedAspect {
     
     private static final String KEY = "key";
     private static final String LVLCODE = "lvlCode";
+    
+    private static final Map<String,Object> originalMap = new ConcurrentHashMap<String, Object>();
     
     @Resource(name="redisTemplate")
     private HashOperations<String,String,NodeTo> hashOps;
@@ -67,26 +73,14 @@ public class RevokedAspect {
 
         if(StringUtil.isNullOrEmpty(key))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), "临时单key" + ErrorMessage._60005.getMsg());
-
-        if(OperateType.DETAIL == revoked.type() && StringUtil.isNullOrEmpty(lvlCode))
-            ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(), "lvlCode" + ErrorMessage._60004.getMsg());
-    }
-    
-    // 服务正常完成后
-    @AfterReturning(value="@annotation(revoked)",argNames="revoked,result",returning = "result")
-    public void serviceEnd(JoinPoint point, Revoked revoked,Result result){
         
-        JSONObject data = new JSONObject();
-        JSONObject args = getKey(point);
-        String key = args.getString(KEY);
-        if(revoked.type() == OperateType.QUERY){
-            data.put("data", result.getData());
-            data.put("revoke", hashOps.size(key+REVOKE_KEY));
-            result.setData(data);
+        if(OperateType.QUERY == revoked.type())
             return;
-        }
-        String lvlCode = args.getString(LVLCODE);
         
+        if(OperateType.DETAIL == revoked.type() && StringUtil.isNullOrEmpty(lvlCode))
+            ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(), LVLCODE + ErrorMessage._60004.getMsg());
+        
+        // 提前保留一份记录
         List<NodeTo> nodes = hashOps.values(key);
         
         RevokedTo to = new RevokedTo();
@@ -97,14 +91,48 @@ public class RevokedAspect {
             to.setCode(lvlCode);
         else
             to.setCode(key);
+        originalMap.put(key+lvlCode, to);
+    }
+    
+    // 服务正常完成后
+    @AfterReturning(value="@annotation(revoked)",argNames="revoked,result",returning = "result")
+    public void serviceEnd(JoinPoint point, Revoked revoked,Result result){
         
-        listOps.leftPush(key+REVOKE_KEY, to);
+        JSONObject data = new JSONObject();
+        JSONObject args = getKey(point);
+        
+        String key = args.getString(KEY);
+        
+        if(revoked.type() == OperateType.QUERY){
+            data.put("data", result.getData());
+            data.put("revoke", hashOps.size(key+REVOKE_KEY));
+            result.setData(data);
+            return;
+        }
+        
+        String lvlCode = args.getString(LVLCODE);
+        
+        listOps.leftPush(key+REVOKE_KEY, (RevokedTo)originalMap.get(key+lvlCode));
         
         if(OperateType.DETAIL == revoked.type()){
             data.put("data", result.getData());
             data.put("revoke", hashOps.size(key+REVOKE_KEY));
             result.setData(data);
         }
+    }
+    
+    
+    @AfterThrowing(value="@annotation(revoked)", throwing="e")
+    public void serviceException(JoinPoint point, Revoked revoked,Exception e){
+        
+        JSONObject args = getKey(point);
+        
+        String key = args.getString(KEY);
+        String lvlCode = args.getString(LVLCODE);
+        
+        if(!JsonUtil.isEmpity(key))
+            originalMap.remove(key+lvlCode);
+        
     }
     
     /**
