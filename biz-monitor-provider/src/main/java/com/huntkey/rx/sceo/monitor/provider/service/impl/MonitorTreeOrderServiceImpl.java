@@ -467,13 +467,30 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         return key;
     }
-
+    
     @Override
-    public String store(String key) {
+    public RevokedTo revoke(String key) {
         
-        return key;
+        String revoke_key = key+REVOKE_KEY;
+        
+        if (listOps.size(revoke_key) == 0) 
+            ApplicationException.throwCodeMesg(ErrorMessage._60011.getCode(), ErrorMessage._60011.getMsg());
+        
+        RevokedTo revoke = listOps.leftPop(revoke_key);
+        
+        Map<String, NodeTo> nodes = new HashMap<String, NodeTo>();
+        
+        revoke.getNodes().stream().forEach(s->{
+            nodes.put(s.getLvlCode(), s);
+        });
+        
+        hashOps.delete(key, hashOps.keys(key));
+        hashOps.putAll(key, nodes);
+        revoke.setNodes(null);
+        
+        return revoke;
     }
-
+    
     @Override
     public String save(String key) {
         
@@ -516,6 +533,11 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         if(addResult.getRetCode() != Result.RECODE_SUCCESS)
             throw new ServiceException(addResult.getErrMsg());
+        
+        return key;
+    }
+    @Override
+    public String store(String key) {
         
         return key;
     }
@@ -572,27 +594,5 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         return savaNodes;
     }
     
-    @Override
-    public RevokedTo revoke(String key) {
-        
-        String revoke_key = key+REVOKE_KEY;
-        
-        if (listOps.size(revoke_key) == 0) 
-            ApplicationException.throwCodeMesg(ErrorMessage._60011.getCode(), ErrorMessage._60011.getMsg());
-        
-        RevokedTo revoke = listOps.leftPop(revoke_key);
-        
-        Map<String, NodeTo> nodes = new HashMap<String, NodeTo>();
-        
-        revoke.getNodes().stream().forEach(s->{
-            nodes.put(s.getLvlCode(), s);
-        });
-        
-        hashOps.delete(key, hashOps.keys(key));
-        hashOps.putAll(key, nodes);
-        revoke.setNodes(null);
-        
-        return revoke;
-    }
 }
 
