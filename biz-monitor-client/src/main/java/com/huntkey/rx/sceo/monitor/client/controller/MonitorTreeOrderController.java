@@ -9,8 +9,6 @@
 
 package com.huntkey.rx.sceo.monitor.client.controller;
 
-import javax.validation.constraints.Pattern;
-
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -49,8 +47,7 @@ public class MonitorTreeOrderController {
      * @return
      */
     @GetMapping("/resource")
-    public Result queryNotUsingResource(@RequestParam @NotBlank(message = "临时单Key不能为空")
-                                        @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单key格式不正确") String key,
+    public Result queryNotUsingResource(@RequestParam @NotBlank(message = "临时单Key不能为空") String key,
                                         @RequestParam @NotBlank(message = "节点层级编码不能为空") String lvlCode, 
                                         @RequestParam(defaultValue = "1",required=false) int currentPage, 
                                         @RequestParam(defaultValue="20",required=false) int pageSize){
@@ -68,8 +65,7 @@ public class MonitorTreeOrderController {
      * @return
      */
     @GetMapping(value="/checkDate")
-    public Result checkNodeResource(@RequestParam @NotBlank(message = "临时单Key不能为空")
-                                    @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单key格式不正确") String key,
+    public Result checkNodeResource(@RequestParam @NotBlank(message = "临时单Key不能为空") String key,
                                     @RequestParam @NotBlank(message="节点层级编码不能为空") String lvlCode,
                                     @RequestParam @NotBlank(message="生效日期不能为空") String startDate,
                                     @RequestParam @NotBlank(message="失效日期不能为空") String endDate){
@@ -96,8 +92,7 @@ public class MonitorTreeOrderController {
      * @return
      */
     @GetMapping("/other")
-    public Result addOtherNode(@RequestParam @NotBlank(message="临时单Key不能为空") 
-                               @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单key格式不正确") String key){
+    public Result addOtherNode(@RequestParam @NotBlank(message="临时单Key不能为空") String key){
         return service.addOtherNode(key);
     }
     
@@ -109,8 +104,7 @@ public class MonitorTreeOrderController {
      * @return
      */
     @RequestMapping("/save/{key}")
-    public Result save(@PathVariable(value="key") @NotBlank(message="临时单Key不能为空") 
-                        @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单Key格式不正确") String key){
+    public Result save(@PathVariable(value="key") @NotBlank(message="临时单Key不能为空") String key){
         return service.save(key);
     }
     
@@ -134,8 +128,7 @@ public class MonitorTreeOrderController {
      * @return
      */
     @GetMapping(value="/{key}")
-    public Result store(@PathVariable(value="key") @NotBlank(message="临时单ID不能为空") 
-                        @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单Key格式不正确") String key){
+    public Result store(@PathVariable(value="key") @NotBlank(message="临时单ID不能为空") String key){
         return service.store(key);
     }
     

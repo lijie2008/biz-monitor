@@ -60,7 +60,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     
     private static final String ADDUSER = "admin";
     
-    private static final String DATE_TIME = "yyyy-MM-dd HH:mm:ss";
     private static final int INVALID = 3;
     private static final String ROOT_LVL_CODE = "1,";
     private static final String SEP = ",";
@@ -130,16 +129,16 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             throw new ServiceException(allResult.getErrMsg());
         
         // 查询在当前节点的时间区间内已被使用的资源信息
-        Date begin = getDate(node.getBegin(),DATE_TIME);
-        Date end = getDate(node.getEnd(),DATE_TIME);
+        Date begin = getDate(node.getBegin(),Constant.YYYY_MM_DD_HH_MM_SS);
+        Date end = getDate(node.getEnd(),Constant.YYYY_MM_DD_HH_MM_SS);
         
         Set<String> usedResources = new HashSet<String>();
         
         for(String field : hashOps.keys(key)){
             
             NodeTo to = hashOps.get(key, field);
-            Date b_date = getDate(to.getBegin(),DATE_TIME);
-            Date e_date = getDate(to.getEnd(),DATE_TIME);
+            Date b_date = getDate(to.getBegin(),Constant.YYYY_MM_DD_HH_MM_SS);
+            Date e_date = getDate(to.getEnd(),Constant.YYYY_MM_DD_HH_MM_SS);
             
             if(to.getType() == INVALID || !b_date.before(end) || !e_date.after(begin))
                 continue;
@@ -261,8 +260,8 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         if(hashOps.size(key) == 0)
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"redis中 键值[" + key + "]"+ErrorMessage._60005.getMsg());
         
-        Date begin = getDate(startDate + " 00:00:00",DATE_TIME);
-        Date end = getDate(endDate + " 23:59:59",DATE_TIME);
+        Date begin = getDate(startDate + Constant.STARTTIME,Constant.YYYY_MM_DD_HH_MM_SS);
+        Date end = getDate(endDate + Constant.ENDTIME,Constant.YYYY_MM_DD_HH_MM_SS);
         
         if(begin.after(end))
             ApplicationException.throwCodeMesg(ErrorMessage._60015.getCode(),ErrorMessage._60015.getMsg());
@@ -277,15 +276,15 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         // 校验当前节点时间区间不能超过上级节点时间区间
         if(level != 1){
             
-            String super_level_code = lvlCode.substring(0,lvlCode.substring(0, lvlCode.length()-1).lastIndexOf(",")+1);
+            String super_level_code = lvlCode.substring(0,lvlCode.substring(0, lvlCode.length()-1).lastIndexOf(SEP)+1);
             NodeTo superNode = hashOps.get(key, super_level_code);
             
             if(superNode == null)
                 ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),
                         "redis中节点层级["+ lvlCode +"], 不存在上级节点" + ErrorMessage._60005.getMsg());
             
-            Date super_begin = getDate(superNode.getBegin(), DATE_TIME);
-            Date super_end = getDate(superNode.getEnd(), DATE_TIME);
+            Date super_begin = getDate(superNode.getBegin(), Constant.YYYY_MM_DD_HH_MM_SS);
+            Date super_end = getDate(superNode.getEnd(), Constant.YYYY_MM_DD_HH_MM_SS);
             
             
             if(super_begin.after(begin) ||  end.after(super_end))
@@ -303,8 +302,8 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 
                 NodeTo to = hashOps.get(key, field);
                 
-                Date t_begin = getDate(to.getBegin(), DATE_TIME);
-                Date t_end = getDate(to.getEnd(), DATE_TIME);
+                Date t_begin = getDate(to.getBegin(), Constant.YYYY_MM_DD_HH_MM_SS);
+                Date t_end = getDate(to.getEnd(), Constant.YYYY_MM_DD_HH_MM_SS);
                 
                 if(to.getType() == INVALID || lvlCode.equals(to.getLvlCode())
                         || !t_begin.before(end) || !t_end.after(begin))
@@ -331,8 +330,8 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
            
            if(to.getLvl() > level && to.getLvlCode().startsWith(lvlCode) && to.getType() != INVALID){
                
-               Date t_begin = getDate(to.getBegin(),DATE_TIME);
-               Date t_end = getDate(to.getEnd(), DATE_TIME);
+               Date t_begin = getDate(to.getBegin(),Constant.YYYY_MM_DD_HH_MM_SS);
+               Date t_end = getDate(to.getEnd(), Constant.YYYY_MM_DD_HH_MM_SS);
                
                // 会导致节点失效
                if(!t_end.after(begin) || !t_begin.before(end))
@@ -415,7 +414,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         JSONArray unusedResources = queryAvailableResource(key);
         
         if(unusedResources == null || unusedResources.isEmpty())
-            return key;
+            ApplicationException.throwCodeMesg(ErrorMessage._60020.getCode(), ErrorMessage._60020.getMsg());
         
         // 取出根节点
         NodeTo rootNode = hashOps.get(key, ROOT_LVL_CODE);
@@ -441,7 +440,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         to.setNodeNo("NODE"+System.currentTimeMillis());
         to.setType(ChangeType.ADD.getValue());
         
-        JSONArray resourceTxt = getResourceText(unusedResources, key.split("-")[1], "");
+        JSONArray resourceTxt = getResourceText(unusedResources, key.split(KEY_SEP)[1], "");
         
         List<ResourceTo> resources = new ArrayList<ResourceTo>();
         

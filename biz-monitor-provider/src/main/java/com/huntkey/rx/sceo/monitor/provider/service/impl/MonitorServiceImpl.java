@@ -267,8 +267,10 @@ public class MonitorServiceImpl implements MonitorService {
             
             case 1:
                 SearchParam reParams = new SearchParam("monitortreeorder.mtor_node_set");
-                reParams.addCond_equals(PID, tempId);
-                reParams.addCond_less("mtor_type", ChangeType.INVALID.toString());
+                reParams.addCond_equals(PID, tempId)
+                        .addSortParam(new SortNode("moni_lvl", SortType.ASC))
+                        .addSortParam(new SortNode("moni_seq", SortType.ASC))
+                        .addCond_less("mtor_type", ChangeType.INVALID.toString());
                 if(StringUtil.isNullOrEmpty(validDate)){
                     validDate=getNowDateStr(YYYY_MM_DD);
                     reParams.addCond_greater("mtor_end", validDate);
@@ -672,12 +674,13 @@ public class MonitorServiceImpl implements MonitorService {
         }
         
         params.addCond_greaterOrEquals("moni_beg", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
-                .format(new Date(rootNode.getLong("moni_beg"))));
-        params.addCond_lessOrEquals("moni_end", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
-                .format(new Date(rootNode.getLong("moni_end"))));
-        params.addCond_like("moni_lvl_code", ROOT_LVL_CODE);
-        params.addSortParam(new SortNode("moni_lvl", SortType.ASC));
-        params.addSortParam(new SortNode("moni_lvl_code", SortType.ASC));
+                .format(new Date(rootNode.getLong("moni_beg"))))
+                .addCond_lessOrEquals("moni_end", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
+                .format(new Date(rootNode.getLong("moni_end"))))
+                .addCond_like("moni_lvl_code", ROOT_LVL_CODE)
+                .addSortParam(new SortNode("moni_lvl", SortType.ASC))
+                .addSortParam(new SortNode("moni_seq", SortType.ASC));
+        
         Result result = client.queryServiceCenter(params.toJSONString());
         
         JSONArray nodes = null;

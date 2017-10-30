@@ -74,8 +74,7 @@ public class MonitorTreeOrderController {
      * @return
      */
     @GetMapping("/checkDate")
-    public Result checkNodeResource(@RequestParam @NotBlank(message = "临时单Key不能为空")
-                                    @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单key格式不正确") String key,
+    public Result checkNodeResource(@RequestParam @NotBlank(message = "临时单Key不能为空") String key,
                                     @RequestParam @NotBlank(message = "节点层级编码不能为空") String lvlCode,
                                     @RequestParam @NotBlank(message = "生效日期不能为空") @Pattern(regexp=ValidBean.DATE_REGX,message="生效日期格式不正确") String startDate, 
                                     @RequestParam @NotBlank(message = "失效日期不能为空") @Pattern(regexp=ValidBean.DATE_REGX,message="失效日期格式不正确") String endDate){
@@ -94,8 +93,7 @@ public class MonitorTreeOrderController {
      * @return
      */
     @GetMapping("/other/resource")
-    public Result checkAvailableResource(@RequestParam @NotBlank(message="临时单Key不能为空") 
-                                         @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单Key格式不正确") String key){
+    public Result checkAvailableResource(@RequestParam @NotBlank(message="临时单Key不能为空") String key){
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
@@ -119,8 +117,7 @@ public class MonitorTreeOrderController {
      */
     @Revoked(type=OperateType.NODE)
     @GetMapping("/other")
-    public Result addOtherNode(@RequestParam @NotBlank(message="临时单Key不能为空") 
-                               @Pattern(regexp ="([0-9]{32}-[0-9]{+})",message = "临时单Key格式不正确") @Revoked(key="key") String key){
+    public Result addOtherNode(@RequestParam @NotBlank(message="临时单Key不能为空") @Revoked(key="key") String key){
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
