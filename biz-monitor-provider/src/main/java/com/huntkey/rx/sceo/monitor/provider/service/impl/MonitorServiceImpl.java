@@ -268,8 +268,8 @@ public class MonitorServiceImpl implements MonitorService {
             case 1:
                 SearchParam reParams = new SearchParam("monitortreeorder.mtor_node_set");
                 reParams.addCond_equals(PID, tempId)
-                        .addSortParam(new SortNode("moni_lvl", SortType.ASC))
-                        .addSortParam(new SortNode("moni_seq", SortType.ASC))
+                        .addSortParam(new SortNode("mtor_lvl", SortType.ASC))
+                        .addSortParam(new SortNode("mtor_seq", SortType.ASC))
                         .addCond_less("mtor_type", ChangeType.INVALID.toString());
                 if(StringUtil.isNullOrEmpty(validDate)){
                     validDate=getNowDateStr(YYYY_MM_DD);
