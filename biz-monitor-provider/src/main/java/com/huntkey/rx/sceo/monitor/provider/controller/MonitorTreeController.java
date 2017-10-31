@@ -89,7 +89,7 @@ public class MonitorTreeController {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         
-        JSONObject obj = monitorTreeService.getMonitorTreeNodes(rootEdmcNameEn,searchDate,rootNodeId);
+        JSONObject obj = monitorTreeService.getMonitorTreeNodes(rootEdmcNameEn,searchDate,"",rootNodeId);
         JSONArray nodes = obj == null ? null : obj.getJSONArray("nodes");
         
         if(nodes == null || nodes.isEmpty())

@@ -16,7 +16,7 @@ public interface MonitorTreeService {
     
     JSONArray getMonitorTrees(String treeName, String edmcNameEn, String edmId, String beginTime, String endTime);
 
-    JSONObject getMonitorTreeNodes(String rootEdmcNameEn, String searchDate, String rootNodeId);
+    JSONObject getMonitorTreeNodes(String rootEdmcNameEn, String startDate, String endDate, String rootNodeId);
 
     JSONArray getNodeResources(String name, List<String> nodes, String edmId, String edmName,int type);
 

@@ -175,13 +175,20 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         }
         return monitorClassesResult;
     }
-
+    
+    /**
+     * 可查询一个时间点的树结构
+     * 也可查一个时间区间内的树结构 
+     * 
+     * 时间必须按照 YYYY-MM-DD传
+     */
     @Override
-    public JSONObject getMonitorTreeNodes(String rootEdmcNameEn, String searchDate, String rootNodeId) {
+    public JSONObject getMonitorTreeNodes(String rootEdmcNameEn, String startDate, String endDate, String rootNodeId) {
         
         JSONObject nodeRet = new JSONObject();
         
-    	searchDate=searchDate+Constant.STARTTIME;
+        startDate = startDate + Constant.STARTTIME;
+        endDate = endDate + Constant.STARTTIME;
     	
     	// 需要确定必须从哪里开始查-- 有根节点id 必须根据edmcNameEn 查一次就可以
     	String[] edmNames = null;
@@ -194,19 +201,25 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     	    //组装参数
     	    SearchParam requestParams = new SearchParam(edmName);
     	    
-            String characters[] = new String[] {"id","moni_node_no", "moni_node_name", "moni_lvl", "moni_lvl_code","moni_seq"};
+            String characters[] = new String[] {"id","moni_node_no", "moni_node_name", "moni_lvl", "moni_lvl_code","moni_seq","moni_beg","moni_end"};
             requestParams
             .addColumns(characters)
             .addSortParam(new SortNode("moni_lvl",SortType.ASC))
-            .addSortParam(new SortNode("moni_lvl_code",SortType.ASC))
-            .addCond_lessOrEquals("moni_beg", searchDate)
-            .addCond_greater("moni_end", searchDate);
+            .addSortParam(new SortNode("moni_lvl_code",SortType.ASC));
+            if(StringUtil.isNullOrEmpty(endDate)){
+                requestParams.addCond_lessOrEquals("moni_beg", startDate)
+                             .addCond_greater("moni_end", startDate);
+                
+            }else{
+                requestParams.addCond_lessOrEquals("moni_beg", startDate)
+                .addCond_greater("moni_end", endDate);
+            }
             
-            if (StringUtil.isNullOrEmpty(rootNodeId)) 
+            if (StringUtil.isNullOrEmpty(rootNodeId)) {
                 requestParams
                 .addCond_equals("moni_lvl", ROOT_LVL)
                 .addCond_equals("moni_lvl_code", ROOT_LVL_CODE);
-            else 
+            }else 
                 requestParams
                 .addCond_equals(Constant.ID, rootNodeId);
 
@@ -229,9 +242,16 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                     .addColumns(characters)
                     .addSortParam(new SortNode("moni_lvl",SortType.ASC))
                     .addSortParam(new SortNode("moni_lvl_code",SortType.ASC))
-                    .addCond_lessOrEquals("moni_beg", searchDate)
-                    .addCond_greater("moni_end", searchDate)
                     .addCond_like("moni_lvl_code", ROOT_LVL_CODE);
+                    
+                    if(StringUtil.isNullOrEmpty(endDate)){
+                        params.addCond_lessOrEquals("moni_beg", startDate)
+                                     .addCond_greater("moni_end", startDate);
+                        
+                    }else{
+                        params.addCond_lessOrEquals("moni_beg", startDate)
+                        .addCond_greater("moni_end", endDate);
+                    }
                     
                     Result allResult = serviceCenterClient.queryServiceCenter(params.toJSONString());
                     
@@ -322,8 +342,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             
             if (rootArray != null && !rootArray.isEmpty()) {
 
-                String lastDate = rootArray.getJSONObject(0).getString("moni_end");
-                DateFormat format =  new SimpleDateFormat("yyyy-MM-dd");
+                String lastDate = new SimpleDateFormat(Constant.YYYY_MM_DD).format(new Date(rootArray.getJSONObject(0).getLong("moni_end")));
+                DateFormat format =  new SimpleDateFormat(Constant.YYYY_MM_DD);
                 try {
                     Date tempDate = format.parse(lastDate);
                     // 存在最大时间区间的记录

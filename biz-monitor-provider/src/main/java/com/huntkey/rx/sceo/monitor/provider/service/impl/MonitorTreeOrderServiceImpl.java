@@ -9,9 +9,7 @@
 
 package com.huntkey.rx.sceo.monitor.provider.service.impl;
 
-import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.ID;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.MONITORTREEORDER;
-import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.PID;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -51,6 +49,7 @@ import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
+import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
 import com.huntkey.rx.sceo.serviceCenter.common.emun.SortType;
 import com.huntkey.rx.sceo.serviceCenter.common.model.MergeParam;
 import com.huntkey.rx.sceo.serviceCenter.common.model.SearchParam;
@@ -85,6 +84,9 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     
     @Autowired
     private MonitorService service;
+    
+    @Autowired
+    private MonitorTreeService mService;
     
     @Resource(name="redisTemplate")
     private HashOperations<String,String,NodeTo> hashOps;
@@ -665,9 +667,9 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 
                 String verNo = null;
                 if(versions == null || versions.isEmpty())
-                    verNo = PRE_VERSION + "0";
+                    verNo = PRE_VERSION + "1";
                 else
-                    verNo = PRE_VERSION + versions.size();
+                    verNo = PRE_VERSION + versions.size() + 1;
                 // 插入版本
                 JSONObject vv = new JSONObject();
                 vv.put("motr_beg", rootNode.getBegin());
@@ -685,7 +687,184 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     throw new ServiceException(rr.getErrMsg());
                 break;
                 
-            case UPDATE: // 修改类型
+            case UPDATE: // 维护类型
+                
+                if(StringUtil.isNullOrEmpty(rootNodeId) || !rootNodeId.equals(rootNode.getRelateId()))
+                    ApplicationException.throwCodeMesg(ErrorMessage._60014.getCode(), "根节点["+ rootNodeId +"]" + ErrorMessage._60014.getMsg());
+                
+                JSONObject r_v = null;
+                
+                for(int i = 0; i < versions.size(); i++){
+                    JSONObject release = versions.getJSONObject(i);
+                    if(rootNodeId != null && rootNodeId.equals(release.getString("motr_root_id"))){
+                        r_v = release;
+                        break;
+                    }
+                }
+                
+                if(StringUtil.isNullOrEmpty(r_v))
+                    ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(), "版本数据" + ErrorMessage._60003.getMsg());
+                
+                SearchParam r_param = new SearchParam(edmName);
+                r_param.addCond_equals(Constant.ID, rootNodeId);
+                
+                Result tRet = client.queryServiceCenter(r_param.toJSONString());
+                
+                JSONObject tRootNode = null;
+                if(tRet.getRetCode() == Result.RECODE_SUCCESS){
+                    JSONArray arry = JSONObject.parseObject(JSONObject.toJSONString(tRet.getData()))
+                            .getJSONArray(Constant.DATASET);
+                    if(arry != null && arry.size() == 1)
+                        tRootNode = arry.getJSONObject(0);
+                }else
+                    throw new ServiceException(tRet.getErrMsg());
+                
+                if(tRootNode == null)
+                    ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), "监管类根节点[" + rootNodeId + "]"+ErrorMessage._60005.getMsg());
+                
+                String t_begin = new SimpleDateFormat(Constant.YYYY_MM_DD).format(new Date(tRootNode.getLong("moni_beg")));
+                String t_end = new SimpleDateFormat(Constant.YYYY_MM_DD).format(new Date(tRootNode.getLong("moni_end")));
+                
+                if(t_end.startsWith(Constant.MAXINVALIDDATE) && 
+                        !rootNode.getEnd().startsWith(Constant.MAXINVALIDDATE)){
+                    MergeParam m_param = new MergeParam("monitortree");
+                    JSONObject obj = new JSONObject();
+                    obj.put("motr_end", rootNode.getEnd());
+                    obj.put(Constant.ID, r_v.getString(Constant.ID));
+                    m_param.addData(obj);
+                    Result s_ret = client.update(m_param.toJSONString());
+                    if(s_ret.getRetCode() != Result.RECODE_SUCCESS)
+                        throw new ServiceException(s_ret.getErrMsg());
+                }
+                
+                JSONObject monitors = mService.getMonitorTreeNodes(edmName, t_begin, t_end, rootNodeId);
+                
+                JSONArray tNodes = monitors.getJSONArray("nodes");
+                
+                if(tNodes == null || tNodes.isEmpty())
+                    ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), "查询节点" + ErrorMessage._60005.getCode());
+                
+                List<String> nodeIds = new ArrayList<String>();
+                for (int i = 0; i < tNodes.size(); i++)
+                    nodeIds.add(tNodes.getJSONObject(i).getString(Constant.ID));
+                
+                JSONArray resources = mService.getNodeResources(null, nodeIds, classId, edmName,1);
+                
+                JSONArray u_nodes = new JSONArray();
+                for(String id : nodeIds){
+                    JSONObject obj = new JSONObject();
+                    obj.put(Constant.ID, id);
+                    obj.put("is_del", 1);
+                    u_nodes.add(obj);
+                }
+                
+                // 更新目标节点状态为失效状态
+                MergeParam n_param = new MergeParam(edmName);
+                n_param.addAllData(u_nodes);
+                Result n_ret = client.update(n_param.toJSONString());
+                if(n_ret.getRetCode() != Result.RECODE_SUCCESS)
+                    throw new ServiceException(n_ret.getErrMsg());
+                
+                if(resources !=null && !resources.isEmpty()){
+                    JSONArray resIds = new JSONArray();
+                    for(int k = 0; k < resources.size(); k++){
+                        JSONObject res = resources.getJSONObject(k);
+                        JSONObject obj = new JSONObject();
+                        obj.put(Constant.ID, res.getString(Constant.ID));
+                        resIds.add(obj);
+                    }
+                    
+                    // 删除目标节点下的资源为失效状态
+                    MergeParam rr_param = new MergeParam(edmName+".moni_res_set");
+                    n_param.addAllData(resIds);
+                    Result rr_ret = client.delete(rr_param.toJSONString());
+                    if(rr_ret.getRetCode() != Result.RECODE_SUCCESS)
+                        throw new ServiceException(rr_ret.getErrMsg());
+                }
+                
+                // 将o_nodes数据插入到正式表中 （这些节点只可能是正在生效 和 未来节点
+                JSONArray ttNodes = setMoni(o_nodes, edmName);
+
+                JSONArray addNodes = new JSONArray();
+                JSONArray updateNodes = new JSONArray();
+                JSONArray addRes = new JSONArray();
+                
+                for(int i = 0; i < ttNodes.size(); i++){
+                    JSONObject node = ttNodes.getJSONObject(i);
+                    Date begin = getDate(node.getString("moni_beg"), Constant.YYYY_MM_DD_HH_MM_SS);
+                    Date now = getDate(new SimpleDateFormat(Constant.YYYY_MM_DD).format(new Date()) + Constant.STARTTIME,
+                            Constant.YYYY_MM_DD_HH_MM_SS);
+                    
+                    String id = node.getString(Constant.ID);
+                    
+                    if(!begin.after(now)) // 正在生效树
+                        node.put("moni_beg", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(now));
+                    
+                    if(StringUtil.isNullOrEmpty(id)) // 新增节点类型
+                        addNodes.add(node);
+                    else{ // 修改节点型 - 资源是新增
+                        JSONArray resArray = node.getJSONArray("moni_res_set");
+                        node.remove("moni_res_set");
+                        updateNodes.add(node);
+                        if(resArray != null && !resArray.isEmpty())
+                            addRes.addAll(resArray);
+                    }
+                }
+                
+                if(!addNodes.isEmpty()){
+                    n_param.addAllData(addNodes);
+                    Result rest = client.add(n_param.toJSONString());
+                    if(rest.getRetCode() != Result.RECODE_SUCCESS)
+                        throw new ServiceException(rest.getErrMsg());
+                }
+                
+                if(!updateNodes.isEmpty()){
+                    n_param.addAllData(updateNodes);
+                    Result rest = client.update(n_param.toJSONString());
+                    if(rest.getRetCode() != Result.RECODE_SUCCESS)
+                        throw new ServiceException(rest.getErrMsg());
+                }
+                
+                if(!addRes.isEmpty()){
+                    MergeParam m_edm = new MergeParam(edmName+".moni_res_set");
+                    m_edm.addAllData(addRes);
+                    Result rest = client.add(m_edm.toJSONString());
+                    if(rest.getRetCode() != Result.RECODE_SUCCESS)
+                        throw new ServiceException(rest.getErrMsg());
+                }
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                if(!new Date(tRootNode.getLong("moni_beg")).after(new Date())){
+                    
+                }
+                
+                
+                
+                // - 拿当前时间 和 根节点的时间做比较  如果 end <= now 失效树 全部加入到历史集
+                // begin >= now 未来树 （将节点的失效时间全部置为当前时间） 入历史集
+                // end >= now 正在生效树 需要筛选节点 begin > now 的节点 未使用 全部移除  未使用节点
+//                                             end >= now 将失效时间全部 置为 now 部分使用节点
+//                                                 已失效的节点 end < now 直接加入
+                // 相反的处理临时单节点数据
+                
                 
                 break;
                 
@@ -695,8 +874,8 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         //临时单中节点信息的清理 - redis中key信息的清理  - 回退信息
         SearchParam allParams = new SearchParam(MTOR_NODES_EDM);
-        allParams.addCond_equals(PID, orderId);
-        allParams.addColumns(new String[]{ID});
+        allParams.addCond_equals(Constant.PID, orderId);
+        allParams.addColumns(new String[]{Constant.ID});
         Result allNodes = client.queryServiceCenter(allParams.toJSONString());
         
         if(allNodes.getRetCode() == Result.RECODE_SUCCESS){
@@ -803,11 +982,17 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             node.put("moni_lvl", to.getLvl());
             node.put("moni_enum", to.getMtorEnum());
             node.put("moni_relate_cnd", to.getRelateCnd());
+            if(!StringUtil.isNullOrEmpty(to.getRelateId())){
+                node.put(Constant.ID, to.getRelateId());
+                node.put("is_del", 0);
+            }
             
             if(to.getResources() != null && !to.getResources().isEmpty() ){
                 JSONArray resources = new JSONArray();
                 for(ResourceTo re : to.getResources()){
                     JSONObject reObj = new JSONObject();
+                    if(!StringUtil.isNullOrEmpty(to.getRelateId()))
+                        reObj.put(Constant.PID, to.getRelateId());
                     reObj.put("moni_res_id", re.getResId());
                     resources.add(reObj);
                 }
@@ -815,7 +1000,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             }
             
             // 特殊树的赋值
-            if(to.getBackSet() != null && !to.getBackSet().isEmpty() && edmName.lastIndexOf("depttree") != -1){
+            if(to.getBackSet() != null && !to.getBackSet().isEmpty() && edmName.endsWith("depttree")){
                 node.put("mdep_beg", to.getBegin());
                 node.put("mdep_end", to.getEnd());
                 for(BackTo bk : to.getBackSet()){
