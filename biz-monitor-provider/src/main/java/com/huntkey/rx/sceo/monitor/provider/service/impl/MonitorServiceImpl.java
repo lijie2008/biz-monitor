@@ -882,6 +882,7 @@ public class MonitorServiceImpl implements MonitorService {
         nodeDetail.setResources(resourceList);
         nodeDetail.setSeq(oldNode.getSeq());
         nodeDetail.setLvl(oldNode.getLvl());
+        nodeDetail.setType(oldNode.getType());
         //操作redis修改
         hasOps.put(key, lvlCode, nodeDetail);
         //修改下级节点失效日期
@@ -1144,7 +1145,7 @@ public class MonitorServiceImpl implements MonitorService {
     @Override
     public String deleteNode(String key,String levelCode,int type) {
         // TODO Auto-generated method stub
-        if(type==1){
+        if(type==0){
             NodeTo node=hasOps.get(key, levelCode);
             if(node!=null){
 	            node.setType(ChangeType.INVALID.getValue());

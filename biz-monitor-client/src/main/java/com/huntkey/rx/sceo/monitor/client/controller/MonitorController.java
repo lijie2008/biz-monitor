@@ -183,7 +183,7 @@ public class MonitorController {
     public Result deleteNode(
             @RequestParam(value = "key") @NotBlank(message = "redis key不能为空") String key,
             @RequestParam(value = "lvlCode") @NotBlank(message = "节点层级编码不能为空") String lvlCode,
-            @RequestParam(value = "type") @Range(min = 0, max = 1, message = "1：节点失效 0：节点删除") int type) {
+            @RequestParam(value = "type") @Range(min = 0, max = 1, message = "1：节点删除 0：节点失效") int type) {
         return monitorClient.deleteNode(key,lvlCode, type);
     }
 
