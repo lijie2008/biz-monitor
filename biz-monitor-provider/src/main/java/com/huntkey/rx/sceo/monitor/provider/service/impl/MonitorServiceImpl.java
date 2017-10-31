@@ -54,6 +54,7 @@ import com.huntkey.rx.sceo.serviceCenter.common.model.SortNode;
 public class MonitorServiceImpl implements MonitorService {
     
     private static final String CREUSER = "admin";
+    private static final String MODUSER = "admin";
     private static final String LVSPLIT = ",";
     private static final String ROOT_LVL_CODE = "1,";
     private static final String REVOKE_KEY = "REVOKE";
@@ -396,6 +397,25 @@ public class MonitorServiceImpl implements MonitorService {
         String classId=addMonitorTreeTo.getClassId();
         String rootId=StringUtil.isNullOrEmpty(addMonitorTreeTo.getRootId()) ? NULL : addMonitorTreeTo.getRootId();
         String rootEdmcNameEn = addMonitorTreeTo.getRootEdmcNameEn();
+        
+        // 检查临时单是否存在
+        SearchParam params = new SearchParam(MONITORTREEORDER);
+        params.addCond_equals("mtor_order_root", rootId);
+        params.addCond_equals("mtor_order_type", String.valueOf(ChangeType.ADD.getValue()));
+        params.addCond_equals("mtor_cls_id", classId);
+        
+        Result result = client.queryServiceCenter(params.toJSONString());
+        
+        if(result.getRetCode() == Result.RECODE_SUCCESS){
+            if(result.getData() != null){
+                JSONArray arry = JSONObject.parseObject(JSONObject.toJSONString(result.getData()))
+                        .getJSONArray(Constant.DATASET);
+                if(arry != null && arry.size() == 1)
+                    return arry.getJSONObject(0).getString(ID)+KEY_SEP+classId;
+            }
+        }else
+            throw new ServiceException(result.getErrMsg());
+        
         String tempId=createTemp(classId,ChangeType.ADD.getValue(),"");
         
         JSONArray nodes = new JSONArray();
@@ -436,6 +456,8 @@ public class MonitorServiceImpl implements MonitorService {
         // TODO 去除多多余的字段
         for(int i = 0; i < nodes.size(); i++){
             JSONObject node = nodes.getJSONObject(i);
+            node.put("moduser", MODUSER);
+            node.put("creuser", CREUSER);
             JSONArray res = node.getJSONArray("mtor_res_set");
             if(res == null || res.isEmpty())
                 continue;
@@ -469,7 +491,7 @@ public class MonitorServiceImpl implements MonitorService {
         
         SearchParam params = new SearchParam(MONITORTREEORDER);
         params.addCond_equals("mtor_order_root", rootId);
-        params.addCond_equals("mtor_order_type", "2");
+        params.addCond_equals("mtor_order_type", String.valueOf(ChangeType.UPDATE.getValue()));
         params.addCond_equals("mtor_cls_id", classId);
         
         Result result = client.queryServiceCenter(params.toJSONString());
@@ -510,6 +532,8 @@ public class MonitorServiceImpl implements MonitorService {
         // TODO 去除多多余的字段
         for(int i = 0; i < nodes.size(); i++){
             JSONObject node = nodes.getJSONObject(i);
+            node.put("moduser", MODUSER);
+            node.put("creuser", CREUSER);
             JSONArray res = node.getJSONArray("mtor_res_set");
             if(res == null || res.isEmpty())
                 continue;
@@ -553,6 +577,7 @@ public class MonitorServiceImpl implements MonitorService {
         temp.put("mtor_cls_id", classId);
         temp.put("mtor_order_root", rootId);
         temp.put("creuser", "admin");
+        temp.put("moduser", MODUSER);
         
         MergeParam params = new MergeParam(MONITORTREEORDER);
         params.addData(temp);
