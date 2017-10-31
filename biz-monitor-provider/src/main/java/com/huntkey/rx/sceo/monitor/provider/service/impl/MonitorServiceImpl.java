@@ -880,6 +880,9 @@ public class MonitorServiceImpl implements MonitorService {
         NodeTo oldNode=hasOps.get(key, lvlCode);
         List<ResourceTo> resourceList=oldNode.getResources();
         nodeDetail.setResources(resourceList);
+        nodeDetail.setSeq(oldNode.getSeq());
+        nodeDetail.setLvl(oldNode.getLvl());
+        nodeDetail.setType(oldNode.getType());
         //操作redis修改
         hasOps.put(key, lvlCode, nodeDetail);
         //修改下级节点失效日期
@@ -1135,7 +1138,7 @@ public class MonitorServiceImpl implements MonitorService {
      * 删除节点
      * @param key redis key
      * @param levelCode 节点层级编码
-     * @param type 删除类型 0 失效 1删除
+     * @param type 删除类型 0 删除 1失效
      * @return levelCode 节点层级编码
      * @author fangkun 2017-10-24
      */
@@ -1144,11 +1147,16 @@ public class MonitorServiceImpl implements MonitorService {
         // TODO Auto-generated method stub
         if(type==0){
             NodeTo node=hasOps.get(key, levelCode);
-            node.setType(ChangeType.INVALID.getValue());
-            //删除原失效节点
-            hasOps.delete(key, levelCode);
-            //新增修改后的失效节点
-            hasOps.put(key, "D"+node.getLvlCode(), node);
+            if(node!=null){
+	            node.setType(ChangeType.INVALID.getValue());
+	            //删除原失效节点
+	            hasOps.delete(key, levelCode);
+	            //新增修改后的失效节点
+	            hasOps.put(key, "D"+node.getLvlCode(), node);
+            }else{
+            	logger.info("该节点不存在！");
+            	throw new ServiceException("该节点不存在！");
+            }
         }else{
             //删除原失效节点
             hasOps.delete(key, levelCode);
