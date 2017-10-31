@@ -192,16 +192,18 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     	
     	// 需要确定必须从哪里开始查-- 有根节点id 必须根据edmcNameEn 查一次就可以
     	String[] edmNames = null;
-    	if(StringUtil.isNullOrEmpty(rootNodeId))
+    	if(StringUtil.isNullOrEmpty(rootNodeId)){
     	    edmNames = new String[]{rootEdmcNameEn,rootEdmcNameEn+MONITOR_HISTORY_SET};
-    	else
+    	}else
     	    edmNames = new String[]{rootEdmcNameEn};
     	
     	for(String edmName : edmNames){
     	    //组装参数
     	    SearchParam requestParams = new SearchParam(edmName);
     	    
-//            String characters[] = new String[] {"id","moni_node_no", "moni_node_name", "moni_lvl", "moni_lvl_code","moni_seq","moni_beg","moni_end"};
+//            String characters[] = new String[] {"id","moni_node_no", "moni_node_name", "moni_node_def", 
+//                    "moni_lvl", "moni_lvl_code","moni_seq","moni_beg","moni_end",
+//                    "moni_index_conf","moni_relate_cnd","moni_enum","moni_major","moni_assit"};
             requestParams
 //            .addColumns(characters)
             .addSortParam(new SortNode("moni_lvl",SortType.ASC))

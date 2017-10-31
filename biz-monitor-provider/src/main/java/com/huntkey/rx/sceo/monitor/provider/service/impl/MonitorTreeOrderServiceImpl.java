@@ -15,6 +15,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -847,42 +848,50 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     
                     if(nn_beg.after(now)) // 未来节点 - 未使用过
                         continue;
-//                    if(!(nn_beg.after(now) || nn_end.before(now)))
-//                        node.put("moni_end", value);
+                    if(!(nn_beg.after(now) || nn_end.before(now))){
+                        Calendar cal = Calendar.getInstance();
+                        cal.setTime(now);
+                        cal.add(Calendar.DATE, -1);
+                        node.put("moni_end", (new SimpleDateFormat(Constant.YYYY_MM_DD)
+                                .format(cal.getTime())) + Constant.ENDTIME);
+                    }else
+                        node.put("moni_end", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(nn_end));
                     
+                    node.put("moni_beg", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(nn_beg));
+                    String id = node.getString(Constant.ID);
+                    node.put(Constant.PID, id);
+                    node.remove(id);
+                    node.put("creuser", CREUSER);
+                    node.put("moduser", MODUSER);
                     
-                        
-                        
+                    JSONArray nodeRes = new JSONArray();
+                    // 当前节点关联的资源
+                    if(resources != null && !resources.isEmpty()){
+                        for(int j = 0; j < resources.size(); j++){
+                            JSONObject reObj = resources.getJSONObject(j);
+                            if(!id.equals(reObj.getString("nodeId")))
+                                continue;
+                            JSONObject res = new JSONObject();
+                            res.put(Constant.PID, id);
+                            res.put("moni_res_id", reObj.getString(Constant.ID));
+                            nodeRes.add(res);
+                        }
+                    }
                     
+                    if(!nodeRes.isEmpty())
+                        node.put("moni_res_set", nodeRes);
+                    
+                    addNodes.add(node);
                 }
-                    
                 
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                // - 拿当前时间 和 根节点的时间做比较  如果 end <= now 失效树 全部加入到历史集
-                // begin >= now 未来树 （将节点的失效时间全部置为当前时间） 入历史集
-                // end >= now 正在生效树 需要筛选节点 begin > now 的节点 未使用 全部移除  未使用节点
-//                                             end >= now 将失效时间全部 置为 now 部分使用节点
-//                                                 已失效的节点 end < now 直接加入
-                // 相反的处理临时单节点数据
-                
+                // 新增历史集
+                if(!addNodes.isEmpty()){
+                    MergeParam hisParam = new MergeParam(edmName+".moni_his_set");
+                    hisParam.addAllData(addNodes);
+                    Result rest = client.add(hisParam.toJSONString());
+                    if(rest.getRetCode() != Result.RECODE_SUCCESS)
+                        throw new ServiceException(rest.getErrMsg());
+                }
                 
                 break;
                 
