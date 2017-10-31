@@ -5,6 +5,7 @@ import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.MONITORTREEOR
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.NULL;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.PID;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.STARTTIME;
+import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.ENDTIME;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.YYYY_MM_DD;
 
 import java.text.DateFormat;
@@ -839,8 +840,10 @@ public class MonitorServiceImpl implements MonitorService {
         String key=nodeDetail.getKey();
         String nodeNo=nodeDetail.getNodeNo();
         String lvlCode=nodeDetail.getLvlCode();
-        String endDate=nodeDetail.getEnd();
-        String beginDate=nodeDetail.getEnd();
+        String endDate=nodeDetail.getEnd()+ENDTIME;
+        nodeDetail.setEnd(endDate);
+        String beginDate=nodeDetail.getBegin()+STARTTIME;
+        nodeDetail.setBegin(beginDate);
         if(StringUtil.isNullOrEmpty(nodeNo)){
             logger.info("不存在当前节点信息！");
             throw new ServiceException("不存在当前节点信息！");
@@ -1059,19 +1062,19 @@ public class MonitorServiceImpl implements MonitorService {
 	            //取出当前节点的层级编码后缀
 	            double lvlCodeLeftEnd=node.getSeq();
 	            newLvlCode=pLvlCode
-	            +numberFormat(curNodeEnd-lvlCodeLeftEnd-1+ranNum)
+	            +numberFormat((curNodeEnd-lvlCodeLeftEnd)*+ranNum+lvlCodeLeftEnd)
 	            +LVSPLIT;
 	        }
         }else{//常见右节点
         	//如果index为最大的 ，代表当前节点没有右边
             if(index==listNodes.size()-1){
             	//如果没有右节点 则在当前结点后缀加1
-                newLvlCode=pLvlCode+(curNodeEnd+1)+LVSPLIT;
+                newLvlCode=pLvlCode+numberFormat(curNodeEnd+1)+LVSPLIT;
             }else{
                 //取出当前节点的右节点
                 node=listNodes.get(index+1);
                 newLvlCode=pLvlCode
-                +numberFormat(node.getSeq()-curNodeEnd-1+ranNum)
+                +numberFormat((node.getSeq()-curNodeEnd)*ranNum+curNodeEnd)
                 +LVSPLIT;
             }
         }
@@ -1082,6 +1085,7 @@ public class MonitorServiceImpl implements MonitorService {
     	String[] arr=newLvlCode.split(LVSPLIT);
     	//生成新节点
         NodeTo newNode=new NodeTo();
+        newNode.setNodeNo("NODE"+System.currentTimeMillis());
         newNode.setKey(key);
         newNode.setLvl(level);
         newNode.setLvlCode(newLvlCode);
@@ -1251,7 +1255,7 @@ public class MonitorServiceImpl implements MonitorService {
             @Override
             public int compare(NodeTo o1, NodeTo o2) {
                 // TODO Auto-generated method stub
-                return (int) Math.ceil(o2.getSeq()-o1.getSeq());
+                return (int) Math.ceil(o1.getSeq()-o2.getSeq());
             }
         });
         return list;
