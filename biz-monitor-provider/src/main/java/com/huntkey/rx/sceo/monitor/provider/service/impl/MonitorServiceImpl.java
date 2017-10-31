@@ -877,6 +877,8 @@ public class MonitorServiceImpl implements MonitorService {
         NodeTo oldNode=hasOps.get(key, lvlCode);
         List<ResourceTo> resourceList=oldNode.getResources();
         nodeDetail.setResources(resourceList);
+        nodeDetail.setSeq(oldNode.getSeq());
+        nodeDetail.setLvl(oldNode.getLvl());
         //操作redis修改
         hasOps.put(key, lvlCode, nodeDetail);
         //修改下级节点失效日期
@@ -1141,11 +1143,16 @@ public class MonitorServiceImpl implements MonitorService {
         // TODO Auto-generated method stub
         if(type==0){
             NodeTo node=hasOps.get(key, levelCode);
-            node.setType(ChangeType.INVALID.getValue());
-            //删除原失效节点
-            hasOps.delete(key, levelCode);
-            //新增修改后的失效节点
-            hasOps.put(key, "D"+node.getLvlCode(), node);
+            if(node!=null){
+	            node.setType(ChangeType.INVALID.getValue());
+	            //删除原失效节点
+	            hasOps.delete(key, levelCode);
+	            //新增修改后的失效节点
+	            hasOps.put(key, "D"+node.getLvlCode(), node);
+            }else{
+            	logger.info("该节点不存在！");
+            	throw new ServiceException("该节点不存在！");
+            }
         }else{
             //删除原失效节点
             hasOps.delete(key, levelCode);
