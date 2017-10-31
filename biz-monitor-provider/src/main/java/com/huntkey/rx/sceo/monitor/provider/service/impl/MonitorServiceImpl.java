@@ -1137,14 +1137,14 @@ public class MonitorServiceImpl implements MonitorService {
      * 删除节点
      * @param key redis key
      * @param levelCode 节点层级编码
-     * @param type 删除类型 0 失效 1删除
+     * @param type 删除类型 0 删除 1失效
      * @return levelCode 节点层级编码
      * @author fangkun 2017-10-24
      */
     @Override
     public String deleteNode(String key,String levelCode,int type) {
         // TODO Auto-generated method stub
-        if(type==0){
+        if(type==1){
             NodeTo node=hasOps.get(key, levelCode);
             if(node!=null){
 	            node.setType(ChangeType.INVALID.getValue());
