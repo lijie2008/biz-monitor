@@ -770,7 +770,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     for(int k = 0; k < resources.size(); k++){
                         JSONObject res = resources.getJSONObject(k);
                         JSONObject obj = new JSONObject();
-                        obj.put(Constant.ID, res.getString(Constant.ID));
+                        obj.put(Constant.ID, res.getString(Constant.OID));
                         resIds.add(obj);
                     }
                     
@@ -789,11 +789,12 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 JSONArray updateNodes = new JSONArray();
                 JSONArray addRes = new JSONArray();
                 
+                Date now = getDate(new SimpleDateFormat(Constant.YYYY_MM_DD).format(new Date()) + Constant.STARTTIME,
+                        Constant.YYYY_MM_DD_HH_MM_SS);
+                
                 for(int i = 0; i < ttNodes.size(); i++){
                     JSONObject node = ttNodes.getJSONObject(i);
                     Date begin = getDate(node.getString("moni_beg"), Constant.YYYY_MM_DD_HH_MM_SS);
-                    Date now = getDate(new SimpleDateFormat(Constant.YYYY_MM_DD).format(new Date()) + Constant.STARTTIME,
-                            Constant.YYYY_MM_DD_HH_MM_SS);
                     
                     String id = node.getString(Constant.ID);
                     
@@ -833,28 +834,45 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                         throw new ServiceException(rest.getErrMsg());
                 }
                 
+                // 将tNodes 和 resources 加入到历史集中
+                addNodes.clear();
                 
+                if(new Date(tRootNode.getLong("moni_beg")).after(new Date())) // 未来树不处理
+                    break;
                 
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                if(!new Date(tRootNode.getLong("moni_beg")).after(new Date())){
+                for(int k = 0; k < tNodes.size(); k++){
+                    JSONObject node = tNodes.getJSONObject(k);
+                    Date nn_beg = new Date(node.getLong("moni_beg"));
+                    Date nn_end = new Date(node.getLong("moni_end"));
+                    
+                    if(nn_beg.after(now)) // 未来节点 - 未使用过
+                        continue;
+//                    if(!(nn_beg.after(now) || nn_end.before(now)))
+//                        node.put("moni_end", value);
+                    
+                    
+                        
+                        
                     
                 }
+                    
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
                 
                 
                 
@@ -994,7 +1012,10 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     if(!StringUtil.isNullOrEmpty(to.getRelateId()))
                         reObj.put(Constant.PID, to.getRelateId());
                     reObj.put("moni_res_id", re.getResId());
+                    reObj.put("creuser", CREUSER);
+                    reObj.put("moduser", MODUSER);
                     resources.add(reObj);
+                    
                 }
                 node.put("moni_res_set", resources);
             }
