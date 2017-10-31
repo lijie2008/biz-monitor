@@ -201,9 +201,9 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     	    //组装参数
     	    SearchParam requestParams = new SearchParam(edmName);
     	    
-            String characters[] = new String[] {"id","moni_node_no", "moni_node_name", "moni_lvl", "moni_lvl_code","moni_seq","moni_beg","moni_end"};
+//            String characters[] = new String[] {"id","moni_node_no", "moni_node_name", "moni_lvl", "moni_lvl_code","moni_seq","moni_beg","moni_end"};
             requestParams
-            .addColumns(characters)
+//            .addColumns(characters)
             .addSortParam(new SortNode("moni_lvl",SortType.ASC))
             .addSortParam(new SortNode("moni_lvl_code",SortType.ASC));
             if(StringUtil.isNullOrEmpty(endDate)){
@@ -239,7 +239,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                     // 表中存在需要的根节点 - 查找出所有的节点信息
                     SearchParam params = new SearchParam(edmName);
                     params
-                    .addColumns(characters)
+//                    .addColumns(characters)
                     .addSortParam(new SortNode("moni_lvl",SortType.ASC))
                     .addSortParam(new SortNode("moni_lvl_code",SortType.ASC))
                     .addCond_like("moni_lvl_code", ROOT_LVL_CODE);

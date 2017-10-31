@@ -364,12 +364,12 @@ public class MonitorServiceImpl implements MonitorService {
                     Date end = getDate(to.getEnd(),Constant.YYYY_MM_DD_HH_MM_SS);
                     if(StringUtil.isNullOrEmpty(validDate)){
                         Date now = getDate(new SimpleDateFormat(YYYY_MM_DD).format(new Date()) + STARTTIME, Constant.YYYY_MM_DD_HH_MM_SS);
-                        if(end.after(now))
+                        if(end.after(now) && ChangeType.INVALID.getValue() != to.getType())
                             list.add(to);
                     }else{
                         validDate+=" 00:00:00";
                         Date now = getDate(validDate, Constant.YYYY_MM_DD_HH_MM_SS);
-                        if(!begin.after(now) && end.after(now))
+                        if(!begin.after(now) && end.after(now) && ChangeType.INVALID.getValue() != to.getType())
                             list.add(to);
                     }
                 }
@@ -806,6 +806,9 @@ public class MonitorServiceImpl implements MonitorService {
             // 备用字段集 - 特殊树 部门树 主责岗位
             if(rootEdmcNameEn.startsWith("depttree") &&
                     !StringUtil.isNullOrEmpty(to.getString("mdep_leader_post"))){
+                
+                // TODO - 部门树的历史集情况需要特殊处理
+                
                 JSONArray bkSet = new JSONArray();
                 JSONObject obj = new JSONObject();
                 obj.put("mtor_bk1", to.getString("mdep_leader_post"));
