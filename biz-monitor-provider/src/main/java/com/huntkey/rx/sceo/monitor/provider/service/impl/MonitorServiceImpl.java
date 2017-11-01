@@ -9,6 +9,7 @@ import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.ENDTIME;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.YYYY_MM_DD;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -18,7 +19,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -1031,6 +1031,7 @@ public class MonitorServiceImpl implements MonitorService {
         return newLvlCode;
     }
     private String addChildNode(String key,String pLvlCode){
+    	DecimalFormat df=new DecimalFormat("##0.##");
     	//新的节点层级编码
         String newLvlCode="";
         //获取到父节点下面的一级节点
@@ -1039,17 +1040,11 @@ public class MonitorServiceImpl implements MonitorService {
         if(listNodes!=null && listNodes.size()>0){
             NodeTo maxNode=listNodes.get(listNodes.size()-1);
             double seq=maxNode.getSeq();
-            newLvlCode=pLvlCode+numberFormat(seq+1)+LVSPLIT;
+            newLvlCode=pLvlCode+df.format(seq+1)+LVSPLIT;
         }else{//不存在子节点 则直接在当前层级编码后面加,1
             newLvlCode=pLvlCode+"1"+LVSPLIT;
         }
         return newLvlCode;
-    }
-    private String numberFormat(double num){
-    	if(Math.floor(num)==num){
-    		return String.valueOf((int)num);
-    	}
-    	return String.valueOf(num);
     }
     private String addLRNode(int type,String key,String lvlCode,String pLvlCode){
     	//新增节点的层级编码
@@ -1070,32 +1065,37 @@ public class MonitorServiceImpl implements MonitorService {
             }
         }
         //生成0-1之间的随机双精小数
-        Double ranNum=new Random().nextDouble();
-        
+        Double ranNum=0.00;
+        DecimalFormat df=new DecimalFormat("##0.##");
         if(type==1){//创建左节点
 	        //如果index为0 ，代表当前节点为左边节点
 	        if(index==0){
+	        	//取0 到当前节点后缀之间的数
+	        	ranNum=(0+curNodeEnd)/2.00;
 	        	//取0到当前节点编码之间的随机数 并且与层级编码前缀组合成新的层级编码
-	            newLvlCode=pLvlCode+numberFormat(curNodeEnd-1+ranNum)+",";
+	            newLvlCode=pLvlCode+df.format(ranNum)+",";
 	        }else{
 	            //取出当前节点的左节点
 	            node=listNodes.get(index-1);
 	            //取出当前节点的层级编码后缀
 	            double lvlCodeLeftEnd=node.getSeq();
+	            //取左节点后缀 到当前节点后缀之间的数
+	        	ranNum=(lvlCodeLeftEnd+curNodeEnd)/2.00;
 	            newLvlCode=pLvlCode
-	            +numberFormat((curNodeEnd-lvlCodeLeftEnd)*+ranNum+lvlCodeLeftEnd)
+	            +df.format(ranNum)
 	            +LVSPLIT;
 	        }
         }else{//常见右节点
         	//如果index为最大的 ，代表当前节点没有右边
             if(index==listNodes.size()-1){
             	//如果没有右节点 则在当前结点后缀加1
-                newLvlCode=pLvlCode+numberFormat(curNodeEnd+1)+LVSPLIT;
+                newLvlCode=pLvlCode+df.format(curNodeEnd+1)+LVSPLIT;
             }else{
                 //取出当前节点的右节点
                 node=listNodes.get(index+1);
+                ranNum=(node.getSeq()+curNodeEnd)/2.00;
                 newLvlCode=pLvlCode
-                +numberFormat((node.getSeq()-curNodeEnd)*ranNum+curNodeEnd)
+                +df.format(ranNum)
                 +LVSPLIT;
             }
         }
