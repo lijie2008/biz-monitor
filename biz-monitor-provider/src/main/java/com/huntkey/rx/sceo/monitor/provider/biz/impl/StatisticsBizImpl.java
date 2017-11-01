@@ -199,7 +199,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
                 for (Object o : chileNodes) {
                     JSONObject jsonObj = JsonUtil.getJson(o);
                     String id = jsonObj.getString(StatisticsConstant.ID);
-                    String name = jsonObj.getString("moni002");
+                    String name = jsonObj.getString("moni_node_name");
 
                     jsonObj.put(StatisticsConstant.TREE_NODE_ID, id);
                     jsonObj.put(StatisticsConstant.TREE_NODE_NAME, name);

@@ -609,7 +609,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         if(StringUtil.isNullOrEmpty(edmName))
             ApplicationException.throwCodeMesg(ErrorMessage._60003.getCode(), "Modeler中" + ErrorMessage._60003.getMsg());
         
-        //查询出临时单中的节点信息
+        //查询出临时单中的节点信息 - 失效节点在此处已被过滤
         List<NodeTo> o_nodes = service.tempTree(orderId, "", 1, true);
         
         if(o_nodes == null || o_nodes.isEmpty())
@@ -617,7 +617,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         // 查看知识-监管树版本表
         SearchParam v_param = new SearchParam("monitortree");
-        v_param.addCond_equals("motr_edm_id", order.getString("mtor_cls_id"))
+        v_param.addCond_equals("motr_edm_id", classId)
                .addSortParam(new SortNode("motr_end", SortType.DESC));
         
         Result versionRet = client.queryServiceCenter(v_param.toJSONString());
@@ -630,9 +630,11 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         }else
             throw new ServiceException(orderRet.getErrMsg());
        
+        // 维护状态的临时单 必须存在版本标识信息
         if(type == ChangeType.UPDATE && (versions == null || versions.isEmpty()))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), "维护的版本" + ErrorMessage._60005.getMsg());
     
+        // 取到临时单节点集合的根节点
         NodeTo rootNode = null;
         
         if( o_nodes.stream().anyMatch(s->ROOT_LVL_CODE.equals(s.getLvlCode())))
@@ -643,7 +645,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
 
         switch(type){
             
-            case ADD :  // 新增类型
+            case ADD :  // 单据 - 新增类型
                 // 所有的节点信息 转换成目标表的数据信息
                 MergeParam a_param = new MergeParam(edmName);
                 a_param.addAllData(setMoni(o_nodes, edmName));
@@ -698,7 +700,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 
                 for(int i = 0; i < versions.size(); i++){
                     JSONObject release = versions.getJSONObject(i);
-                    if(rootNodeId != null && rootNodeId.equals(release.getString("motr_root_id"))){
+                    if(rootNodeId.equals(release.getString("motr_root_id"))){
                         r_v = release;
                         break;
                     }
@@ -997,7 +999,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         return savaNodes;
     }
-    
     
     private JSONArray setMoni(List<NodeTo> nodes,String edmName){
         
