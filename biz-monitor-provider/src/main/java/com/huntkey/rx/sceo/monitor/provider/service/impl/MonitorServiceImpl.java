@@ -60,7 +60,6 @@ public class MonitorServiceImpl implements MonitorService {
     private static final String REVOKE_KEY = "REVOKE";
     private static final String MTOR_NODES_EDM = "monitortreeorder.mtor_node_set";
     private static final String KEY_SEP = "-";
-    
     private static final String DEFAULTNODENAME="未命名节点";
     
     private static final Logger logger = LoggerFactory.getLogger(MonitorServiceImpl.class);
@@ -980,6 +979,7 @@ public class MonitorServiceImpl implements MonitorService {
             logger.info("deleteNodeResource方法==>未找到节点!!!");
             throw new ServiceException("deleteNodeResource方法==>未找到节点!!!");
         }
+        hasOps.put(key, lvlCode, node);
         return resourceId;
     }
 
@@ -1002,10 +1002,13 @@ public class MonitorServiceImpl implements MonitorService {
             resource.setResId(resourceId);
             resource.setText(resourceText);
             resourceList.add(resource);
+            node.setResources(resourceList);
+            hasOps.put(key, lvlCode, node);
         }else{
             logger.info("addResource方法==>未找到节点!!!");
             throw new ServiceException("addResource方法==>未找到节点!!!");
         }
+        
         return resourceId;
     }
 
@@ -1161,8 +1164,6 @@ public class MonitorServiceImpl implements MonitorService {
             //删除原失效节点
             hasOps.delete(key, levelCode);
         }
-        //删除节点下资源
-
         //查询出子节点
         List<NodeTo> nodes=getChildNode(key,levelCode);//查询子节点
         if(nodes!=null && nodes.size()>0){//存在子节点
