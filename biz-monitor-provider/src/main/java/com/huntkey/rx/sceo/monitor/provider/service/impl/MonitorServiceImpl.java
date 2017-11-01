@@ -723,7 +723,7 @@ public class MonitorServiceImpl implements MonitorService {
         JSONArray resources = treeService.getNodeResources(null, ids, classId, rootEdmcNameEn, 1);
         
         if (resources == null || resources.isEmpty()) 
-            return nodes;
+            return setOrderValues(tempId,nodes,type, beginDate, endDate,rootEdmcNameEn);
         
         for(int i = 0 ; i < nodes.size(); i++){
             String id = nodes.getJSONObject(i).getString(ID);

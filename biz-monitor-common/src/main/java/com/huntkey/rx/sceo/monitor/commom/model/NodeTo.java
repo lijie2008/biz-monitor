@@ -251,7 +251,7 @@ public class NodeTo implements Serializable{
             node.setLvl(Integer.valueOf(to.getString("mtor_lvl")));
             node.setLvlCode(to.getString("mtor_lvl_code"));
             node.setRelateCnd(to.getString("mtor_relate_cnd"));
-            node.setType(Integer.valueOf(to.getString("mtor_type")));
+            node.setType(to.getInteger("mtor_type"));
             node.setRelateId(to.getString("mtor_relate_id"));
             
             node.setBegin(new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(to.getLong("mtor_beg"))));
