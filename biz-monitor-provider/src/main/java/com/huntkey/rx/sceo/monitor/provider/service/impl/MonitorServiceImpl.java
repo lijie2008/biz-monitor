@@ -1198,11 +1198,15 @@ public class MonitorServiceImpl implements MonitorService {
 
         }
         if(deleteList!=null && deleteList.size()>0){
-            hasOps.delete(tempId, deleteList);//删除失效节点
+        	for(int i=0;i<deleteList.size();i++){
+        		hasOps.delete(tempId, deleteList.get(i));//删除失效节点
+        	}
             hasOps.putAll(tempId, updateNodes);//新增标志失效状态过后的失效节点
         }
         if(addList!=null && addList.size()>0){
-            hasOps.delete(tempId, addList);//删除新增节点
+        	for(int j=0;j<addList.size();j++){
+        		hasOps.delete(tempId, addList.get(j));//删除新增节点
+        	}
         }
     }
     /***
@@ -1228,6 +1232,7 @@ public class MonitorServiceImpl implements MonitorService {
     	if(!getDate(moveNode.getBegin()).before(getDate(nodeP.getBegin()))
     		&& !getDate(nodeP.getEnd()).before(getDate(nodeP.getEnd()))
     		){
+    		
     	}else{//如果移动节点的时间段不在目标节点的时间段内, 则不允许拖动
     		logger.info(ErrorMessage._60018.getMsg());
     		ApplicationException.throwCodeMesg(ErrorMessage._60018.getCode(), 
@@ -1235,8 +1240,8 @@ public class MonitorServiceImpl implements MonitorService {
     	}
     	//生成新节点
     	newLvlCode=addNode(key, desLvlcode, type);
-    	//用生成的新节点替换所有节点
     	NodeTo newNode=hasOps.get(key, newLvlCode);
+    	
     	//新老节点层级差值
     	int lvlGap=newNode.getLvl()-moveNode.getLvl();
     	//变更移动节点的层级 层级编码 排序字段参数
@@ -1246,17 +1251,25 @@ public class MonitorServiceImpl implements MonitorService {
     	moveNode.setSeq(newNode.getSeq());
     	map.put(newLvlCode, moveNode);
     	
+    	//删除老的移动节点
+    	hasOps.delete(key,moveLvlcode);
+    	
     	//获取移动节点的所有子节点
     	List<NodeTo> listChildren=getChildNode(key, moveLvlcode);
     	if(listChildren!=null && listChildren.size()>0){
     		//更新移动节点子节点的节点层级和节点编码
             for(int i=0;i<listChildren.size();i++){
             	NodeTo node=listChildren.get(i);
+            	//删除老的节点
+            	hasOps.delete(key, node.getLvlCode());
+            	//生成新的节点
             	node.setLvl(node.getLvl()+lvlGap);
             	node.setLvlCode(node.getLvlCode().replaceFirst(moveLvlcode, newLvlCode));
-            	map.put(node.getLvlCode(), node);	
+            	map.put(node.getLvlCode(), node);
             }
     	}
+    	//统一插入新的节点
+    	hasOps.putAll(key, map);
     	
         return newLvlCode; 
     }
