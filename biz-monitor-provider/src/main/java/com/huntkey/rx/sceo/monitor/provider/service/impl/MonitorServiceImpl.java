@@ -456,6 +456,8 @@ public class MonitorServiceImpl implements MonitorService {
         // TODO 去除多多余的字段
         for(int i = 0; i < nodes.size(); i++){
             JSONObject node = nodes.getJSONObject(i);
+            node.put("mtor_beg", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(node.getLong("mtor_beg"))));
+            node.put("mtor_end", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(node.getLong("mtor_end"))));
             node.put("moduser", MODUSER);
             node.put("creuser", CREUSER);
             JSONArray res = node.getJSONArray("mtor_res_set");
@@ -467,21 +469,14 @@ public class MonitorServiceImpl implements MonitorService {
         }
         
         // 将复制的节点插入到表中
-        new Thread(new Runnable() {
-            
-            @Override
-            public void run() {
-                
-                MergeParam params = new MergeParam(MTOR_NODES_EDM);
-                
-                params.addAllData(nodes);
-                Result result = client.add(params.toJSONString());
-                
-                if(result.getRetCode() != Result.RECODE_SUCCESS){
-                	throw new ServiceException(result.getErrMsg());
-                }
-            }
-        });
+        MergeParam pp = new MergeParam(MTOR_NODES_EDM);
+        
+        pp.addAllData(nodes);
+        Result ret = client.add(pp.toJSONString());
+        
+        if(ret.getRetCode() != Result.RECODE_SUCCESS){
+            throw new ServiceException(ret.getErrMsg());
+        }
         
         return key;
     }
@@ -532,6 +527,8 @@ public class MonitorServiceImpl implements MonitorService {
         // TODO 去除多多余的字段
         for(int i = 0; i < nodes.size(); i++){
             JSONObject node = nodes.getJSONObject(i);
+            node.put("mtor_beg", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(node.getLong("mtor_beg"))));
+            node.put("mtor_end", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(node.getLong("mtor_end"))));
             node.put("moduser", MODUSER);
             node.put("creuser", CREUSER);
             JSONArray res = node.getJSONArray("mtor_res_set");
@@ -542,21 +539,14 @@ public class MonitorServiceImpl implements MonitorService {
             }
         }
         
-        new Thread(new Runnable() {
-            
-            @Override
-            public void run() {
-                
-                MergeParam addParams = new MergeParam(MTOR_NODES_EDM);
-                addParams.addAllData(nodes);
-                
-                Result ret = client.add(params.toJSONString());
-                
-                if(ret.getRetCode() != Result.RECODE_SUCCESS){
-                	throw new ServiceException(ret.getErrMsg());
-                }
-            }
-        });
+        MergeParam addParams = new MergeParam(MTOR_NODES_EDM);
+        addParams.addAllData(nodes);
+        
+        Result ret = client.add(addParams.toJSONString());
+        
+        if(ret.getRetCode() != Result.RECODE_SUCCESS){
+            throw new ServiceException(ret.getErrMsg());
+        }
         
         return key;
     }

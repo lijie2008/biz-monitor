@@ -664,7 +664,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 
                 Result noRes = client.queryServiceCenter(pp.toJSONString());
                 if(noRes.getRetCode() == Result.RECODE_SUCCESS)
-                    rootNodeId = JSONObject.parseObject(JSONObject.toJSONString(versionRet.getData()))
+                    rootNodeId = JSONObject.parseObject(JSONObject.toJSONString(noRes.getData()))
                             .getJSONArray(Constant.DATASET).getJSONObject(0).getString(Constant.ID);
                 else
                     throw new ServiceException(noRes.getErrMsg());
