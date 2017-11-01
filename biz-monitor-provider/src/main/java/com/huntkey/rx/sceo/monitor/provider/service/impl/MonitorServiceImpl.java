@@ -804,7 +804,7 @@ public class MonitorServiceImpl implements MonitorService {
                 node.put("mtor_res_set", mtorRes);
             }
             // 备用字段集 - 特殊树 部门树 主责岗位
-            if(rootEdmcNameEn.startsWith("depttree") &&
+            if(rootEdmcNameEn.endsWith("depttree") &&
                     !StringUtil.isNullOrEmpty(to.getString("mdep_leader_post"))){
                 
                 // TODO - 部门树的历史集情况需要特殊处理

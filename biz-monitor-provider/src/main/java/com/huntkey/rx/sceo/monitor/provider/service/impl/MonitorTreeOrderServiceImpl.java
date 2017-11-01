@@ -76,6 +76,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     private static final String KEY_SEP = "-";
     private static final String MTOR_NODES_EDM = "monitortreeorder.mtor_node_set";
     private static final String PRE_VERSION = "V";
+    private static final String SPE_HIS_SET = ".mdep_chag_set"; 
     
     @Autowired
     private ServiceCenterClient client;
@@ -861,8 +862,15 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     String id = node.getString(Constant.ID);
                     node.put(Constant.PID, id);
                     node.remove(id);
+                    node.remove("cretime");
+                    node.remove("modtime");
+                    node.remove("is_del");
                     node.put("creuser", CREUSER);
                     node.put("moduser", MODUSER);
+                    if(edmName.endsWith("depttree")){
+                        node.put("mdep_beg", node.get("moni_beg"));
+                        node.put("mdep_end", node.get("moni_end"));
+                    }
                     
                     JSONArray nodeRes = new JSONArray();
                     // 当前节点关联的资源
@@ -872,7 +880,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                             if(!id.equals(reObj.getString("nodeId")))
                                 continue;
                             JSONObject res = new JSONObject();
-                            res.put(Constant.PID, id);
                             res.put("moni_res_id", reObj.getString(Constant.ID));
                             nodeRes.add(res);
                         }
@@ -886,13 +893,16 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 
                 // 新增历史集
                 if(!addNodes.isEmpty()){
-                    MergeParam hisParam = new MergeParam(edmName+".moni_his_set");
+                    if(edmName.endsWith("depttree"))
+                        edmName = edmName + SPE_HIS_SET;
+                    else
+                        edmName = edmName+".moni_his_set";
+                    MergeParam hisParam = new MergeParam(edmName);
                     hisParam.addAllData(addNodes);
                     Result rest = client.add(hisParam.toJSONString());
                     if(rest.getRetCode() != Result.RECODE_SUCCESS)
                         throw new ServiceException(rest.getErrMsg());
                 }
-                
                 break;
                 
             default:

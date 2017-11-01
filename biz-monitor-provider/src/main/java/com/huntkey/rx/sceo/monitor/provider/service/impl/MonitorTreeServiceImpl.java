@@ -16,18 +16,16 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.huntkey.rx.commons.utils.datetime.DateUtil;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
-import com.huntkey.rx.sceo.monitor.commom.constant.DateConstant;
+import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
+import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
-import com.huntkey.rx.sceo.serviceCenter.common.emun.OperatorType;
 import com.huntkey.rx.sceo.serviceCenter.common.emun.SortType;
-import com.huntkey.rx.sceo.serviceCenter.common.model.ConditionNode;
 import com.huntkey.rx.sceo.serviceCenter.common.model.PagenationNode;
 import com.huntkey.rx.sceo.serviceCenter.common.model.SearchParam;
 import com.huntkey.rx.sceo.serviceCenter.common.model.SortNode;
@@ -44,6 +42,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     private static final String ROOT_LVL_CODE = "1,";
     private static final String MONITOR_HISTORY_SET=".moni_his_set";
     private static final String MONITOR_VERSION = "monitortree";
+    private static final String SPE_HIS_SET = ".mdep_chag_set";
     
     @Autowired
     ServiceCenterClient serviceCenterClient;
@@ -102,8 +101,13 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         for(int i = 0 ; i < versions.size(); i++){
             
             JSONObject version = versions.getJSONObject(i);
-            String[] edmNames = new String[]{edmcNameEn,edmcNameEn+MONITOR_HISTORY_SET};
             
+            String[] edmNames = null;
+            if(edmcNameEn.endsWith("depttree"))
+                edmNames = new String[]{edmcNameEn,edmcNameEn+SPE_HIS_SET};
+            else
+                edmNames = new String[]{edmcNameEn,edmcNameEn+MONITOR_HISTORY_SET};
+                
             for(String edmName : edmNames){
                 SearchParam requestParams = new SearchParam(edmName);
                 
@@ -193,7 +197,10 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     	// 需要确定必须从哪里开始查-- 有根节点id 必须根据edmcNameEn 查一次就可以
     	String[] edmNames = null;
     	if(StringUtil.isNullOrEmpty(rootNodeId)){
-    	    edmNames = new String[]{rootEdmcNameEn,rootEdmcNameEn+MONITOR_HISTORY_SET};
+    	    if(rootEdmcNameEn.endsWith("depttree"))
+    	        edmNames = new String[]{rootEdmcNameEn,rootEdmcNameEn+SPE_HIS_SET};
+    	    else
+    	        edmNames = new String[]{rootEdmcNameEn,rootEdmcNameEn+MONITOR_HISTORY_SET};
     	}else
     	    edmNames = new String[]{rootEdmcNameEn};
     	
@@ -201,11 +208,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     	    //组装参数
     	    SearchParam requestParams = new SearchParam(edmName);
     	    
-//            String characters[] = new String[] {"id","moni_node_no", "moni_node_name", "moni_node_def", 
-//                    "moni_lvl", "moni_lvl_code","moni_seq","moni_beg","moni_end",
-//                    "moni_index_conf","moni_relate_cnd","moni_enum","moni_major","moni_assit"};
             requestParams
-//            .addColumns(characters)
             .addSortParam(new SortNode("moni_lvl",SortType.ASC))
             .addSortParam(new SortNode("moni_lvl_code",SortType.ASC));
             if(StringUtil.isNullOrEmpty(endDate)){
@@ -241,7 +244,6 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                     // 表中存在需要的根节点 - 查找出所有的节点信息
                     SearchParam params = new SearchParam(edmName);
                     params
-//                    .addColumns(characters)
                     .addSortParam(new SortNode("moni_lvl",SortType.ASC))
                     .addSortParam(new SortNode("moni_lvl_code",SortType.ASC))
                     .addCond_like("moni_lvl_code", ROOT_LVL_CODE);
@@ -421,43 +423,57 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         if (StringUtils.isNotBlank(nodeId) && StringUtils.isNotBlank(edmcNameEn)) {
 
             SearchParam requestParams = new SearchParam(edmcNameEn);
-            //父节点id
-            if (StringUtils.isNotBlank(nodeId)) {
-                requestParams
-                        .addCondition(new ConditionNode("moni006", OperatorType.Equals, nodeId));
-            }
-
-            Calendar cl = Calendar.getInstance();
-            String currentDate = DateUtil.parseFormatDate(cl.getTime(),
-                    DateConstant.FORMATE_YYYY_MM_DD);
-            //生效时间
-            requestParams.addCondition(
-                    new ConditionNode("moni004", OperatorType.LessEquals, currentDate));
-            //失效时间
-            requestParams.addCondition(
-                    new ConditionNode("moni005", OperatorType.Greater, currentDate));
+            
+            requestParams.addCond_equals(Constant.ID, nodeId);
+            
+            Result result = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
+            
+            JSONObject node = null;
+            
+            if(result.getRetCode() == Result.RECODE_SUCCESS){
+                
+                if(result.getData() != null){
+                    JSONArray nodesArray = JSONObject.parseObject(JSONObject.toJSONString(result.getData()))
+                            .getJSONArray(Constant.DATASET);
+                    if(nodesArray != null && nodesArray.size() == 1)
+                        node = nodesArray.getJSONObject(0);
+                }
+            }else
+                throw new ServiceException(result.getErrMsg());
+            
+            if(node == null)
+                ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), "节点记录" + ErrorMessage._60005.getMsg());            
+            
+            String begin = new SimpleDateFormat(Constant.YYYY_MM_DD)
+                    .format(new Date(node.getLong("moni_beg")));
+            String end = new SimpleDateFormat(Constant.YYYY_MM_DD)
+                    .format(new Date(node.getLong("moni_end")));
+            
+            requestParams.clearConditions();
+            requestParams
+                .addCond_greater("moni_lvl", String.valueOf(node.getInteger("moni_lvl")))
+                .addCond_lessOrEquals("moni_beg", begin)
+                .addCond_greater("moni_end", end)
+                .addCond_like("moni_lvl_code", node.getString("moni_lvl_code"));
 
             LOG.info("查询json:{}", requestParams.toJSONString());
 
-            Result result = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
+            Result allRet = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
 
-            if (result != null && result.getRetCode() == Result.RECODE_SUCCESS) {
-                if (result.getData() == null) {
+            if (allRet != null && allRet.getRetCode() == Result.RECODE_SUCCESS) {
+                if (allRet.getData() == null) {
                     return null;
                 }
-                
-                return JSONObject.parseObject(JSONObject.toJSONString(result.getData()))
+                return JSONObject.parseObject(JSONObject.toJSONString(allRet.getData()))
                         .getJSONArray(Constant.DATASET);
             } else {
-                throw new ServiceException(result.getErrMsg());
+                throw new ServiceException(allRet.getErrMsg());
             }
 
         }
 
         return null;
     }
-    
-    
     
     
 }
