@@ -118,7 +118,7 @@ public class MonitorServiceImpl implements MonitorService {
 	    
 	    // 单据中不存在当前树的临时单
 	    if(order == null)
-	        return obj;
+	        return null;
 	    
 	    // 存在临时单 - 判断临时单是否失效
 	    params = null;

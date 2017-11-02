@@ -162,6 +162,11 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             
             version.put("count",version.getJSONArray("rootNodes") == null ? 0 : version.getJSONArray("rootNodes").size() );
             
+            // 如果查历史树 导致版本树没有名称
+            if(version.getInteger("count") != 0 && 
+                    StringUtil.isNullOrEmpty(version.getString("rootNodeName")))
+                version.put("rootNodeName", version.getJSONArray("rootNodes").getJSONObject(0).getString("moni_node_name"));
+            
             monitorTrees.add(version);
         }
         
