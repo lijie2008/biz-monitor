@@ -140,7 +140,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                         JSONArray treeArray = treeData.getJSONArray("dataset");
 
                         for (int j = 0; j < treeArray.size(); j++) {
-                            JSONObject temp = treeArray.getJSONObject(i);
+                            JSONObject temp = treeArray.getJSONObject(j);
                             JSONObject tree = new JSONObject();
                             tree.put("rootNodeId", temp.getString("id"));
                             tree.put("rootNodeName", temp.getString("moni_node_name"));
