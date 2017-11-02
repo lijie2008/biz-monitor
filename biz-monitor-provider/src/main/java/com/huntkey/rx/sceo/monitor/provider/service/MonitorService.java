@@ -33,4 +33,6 @@ public interface MonitorService {
   	String deleteNode(String key,String lvlCode,int type);
   	// 获取临时单中当前节点所有子节点
   	List<NodeTo> getChildNode(String key,String lvlCode);
+  	
+  	List<String> formula(NodeTo node);
 }

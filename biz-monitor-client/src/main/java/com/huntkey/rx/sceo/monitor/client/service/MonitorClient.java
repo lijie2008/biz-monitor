@@ -96,4 +96,6 @@ public interface MonitorClient {
                     @RequestParam(value = "desLvlCode") String desLvlCode,
                     @RequestParam(value = "type") int type
     );
+    @RequestMapping(value = "/monitors/formula", method = RequestMethod.POST)
+    Result formula(@RequestBody NodeTo node);
 }

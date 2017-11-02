@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.hibernate.validator.constraints.NotBlank;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
@@ -30,6 +32,7 @@ public class NodeTo implements Serializable{
     
     private static final long serialVersionUID = 1L;
     
+    @NotBlank(message="key值不能为空")
     private String key;
     
     private String nodeNo;
@@ -54,6 +57,7 @@ public class NodeTo implements Serializable{
     
     private double seq;
     
+    @NotBlank(message="节点层级编码不能为空")
     private String lvlCode;
     
     private int lvl;

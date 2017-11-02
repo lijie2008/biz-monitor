@@ -115,4 +115,13 @@ public class MonitorClientFallback implements MonitorClient {
         result.setErrMsg("MonitorClient moveNode fallback");
         return result;
     }
+
+	@Override
+	public Result formula(NodeTo node) {
+		// TODO Auto-generated method stub
+		Result result = new Result();
+        result.setRetCode(Result.RECODE_ERROR);
+        result.setErrMsg("MonitorClient formula fallback");
+        return result;
+	}
 }
