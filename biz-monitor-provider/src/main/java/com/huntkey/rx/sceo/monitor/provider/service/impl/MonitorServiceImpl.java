@@ -872,6 +872,7 @@ public class MonitorServiceImpl implements MonitorService {
         nodeDetail.setSeq(oldNode.getSeq());
         nodeDetail.setLvl(oldNode.getLvl());
         nodeDetail.setType(oldNode.getType());
+        nodeDetail.setRelateId(oldNode.getRelateId());
         //操作redis修改
         hasOps.put(key, lvlCode, nodeDetail);
         //修改下级节点失效日期
@@ -1223,44 +1224,43 @@ public class MonitorServiceImpl implements MonitorService {
     	if(!getDate(moveNode.getBegin()).before(getDate(nodeP.getBegin()))
     		&& !getDate(nodeP.getEnd()).before(getDate(nodeP.getEnd()))
     		){
-    		
+    		//生成新节点
+        	newLvlCode=addNode(key, desLvlcode, type);
+        	NodeTo newNode=hasOps.get(key, newLvlCode);
+        	
+        	//新老节点层级差值
+        	int lvlGap=newNode.getLvl()-moveNode.getLvl();
+        	//变更移动节点的层级 层级编码 排序字段参数
+        	Map<String, NodeTo> map=new HashMap<String, NodeTo>();
+        	moveNode.setLvl(newNode.getLvl());
+        	moveNode.setLvlCode(newLvlCode);
+        	moveNode.setSeq(newNode.getSeq());
+        	map.put(newLvlCode, moveNode);
+        	
+        	//删除老的移动节点
+        	hasOps.delete(key,moveLvlcode);
+        	
+        	//获取移动节点的所有子节点
+        	List<NodeTo> listChildren=getChildNode(key, moveLvlcode);
+        	if(listChildren!=null && listChildren.size()>0){
+        		//更新移动节点子节点的节点层级和节点编码
+                for(int i=0;i<listChildren.size();i++){
+                	NodeTo node=listChildren.get(i);
+                	//删除老的节点
+                	hasOps.delete(key, node.getLvlCode());
+                	//生成新的节点
+                	node.setLvl(node.getLvl()+lvlGap);
+                	node.setLvlCode(node.getLvlCode().replaceFirst(moveLvlcode, newLvlCode));
+                	map.put(node.getLvlCode(), node);
+                }
+        	}
+        	//统一插入新的节点
+        	hasOps.putAll(key, map);
     	}else{//如果移动节点的时间段不在目标节点的时间段内, 则不允许拖动
     		logger.info(ErrorMessage._60018.getMsg());
     		ApplicationException.throwCodeMesg(ErrorMessage._60018.getCode(), 
     				ErrorMessage._60018.getMsg());
     	}
-    	//生成新节点
-    	newLvlCode=addNode(key, desLvlcode, type);
-    	NodeTo newNode=hasOps.get(key, newLvlCode);
-    	
-    	//新老节点层级差值
-    	int lvlGap=newNode.getLvl()-moveNode.getLvl();
-    	//变更移动节点的层级 层级编码 排序字段参数
-    	Map<String, NodeTo> map=new HashMap<String, NodeTo>();
-    	moveNode.setLvl(newNode.getLvl());
-    	moveNode.setLvlCode(newLvlCode);
-    	moveNode.setSeq(newNode.getSeq());
-    	map.put(newLvlCode, moveNode);
-    	
-    	//删除老的移动节点
-    	hasOps.delete(key,moveLvlcode);
-    	
-    	//获取移动节点的所有子节点
-    	List<NodeTo> listChildren=getChildNode(key, moveLvlcode);
-    	if(listChildren!=null && listChildren.size()>0){
-    		//更新移动节点子节点的节点层级和节点编码
-            for(int i=0;i<listChildren.size();i++){
-            	NodeTo node=listChildren.get(i);
-            	//删除老的节点
-            	hasOps.delete(key, node.getLvlCode());
-            	//生成新的节点
-            	node.setLvl(node.getLvl()+lvlGap);
-            	node.setLvlCode(node.getLvlCode().replaceFirst(moveLvlcode, newLvlCode));
-            	map.put(node.getLvlCode(), node);
-            }
-    	}
-    	//统一插入新的节点
-    	hasOps.putAll(key, map);
     	
         return newLvlCode; 
     }
