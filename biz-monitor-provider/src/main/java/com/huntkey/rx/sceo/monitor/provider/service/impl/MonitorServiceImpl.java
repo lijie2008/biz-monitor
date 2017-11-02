@@ -1325,12 +1325,12 @@ public class MonitorServiceImpl implements MonitorService {
 		// TODO Auto-generated method stub
     	String key=node.getKey();
     	String lvlCode=node.getLvlCode();
-    	List<ResourceTo> list=node.getResources();
+    	List<ResourceTo> listAll=node.getResources();
     	//获取节点信息
     	NodeTo curNode=hasOps.get(key, lvlCode);
-    	
+    	List<ResourceTo> listUsed=node.getResources();
     	//调用未使用资源接口
-    	orderTree.queryNotUsingResource(key, lvlCode, 1, 20);
+    	JSONObject listNotUsing=orderTree.queryNotUsingResource(key, lvlCode, 1, 20);
     	
 		return null;
 	}
