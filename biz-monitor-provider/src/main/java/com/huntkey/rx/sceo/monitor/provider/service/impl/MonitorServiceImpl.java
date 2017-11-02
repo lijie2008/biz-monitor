@@ -45,6 +45,7 @@ import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
+import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
 import com.huntkey.rx.sceo.serviceCenter.common.emun.SortType;
 import com.huntkey.rx.sceo.serviceCenter.common.model.MergeParam;
@@ -53,7 +54,7 @@ import com.huntkey.rx.sceo.serviceCenter.common.model.SortNode;
 @Service
 public class MonitorServiceImpl implements MonitorService {
     
-    private static final String CREUSER = "admin";
+	private static final String CREUSER = "admin";
     private static final String MODUSER = "admin";
     private static final String LVSPLIT = ",";
     private static final String ROOT_LVL_CODE = "1,";
@@ -69,6 +70,9 @@ public class MonitorServiceImpl implements MonitorService {
     
     @Autowired
     private MonitorTreeService treeService;
+    
+    @Autowired
+    private MonitorTreeOrderService orderTree ;
     
     @Resource(name="redisTemplate")
     private HashOperations<String, String, NodeTo> hasOps;
@@ -1313,4 +1317,21 @@ public class MonitorServiceImpl implements MonitorService {
             throw new RuntimeException("日期转换错误"+ str);
         }
     }
+    /***
+     * 公式计算的资源保存
+     */
+    @Override
+	public List<String> formula(NodeTo node) {
+		// TODO Auto-generated method stub
+    	String key=node.getKey();
+    	String lvlCode=node.getLvlCode();
+    	List<ResourceTo> list=node.getResources();
+    	//获取节点信息
+    	NodeTo curNode=hasOps.get(key, lvlCode);
+    	
+    	//调用未使用资源接口
+    	orderTree.queryNotUsingResource(key, lvlCode, 1, 20);
+    	
+		return null;
+	}
 }

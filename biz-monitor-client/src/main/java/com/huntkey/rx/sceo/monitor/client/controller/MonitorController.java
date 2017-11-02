@@ -195,5 +195,10 @@ public class MonitorController {
     ) {
         return monitorClient.moveNode(key, moveLvlCode, desLvlCode, type);
     }
+    
+    @RequestMapping(value = "/formula", method = RequestMethod.POST)
+    public Result formula(@RequestBody NodeTo node) {
+        return monitorClient.formula(node);
+    }
 
 }

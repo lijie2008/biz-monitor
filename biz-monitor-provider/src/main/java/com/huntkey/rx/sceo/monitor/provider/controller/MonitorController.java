@@ -223,4 +223,16 @@ public class MonitorController {
         result.setData(service.moveNode(key, moveLvlCode, desLvlCode, type));
         return result;
     }
+    /**
+     * 调用公式
+     * @param node 节点信息
+     * @return
+     */
+    @RequestMapping(value = "/formula", method = RequestMethod.POST)
+    public Result formula(@RequestBody NodeTo node) {
+    	Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        result.setData(service.formula(node));
+        return result;
+    }
 }
