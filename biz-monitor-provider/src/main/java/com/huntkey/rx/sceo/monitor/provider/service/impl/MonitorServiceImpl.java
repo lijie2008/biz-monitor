@@ -1,11 +1,11 @@
 package com.huntkey.rx.sceo.monitor.provider.service.impl;
 
+import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.ENDTIME;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.ID;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.MONITORTREEORDER;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.NULL;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.PID;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.STARTTIME;
-import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.ENDTIME;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.YYYY_MM_DD;
 
 import java.text.DateFormat;
@@ -644,9 +644,9 @@ public class MonitorServiceImpl implements MonitorService {
                 if(nodes != null && nodes.size() == 1)
                     rootNode = nodes.getJSONObject(0);
             }
-        }else{
+        }else
         	throw new ServiceException(rootResult.getErrMsg());
-        }
+        
         
         if(rootNode == null)
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), ErrorMessage._60005.getMsg());
