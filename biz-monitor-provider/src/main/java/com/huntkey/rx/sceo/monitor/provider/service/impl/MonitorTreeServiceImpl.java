@@ -216,7 +216,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             requestParams
             .addSortParam(new SortNode("moni_lvl",SortType.ASC))
             .addSortParam(new SortNode("moni_lvl_code",SortType.ASC));
-            if(StringUtil.isNullOrEmpty(endDate)){
+            if(StringUtil.isNullOrEmpty(endDate) || endDate.startsWith(Constant.STARTTIME)){
                 requestParams.addCond_lessOrEquals("moni_beg", startDate)
                              .addCond_greater("moni_end", startDate);
                 
@@ -253,7 +253,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                     .addSortParam(new SortNode("moni_lvl_code",SortType.ASC))
                     .addCond_like("moni_lvl_code", ROOT_LVL_CODE);
                     
-                    if(StringUtil.isNullOrEmpty(endDate)){
+                    if(StringUtil.isNullOrEmpty(endDate) || endDate.startsWith(Constant.STARTTIME)){
                         params.addCond_lessOrEquals("moni_beg", startDate)
                                      .addCond_greater("moni_end", startDate);
                         
