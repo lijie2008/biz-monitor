@@ -841,6 +841,10 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                         throw new ServiceException(rest.getErrMsg());
                 }
                 
+                // 生效日期和入库日期相同的 - 不写历史
+                if(now.equals(getDate(t_begin, Constant.YYYY_MM_DD)))
+                    break;
+                    
                 // 将tNodes 和 resources 加入到历史集中
                 addNodes.clear();
                 
