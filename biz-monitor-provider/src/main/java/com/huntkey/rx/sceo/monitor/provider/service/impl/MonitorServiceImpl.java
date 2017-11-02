@@ -989,6 +989,11 @@ public class MonitorServiceImpl implements MonitorService {
         if(node!=null){
             List<ResourceTo> resourceList=node.getResources();
             resourceList=resourceList==null?new ArrayList<ResourceTo>():resourceList;
+            //获取监管树类Id  如果是岗位树先清空资源表
+            String[] classId=key.split("-");
+            if(StringUtil.isEqual("6fa512bf66e211e7b2e4005056bc4879",classId[classId.length-1])){
+            	resourceList=new ArrayList<ResourceTo>();
+            }
             ResourceTo resource=new ResourceTo();
             resource.setResId(resourceId);
             resource.setText(resourceText);
