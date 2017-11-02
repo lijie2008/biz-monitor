@@ -183,10 +183,13 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 .getJSONObject(Constant.VALUE)
                 .getString("id");
         
-        // 拼接资源的text信息 - 最终资源信息
-        JSONArray textRes = getResourceText(new JSONArray(filterRes), "", resourceEdmId);
-        
-        datas.put("data", textRes);
+        if(filterRes == null || filterRes.isEmpty())
+            datas.put("data", null);
+        else{
+            // 拼接资源的text信息 - 最终资源信息
+            JSONArray textRes = getResourceText(new JSONArray(filterRes), "", resourceEdmId);
+            datas.put("data", textRes);
+        }
         return datas;
     }
     
