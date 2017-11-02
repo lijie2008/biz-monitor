@@ -68,7 +68,7 @@ public class MonitorController {
      */
     @RequestMapping(value = "/edit")
     public Result editBefore(@RequestParam(value = "key") @NotBlank(message="redis的Key不能为空") String key,
-                             @RequestParam(value = "flag",defaultValue="false") @NotBlank(message="用户选择不能为空") boolean flag){
+                             @RequestParam(value = "flag",defaultValue="false") boolean flag){
         return monitorClient.editBefore(key,flag);
     }
     
