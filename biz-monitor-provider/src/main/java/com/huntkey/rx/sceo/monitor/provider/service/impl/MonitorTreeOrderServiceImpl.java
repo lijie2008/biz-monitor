@@ -183,10 +183,13 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 .getJSONObject(Constant.VALUE)
                 .getString("id");
         
-        // 拼接资源的text信息 - 最终资源信息
-        JSONArray textRes = getResourceText(new JSONArray(filterRes), "", resourceEdmId);
-        
-        datas.put("data", textRes);
+        if(filterRes == null || filterRes.isEmpty())
+            datas.put("data", null);
+        else{
+            // 拼接资源的text信息 - 最终资源信息
+            JSONArray textRes = getResourceText(new JSONArray(filterRes), "", resourceEdmId);
+            datas.put("data", textRes);
+        }
         return datas;
     }
     
@@ -838,6 +841,10 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                         throw new ServiceException(rest.getErrMsg());
                 }
                 
+                // 生效日期和入库日期相同的 - 不写历史
+                if(now.equals(getDate(t_begin, Constant.YYYY_MM_DD)))
+                    break;
+                    
                 // 将tNodes 和 resources 加入到历史集中
                 addNodes.clear();
                 
