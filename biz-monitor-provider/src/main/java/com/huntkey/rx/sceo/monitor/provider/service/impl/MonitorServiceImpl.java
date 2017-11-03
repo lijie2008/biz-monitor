@@ -44,6 +44,7 @@ import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
+import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
@@ -68,6 +69,9 @@ public class MonitorServiceImpl implements MonitorService {
     
     @Autowired
     private ServiceCenterClient client;
+    
+    @Autowired
+    private ModelerClient edmClient;
     
     @Autowired
     private MonitorTreeService treeService;
@@ -301,9 +305,18 @@ public class MonitorServiceImpl implements MonitorService {
                 if(nodes == null || nodes.isEmpty())
                     return list;
                 
+                list = NodeTo.setValue(nodes);
+                
+                // 增加监管人和协管人赋值
+                for(NodeTo tt : list){
+                    tt.setAssitText(getStaffText(tt.getAssit()));
+                    tt.setMajorText(getStaffText(tt.getMajor()));
+                }
+                
                 //不包含资源
                 if(!flag)
-                    return NodeTo.setValue(nodes);
+                    return list;
+                
                 
                 // 查询出所有的资源 和 资源id
                 List<String> ids = new ArrayList<String>();
@@ -353,6 +366,13 @@ public class MonitorServiceImpl implements MonitorService {
                 }
                 
                 list = NodeTo.setValue(nodes);
+                
+                // 增加监管人和协管人赋值
+                for(NodeTo tt : list){
+                    tt.setAssitText(getStaffText(tt.getAssit()));
+                    tt.setMajorText(getStaffText(tt.getMajor()));
+                }
+                
                 break;
                 
             case 2:
@@ -444,6 +464,12 @@ public class MonitorServiceImpl implements MonitorService {
         
         List<NodeTo> list = NodeTo.setValue(nodes);
         
+        // 增加监管人和协管人赋值
+        for(NodeTo tt : list){
+            tt.setAssitText(getStaffText(tt.getAssit()));
+            tt.setMajorText(getStaffText(tt.getMajor()));
+        }
+        
         hasOps.getOperations().delete(key);
         hasOps.getOperations().delete(revokedKey);
         
@@ -514,6 +540,12 @@ public class MonitorServiceImpl implements MonitorService {
         String revokedKey = key + REVOKE_KEY;
         
         List<NodeTo> list = NodeTo.setValue(nodes);
+        
+        // 增加监管人和协管人赋值
+        for(NodeTo tt : list){
+            tt.setAssitText(getStaffText(tt.getAssit()));
+            tt.setMajorText(getStaffText(tt.getMajor()));
+        }
         
         hasOps.getOperations().delete(key);
         hasOps.getOperations().delete(revokedKey);
@@ -1363,4 +1395,56 @@ public class MonitorServiceImpl implements MonitorService {
     	}
 		return listNew;
 	}
+    
+    public String getStaffText(String id){
+        
+        if(StringUtil.isNullOrEmpty(id))
+            return null;
+        
+        SearchParam params = new SearchParam(Constant.STAFF);
+        params.addCond_equals(Constant.ID, id);
+        
+        Result staffRet = client.queryServiceCenter(params.toJSONString());
+        
+        JSONObject staff = null;
+        
+        if(staffRet.getRetCode() == Result.RECODE_SUCCESS){
+            if (staffRet.getData() != null) {
+                JSONArray arry = JSONObject.parseObject(JSONObject.toJSONString(staffRet.getData()))
+                        .getJSONArray(Constant.DATASET);
+                if(arry != null && arry.size() == 1)
+                    staff = arry.getJSONObject(0);
+            }
+        }else
+            throw new ServiceException(staffRet.getErrMsg());
+        
+        Result formatResult = edmClient.getCharacterAndFormat(Constant.STAFFCLASSID);
+        
+        if(formatResult.getRetCode() == Result.RECODE_SUCCESS){
+            
+            if(formatResult.getData() != null){
+                
+                JSONArray character = JSONObject.parseObject(JSONObject.toJSONString(formatResult.getData())).getJSONArray("character");
+                String format = JSONObject.parseObject(JSONObject.toJSONString(formatResult.getData())).getString("format");
+                
+                if(character == null || format == null || character.isEmpty())
+                    ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"特征值" + ErrorMessage._60005.getMsg());
+                
+                String[] resourceFields = new String[character.size()];
+                character.toArray(resourceFields);
+                
+                String txt = format.toLowerCase();
+                for (String fieldName : resourceFields){
+                    String f_str = StringUtil.isNullOrEmpty(staff.getString(fieldName))?""
+                            : staff.getString(fieldName);
+                    txt = txt.replace(fieldName,f_str);
+                }
+                return txt;
+                
+            }else
+                ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"Staff特征值" + ErrorMessage._60005.getMsg());
+        }else
+            throw new ServiceException(formatResult.getErrMsg());
+        return null;
+    }
 }

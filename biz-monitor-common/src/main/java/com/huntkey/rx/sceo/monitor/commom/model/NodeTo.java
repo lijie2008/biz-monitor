@@ -272,11 +272,6 @@ public class NodeTo implements Serializable{
             node.setBegin(new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(to.getLong("mtor_beg"))));
             node.setEnd(new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(to.getLong("mtor_end"))));
             
-            //TODO 主管人 协管人赋值
-            node.setAssitText(null);
-            node.setMajorText(null);
-            // TODO 主管人 协管人赋值
-            
             // 资源集 
             JSONArray res = to.getJSONArray("mtor_res_set");
             
