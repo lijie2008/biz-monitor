@@ -783,7 +783,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     
                     // 删除目标节点下的资源为失效状态
                     MergeParam rr_param = new MergeParam(edmName+".moni_res_set");
-                    n_param.addAllData(resIds);
+                    rr_param.addAllData(resIds);
                     Result rr_ret = client.delete(rr_param.toJSONString());
                     if(rr_ret.getRetCode() != Result.RECODE_SUCCESS)
                         throw new ServiceException(rr_ret.getErrMsg());

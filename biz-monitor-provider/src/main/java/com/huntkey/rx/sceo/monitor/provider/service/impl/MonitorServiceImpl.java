@@ -692,7 +692,7 @@ public class MonitorServiceImpl implements MonitorService {
                 ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(), "type类型[" + changeType +"]" +ErrorMessage._60004.getMsg());
         }
         
-        params.addCond_lessOrEquals("moni_beg", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
+        params.addCond_greaterOrEquals("moni_beg", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
                 .format(new Date(rootNode.getLong("moni_beg"))))
                 .addCond_lessOrEquals("moni_end", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
                 .format(new Date(rootNode.getLong("moni_end"))))

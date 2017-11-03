@@ -66,8 +66,9 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         
         String versionCharacters[] = new String[] { "motr_ver_code", "motr_beg", "motr_end", "motr_root_id" };
         
-        versionParams.addColumns(versionCharacters);
-        versionParams.addCond_equals("motr_edm_id", edmId);
+        versionParams.addColumns(versionCharacters)
+                    .addCond_equals("motr_edm_id", edmId)
+                    .addSortParam(new SortNode("motr_beg", SortType.DESC));
         
         if (!StringUtil.isNullOrEmpty(endTime)) {
             versionParams.addCond_lessOrEquals("motr_beg", endTime);
@@ -116,7 +117,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                 requestParams
                 .addSortParam(new SortNode("moni_end",SortType.ASC))
                 .addCond_equals("moni_lvl_code", ROOT_LVL_CODE)
-                .addCond_equals("moni_lvl", ROOT_LVL);
+                .addCond_equals("moni_lvl", ROOT_LVL)
+                .addSortParam(new SortNode("moni_beg", SortType.DESC));
 
                 if (!StringUtil.isNullOrEmpty(treeName)) 
                     requestParams.addCond_like("moni_node_name", treeName);
@@ -165,7 +167,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             // 如果查历史树 导致版本树没有名称
             if(version.getInteger("count") != 0 && 
                     StringUtil.isNullOrEmpty(version.getString("rootNodeName")))
-                version.put("rootNodeName", version.getJSONArray("rootNodes").getJSONObject(0).getString("moni_node_name"));
+                version.put("rootNodeName", version.getJSONArray("rootNodes").getJSONObject(0).getString("rootNodeName"));
             
             monitorTrees.add(version);
         }
