@@ -870,7 +870,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     node.put("moni_beg", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(nn_beg));
                     String id = node.getString(Constant.ID);
                     node.put(Constant.PID, id);
-                    node.remove(id);
+                    node.remove(Constant.ID);
                     node.remove("cretime");
                     node.remove("modtime");
                     node.remove("is_del");

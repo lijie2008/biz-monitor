@@ -68,6 +68,8 @@ public class NodeTo implements Serializable{
     
     private String relateCnd;
     
+    private String relateCndText;
+    
     private int type;
     
     private String relateId;
@@ -235,6 +237,15 @@ public class NodeTo implements Serializable{
         this.assitText = assitText;
     }
 
+    
+    public String getRelateCndText() {
+        return relateCndText;
+    }
+
+    public void setRelateCndText(String relateCndText) {
+        this.relateCndText = relateCndText;
+    }
+
     public static List<NodeTo> setValue(JSONArray orderNodes){
         
         List<NodeTo> nodes = new ArrayList<NodeTo>();
@@ -301,5 +312,7 @@ public class NodeTo implements Serializable{
         }
         return nodes;
     }
+    
+    
 }
 
