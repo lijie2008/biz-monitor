@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
@@ -1304,7 +1305,14 @@ public class MonitorServiceImpl implements MonitorService {
             @Override
             public int compare(NodeTo o1, NodeTo o2) {
                 // TODO Auto-generated method stub
-                return (int) Math.ceil(o1.getSeq()-o2.getSeq());
+            	double d=o1.getSeq()-o2.getSeq();
+				int ret=0;
+				if(d>0){
+					ret=1;
+				}else if(d<0){
+					ret=-1;
+				}
+				return ret;
             }
         });
         return list;
@@ -1321,17 +1329,38 @@ public class MonitorServiceImpl implements MonitorService {
      * 公式计算的资源保存
      */
     @Override
-	public List<String> formula(NodeTo node) {
+	public List<ResourceTo> formula(NodeTo node) {
 		// TODO Auto-generated method stub
     	String key=node.getKey();
     	String lvlCode=node.getLvlCode();
     	List<ResourceTo> listAll=node.getResources();
+    	if(listAll==null || listAll.size()==0){//如果
+    		logger.info("公式未筛查出资源！");
+    		throw new ServiceException("公式未筛查出资源！");
+    	}
     	//获取节点信息
     	NodeTo curNode=hasOps.get(key, lvlCode);
-    	List<ResourceTo> listUsed=node.getResources();
+    	List<ResourceTo> listUsed=curNode.getResources();
     	//调用未使用资源接口
-    	JSONObject listNotUsing=orderTree.queryNotUsingResource(key, lvlCode, 1, 20);
-    	
-		return null;
+    	JSONObject notUsingObj=orderTree.queryNotUsingResource(key, lvlCode, 1, 20);
+    	List<ResourceTo> notUsingArr=null;
+    	if(notUsingObj!=null){
+    		notUsingArr=JSONArray.parseArray(JSON.toJSONString(notUsingObj.getJSONArray("data")), 
+    				ResourceTo.class);
+    	}
+    	notUsingArr=(notUsingArr==null?new ArrayList<ResourceTo>():notUsingArr);
+    	//节点未使用资源和使用资源交集==》组合成节点可用资源
+    	notUsingArr.addAll(listUsed);
+    	//公式返回资源和可用资源取交集
+    	List<ResourceTo> listNew=new ArrayList<ResourceTo>();
+    	for(ResourceTo allTo :listAll){
+    		for(ResourceTo notUsingTo :notUsingArr){
+    			if(StringUtil.isEqual(allTo.getResId(), notUsingTo.getResId())){
+    				listNew.add(notUsingTo);
+    				continue;
+    			}
+    		}
+    	}
+		return listNew;
 	}
 }

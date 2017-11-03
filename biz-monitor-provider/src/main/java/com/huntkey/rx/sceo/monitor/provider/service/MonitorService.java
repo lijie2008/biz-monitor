@@ -5,6 +5,7 @@ import java.util.List;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
+import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 public interface MonitorService {
     
     String addMonitorTree(AddMonitorTreeTo addMonitorTreeTo);
@@ -34,5 +35,5 @@ public interface MonitorService {
   	// 获取临时单中当前节点所有子节点
   	List<NodeTo> getChildNode(String key,String lvlCode);
   	
-  	List<String> formula(NodeTo node);
+  	List<ResourceTo> formula(NodeTo node);
 }
