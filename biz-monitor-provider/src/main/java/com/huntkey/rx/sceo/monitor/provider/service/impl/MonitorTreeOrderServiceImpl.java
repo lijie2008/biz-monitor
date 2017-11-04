@@ -784,14 +784,17 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     u_nodes.add(obj);
                 }
                 
-                // 更新目标节点状态为失效状态
                 MergeParam n_param = new MergeParam(edmName);
-                n_param.addAllData(u_nodes);
-                
-                Result n_ret = client.delete(n_param.toJSONString());
-                
-                if(n_ret.getRetCode() != Result.RECODE_SUCCESS)
-                    throw new ServiceException(n_ret.getErrMsg());
+
+                // 更新目标节点状态为失效状态
+                if(!u_nodes.isEmpty()){
+                    n_param.addAllData(u_nodes);
+                    
+                    Result n_ret = client.delete(n_param.toJSONString());
+                    
+                    if(n_ret.getRetCode() != Result.RECODE_SUCCESS)
+                        throw new ServiceException(n_ret.getErrMsg());
+                }
                 
                 if(resources !=null && !resources.isEmpty()){
                     JSONArray resIds = new JSONArray();
