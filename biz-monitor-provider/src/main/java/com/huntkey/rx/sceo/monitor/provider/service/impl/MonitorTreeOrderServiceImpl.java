@@ -748,6 +748,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 
                 JSONArray tNodes = monitors.getJSONArray("nodes");
                 
+                
                 if(tNodes == null || tNodes.isEmpty())
                     ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), "查询节点" + ErrorMessage._60005.getCode());
                 
@@ -757,18 +758,38 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 
                 JSONArray resources = mService.getNodeResources(null, nodeIds, classId, edmName,1);
                 
+                // 临时单的节点 需入库的节点信息
+                JSONArray ttNodes = setMoni(o_nodes, edmName);
+
                 JSONArray u_nodes = new JSONArray();
+                
                 for(String id : nodeIds){
+                    
+                    boolean exist = false;
+                    
+                    for(int j = 0; j < ttNodes.size(); j++){
+                        JSONObject nn = ttNodes.getJSONObject(j);
+                        String nn_id = nn.getString(Constant.ID);
+                        if(!StringUtil.isNullOrEmpty(nn_id) && nn_id.equals(id)){
+                            exist = true;
+                            break;
+                        }
+                    }
+                    
+                    if(exist)
+                        continue;
+                    
                     JSONObject obj = new JSONObject();
                     obj.put(Constant.ID, id);
-                    obj.put("is_del", 1);
                     u_nodes.add(obj);
                 }
                 
                 // 更新目标节点状态为失效状态
                 MergeParam n_param = new MergeParam(edmName);
                 n_param.addAllData(u_nodes);
-                Result n_ret = client.update(n_param.toJSONString());
+                
+                Result n_ret = client.delete(n_param.toJSONString());
+                
                 if(n_ret.getRetCode() != Result.RECODE_SUCCESS)
                     throw new ServiceException(n_ret.getErrMsg());
                 
@@ -784,14 +805,14 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     // 删除目标节点下的资源为失效状态
                     MergeParam rr_param = new MergeParam(edmName+".moni_res_set");
                     rr_param.addAllData(resIds);
+                    
                     Result rr_ret = client.delete(rr_param.toJSONString());
+                    
                     if(rr_ret.getRetCode() != Result.RECODE_SUCCESS)
                         throw new ServiceException(rr_ret.getErrMsg());
                 }
                 
                 // 将o_nodes数据插入到正式表中 （这些节点只可能是正在生效 和 未来节点
-                JSONArray ttNodes = setMoni(o_nodes, edmName);
-
                 JSONArray addNodes = new JSONArray();
                 JSONArray updateNodes = new JSONArray();
                 JSONArray addRes = new JSONArray();
