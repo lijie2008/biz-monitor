@@ -42,6 +42,7 @@ import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
+import com.huntkey.rx.sceo.monitor.commom.model.BackTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
@@ -890,7 +891,6 @@ public class MonitorServiceImpl implements MonitorService {
      */
     @Override
     public String saveNodeDetail(NodeTo nodeDetail) {
-        // TODO Auto-generated method stub
         String key=nodeDetail.getKey();
         String nodeNo=nodeDetail.getNodeNo();
         String lvlCode=nodeDetail.getLvlCode();
@@ -910,8 +910,14 @@ public class MonitorServiceImpl implements MonitorService {
         nodeDetail.setLvl(oldNode.getLvl());
         nodeDetail.setType(oldNode.getType());
         nodeDetail.setRelateId(oldNode.getRelateId());
+        List<BackTo> backSet = nodeDetail.getBackSet();
+        
+        if(backSet != null && !backSet.isEmpty())
+            nodeDetail.setBackSet(backSet);
+        
         //操作redis修改
         hasOps.put(key, lvlCode, nodeDetail);
+        
         //修改下级节点失效日期
         List<NodeTo> list=new ArrayList<NodeTo>();
         list.add(nodeDetail);
@@ -995,6 +1001,12 @@ public class MonitorServiceImpl implements MonitorService {
                     ResourceTo resource=resourceList.get(i);
                     if(StringUtil.isEqual(resourceId,resource.getResId())){
                         resourceList.remove(i);
+                        List<BackTo> backSet = node.getBackSet();
+                        if(backSet != null && !backSet.isEmpty()){
+                            String bk1 = backSet.get(0).getBk1();
+                            if(resourceId.equals(bk1))
+                                node.setBackSet(null);
+                        }
                         break;
                     }
                 }
@@ -1030,6 +1042,7 @@ public class MonitorServiceImpl implements MonitorService {
             String[] classId=key.split("-");
             if(StringUtil.isEqual("6fa512bf66e211e7b2e4005056bc4879",classId[classId.length-1])){
             	resourceList=new ArrayList<ResourceTo>();
+            	node.setNodeName(resourceText);
             }
             ResourceTo resource=new ResourceTo();
             resource.setResId(resourceId);
