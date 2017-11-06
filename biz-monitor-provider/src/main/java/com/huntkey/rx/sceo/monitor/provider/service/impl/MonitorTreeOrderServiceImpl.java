@@ -530,6 +530,9 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         List<NodeTo> nodes = hashOps.values(key);
         
+        // 检查节点合法性
+        checkNodeLegal(key.split(KEY_SEP)[1],nodes);
+        
         if(nodes == null || nodes.isEmpty())
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), "redis中节点" + ErrorMessage._60005.getMsg());
         
@@ -617,6 +620,9 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         if(o_nodes == null || o_nodes.isEmpty())
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), "节点" + ErrorMessage._60005.getMsg());
+        
+        // 检查节点合法性
+        checkNodeLegal(classId,o_nodes);
         
         // 查看知识-监管树版本表
         SearchParam v_param = new SearchParam("monitortree");
@@ -1087,6 +1093,20 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         return savaNodes;
     }
-    
+   
+    private void checkNodeLegal(String classId, List<NodeTo> nodes){
+        
+        if(StringUtil.isNullOrEmpty(classId) || nodes == null || nodes.isEmpty())
+            return;
+        
+        // 岗位树所有节点必须包含资源 而且 一个资源
+        if(classId.equals(Constant.JOBPOSITIONCLASSID)){
+            for(NodeTo to : nodes){
+                List<ResourceTo> resources = to.getResources();
+                if(resources == null || resources.size() != 1)
+                    ApplicationException.throwCodeMesg(ErrorMessage._60021.getCode(), ErrorMessage._60021.getMsg());
+            }
+        }
+    }
 }
 

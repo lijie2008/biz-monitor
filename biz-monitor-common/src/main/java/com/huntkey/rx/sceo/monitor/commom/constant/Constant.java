@@ -151,5 +151,7 @@ public interface Constant {
     String VALUE = "value";
     String STARTTIME = " 00:00:00";
     String ENDTIME = " 23:59:59";
+
+    String JOBPOSITIONCLASSID = "6fa512bf66e211e7b2e4005056bc4879";
 }
 
