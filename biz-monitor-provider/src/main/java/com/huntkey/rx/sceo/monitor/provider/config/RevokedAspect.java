@@ -102,14 +102,15 @@ public class RevokedAspect {
         
         String key = args.getString(KEY);
         
+        String lvlCode = args.getString(LVLCODE);
+        
         if(revoked.type() == OperateType.QUERY){
             data.put("data", result.getData());
-            data.put("revoke", hashOps.size(key+REVOKE_KEY));
+            data.put("revoke", listOps.size(key+REVOKE_KEY));
             result.setData(data);
             return;
         }
         
-        String lvlCode = args.getString(LVLCODE);
         
         listOps.leftPush(key+REVOKE_KEY, (RevokedTo)originalMap.get(key+lvlCode));
         
@@ -117,7 +118,7 @@ public class RevokedAspect {
         
         if(OperateType.DETAIL == revoked.type()){
             data.put("data", result.getData());
-            data.put("revoke", hashOps.size(key+REVOKE_KEY));
+            data.put("revoke", listOps.size(key+REVOKE_KEY));
             result.setData(data);
         }
     }

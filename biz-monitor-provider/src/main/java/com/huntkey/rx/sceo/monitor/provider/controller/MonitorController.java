@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
+import com.huntkey.rx.sceo.monitor.provider.config.Revoked;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 
 @RestController
@@ -65,8 +67,9 @@ public class MonitorController {
      * @param type 1 - 从redis中查询 2 - 从临时单表查询
      * @return
      */
+    @Revoked(type=OperateType.QUERY)
     @RequestMapping(value = "/tempTree")
-    public Result tempTree(@RequestParam(value = "key")  String key,
+    public Result tempTree(@RequestParam(value = "key")  @Revoked(key="key") String key,
                            @RequestParam(value = "validDate") String validDate, 
                            @RequestParam(value = "type", defaultValue="1") int type,
                            @RequestParam(value = "flag", defaultValue="false") boolean flag) {
@@ -130,8 +133,9 @@ public class MonitorController {
 	 * @return 节点的层级编码
 	 * @author fangkun
 	 */
+    @Revoked(type=OperateType.NODE)
     @RequestMapping(value = "/saveNodeDetail", method = RequestMethod.POST)
-    public Result saveNodeDetail(@RequestBody NodeTo nodeDetail) {
+    public Result saveNodeDetail(@RequestBody @Revoked NodeTo nodeDetail) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(service.saveNodeDetail(nodeDetail));
@@ -145,9 +149,10 @@ public class MonitorController {
 	 * @param resourceId 资源ID
 	 * @return 被删除的节点ID
 	 */
+    @Revoked(type=OperateType.DETAIL)
     @RequestMapping(value = "/deleteNodeResource")
-    public Result deleteNodeResource(@RequestParam(value = "key")  String key,
-    								 @RequestParam(value = "lvlCode")  String lvlCode,
+    public Result deleteNodeResource(@RequestParam(value = "key") @Revoked(key="key") String key,
+    								 @RequestParam(value = "lvlCode")  @Revoked(key="lvlCode") String lvlCode,
                                      @RequestParam(value = "resourceId")   String resourceId) {
     	Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
@@ -164,10 +169,11 @@ public class MonitorController {
 	 * @return 资源ID
 	 * @author fangkun 2017-10-24
 	 */
+    @Revoked(type=OperateType.DETAIL)
     @RequestMapping(value = "/addResource")
     public Result addResource(
-    		@RequestParam(value = "key") @NotBlank(message = "redis key不能为空") String key,
-            @RequestParam(value = "lvlCode") @NotBlank(message = "节点层及编码不能为空") String lvlCode,        
+    		@RequestParam(value = "key") @NotBlank(message = "redis key不能为空") @Revoked(key="key") String key,
+            @RequestParam(value = "lvlCode") @NotBlank(message = "节点层及编码不能为空") @Revoked(key="lvlCode") String lvlCode,        
             @RequestParam(value = "resourceId") String resourceId,
             @RequestParam(value = "resourceText") String resourceText) {
         Result result = new Result();
@@ -184,8 +190,9 @@ public class MonitorController {
 	 * @return levelCode 节点层级编码
 	 * @author fangkun 2017-10-24
 	 */
+    @Revoked(type=OperateType.NODE)
     @RequestMapping(value = "/addNode", method = RequestMethod.GET)
-    public Result addNode(@RequestParam(value = "key") String key,
+    public Result addNode(@RequestParam(value = "key") @Revoked(key="key") String key,
                           @RequestParam(value = "lvlCode")  String lvlCode,
                           @RequestParam(value = "type") int type) {
         Result result = new Result();
@@ -202,8 +209,9 @@ public class MonitorController {
 	 * @return levelCode 节点层级编码
 	 * @author fangkun 2017-10-24 
 	 */
+    @Revoked(type=OperateType.NODE)
     @RequestMapping(value = "/deleteNode", method = RequestMethod.GET)
-    public Result deleteNode(@RequestParam(value = "key") String key,
+    public Result deleteNode(@RequestParam(value = "key") @Revoked(key="key") String key,
     						 @RequestParam(value = "lvlCode") String lvlCode,
                              @RequestParam(value = "type") int type) {
         Result result = new Result();
@@ -212,8 +220,9 @@ public class MonitorController {
         return result;
     }
     
+    @Revoked(type=OperateType.NODE)
     @RequestMapping(value = "/moveNode", method = RequestMethod.GET)
-    public Result moveNode(@RequestParam(value = "key") String key,
+    public Result moveNode(@RequestParam(value = "key") @Revoked(key="key") String key,
                            @RequestParam(value = "moveLvlCode") String moveLvlCode,
                            @RequestParam(value = "desLvlCode") String desLvlCode,
                            @RequestParam(value = "type") int type
