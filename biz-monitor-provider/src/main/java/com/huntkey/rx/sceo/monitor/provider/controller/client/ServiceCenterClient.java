@@ -24,8 +24,8 @@ import com.huntkey.rx.commons.utils.rest.Result;
  * Date:     2017年6月30日 下午5:38:01
  * @author caozhenx
  */
-@FeignClient(value = "SERVICECENTER-PROVIDER", url = "http://10.3.99.47:2008", fallback = ServiceCenterClientFallback.class) //单机调试使用(注意不要提交此行)
-//@FeignClient(value = "serviceCenter-provider", fallback = ServiceCenterClientFallback.class)
+//@FeignClient(value = "SERVICECENTER-PROVIDER", url = "http://10.3.99.47:2008", fallback = ServiceCenterClientFallback.class) //单机调试使用(注意不要提交此行)
+@FeignClient(value = "serviceCenter-provider", fallback = ServiceCenterClientFallback.class)
 //@FeignClient(value = "serviceCenter-provider", fallback = ServiceCenterClientFallback.class,url="http://192.168.113.22:2008")
 public interface ServiceCenterClient {
 
