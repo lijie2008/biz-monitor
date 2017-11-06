@@ -36,7 +36,6 @@ import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
-import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
 
 /**
  * ClassName:RevokedAspect 与撤销有关的切面信息
@@ -132,7 +131,7 @@ public class RevokedAspect {
         String key = args.getString(KEY);
         String lvlCode = args.getString(LVLCODE);
         
-        if(!JsonUtil.isEmpity(key))
+        if(!StringUtil.isNullOrEmpty(key))
             originalMap.remove(key+lvlCode);
         
     }

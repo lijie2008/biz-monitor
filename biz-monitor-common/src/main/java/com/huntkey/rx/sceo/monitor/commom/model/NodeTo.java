@@ -19,6 +19,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 
 /**
@@ -298,7 +299,8 @@ public class NodeTo implements Serializable{
                     BackTo bkTo = new BackTo();
                     bkTo.setBk1(bk.getString("mtor_bk1"));
                     bkTo.setBk2(bk.getString("mtor_bk2"));
-                    bkTo.setBk3(Integer.valueOf(bk.getString("mtor_bk3")));
+                    if(!StringUtil.isNullOrEmpty(bk.getString("mtor_bk3")))
+                        bkTo.setBk3(Integer.valueOf(bk.getString("mtor_bk3")));
                     bkList.add(bkTo);
                 }
                 node.setBackSet(bkList);
