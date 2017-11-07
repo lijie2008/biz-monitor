@@ -681,8 +681,9 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 String verNo = null;
                 if(versions == null || versions.isEmpty())
                     verNo = PRE_VERSION + "1";
-                else
-                    verNo = PRE_VERSION + versions.size() + 1;
+                else{
+                    verNo = PRE_VERSION + (versions.size() + 1);
+                }
                 // 插入版本
                 JSONObject vv = new JSONObject();
                 vv.put("motr_beg", rootNode.getBegin());

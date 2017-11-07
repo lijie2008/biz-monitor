@@ -164,6 +164,10 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             
             version.put("count",version.getJSONArray("rootNodes") == null ? 0 : version.getJSONArray("rootNodes").size() );
             
+            // 版本下没有树时 数据不送给前端
+            if(version.getInteger("count") == 0)
+                continue;
+                
             // 如果查历史树 导致版本树没有名称
             if(version.getInteger("count") != 0 && 
                     StringUtil.isNullOrEmpty(version.getString("rootNodeName")))
@@ -199,7 +203,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         JSONObject nodeRet = new JSONObject();
         
         startDate = startDate + Constant.STARTTIME;
-        endDate = endDate + Constant.STARTTIME;
+        endDate = endDate + Constant.ENDTIME;
     	
     	// 需要确定必须从哪里开始查-- 有根节点id 必须根据edmcNameEn 查一次就可以
     	String[] edmNames = null;
@@ -218,13 +222,13 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             requestParams
             .addSortParam(new SortNode("moni_lvl",SortType.ASC))
             .addSortParam(new SortNode("moni_lvl_code",SortType.ASC));
-            if(StringUtil.isNullOrEmpty(endDate) || endDate.startsWith(Constant.STARTTIME)){
+            if(StringUtil.isNullOrEmpty(endDate) || endDate.startsWith(Constant.ENDTIME)){
                 requestParams.addCond_lessOrEquals("moni_beg", startDate)
                              .addCond_greater("moni_end", startDate);
                 
             }else{
-                requestParams.addCond_lessOrEquals("moni_beg", startDate)
-                .addCond_greater("moni_end", endDate);
+                requestParams.addCond_greaterOrEquals("moni_beg", startDate)
+                .addCond_lessOrEquals("moni_end", endDate);
             }
             
             if (StringUtil.isNullOrEmpty(rootNodeId)) {
@@ -255,13 +259,13 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                     .addSortParam(new SortNode("moni_lvl_code",SortType.ASC))
                     .addCond_like("moni_lvl_code", ROOT_LVL_CODE);
                     
-                    if(StringUtil.isNullOrEmpty(endDate) || endDate.startsWith(Constant.STARTTIME)){
+                    if(StringUtil.isNullOrEmpty(endDate) || endDate.startsWith(Constant.ENDTIME)){
                         params.addCond_lessOrEquals("moni_beg", startDate)
                                      .addCond_greater("moni_end", startDate);
                         
                     }else{
-                        params.addCond_lessOrEquals("moni_beg", startDate)
-                        .addCond_greater("moni_end", endDate);
+                        params.addCond_greaterOrEquals("moni_beg", startDate)
+                        .addCond_lessOrEquals("moni_end", endDate);
                     }
                     
                     Result allResult = serviceCenterClient.queryServiceCenter(params.toJSONString());
