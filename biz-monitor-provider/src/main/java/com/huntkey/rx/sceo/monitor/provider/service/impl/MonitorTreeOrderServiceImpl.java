@@ -1104,6 +1104,8 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         if(classId.equals(Constant.JOBPOSITIONCLASSID)){
             for(NodeTo to : nodes){
                 List<ResourceTo> resources = to.getResources();
+                if(to.getType() == ChangeType.INVALID.getValue())
+                    continue;
                 if(resources == null || resources.size() != 1)
                     ApplicationException.throwCodeMesg(ErrorMessage._60021.getCode(), ErrorMessage._60021.getMsg());
             }
