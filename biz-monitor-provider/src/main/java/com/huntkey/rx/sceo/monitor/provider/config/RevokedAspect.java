@@ -104,6 +104,12 @@ public class RevokedAspect {
         
         String lvlCode = args.getString(LVLCODE);
         
+        // 服务不成功 不保存回退信息
+        if(result.getRetCode() != Result.RECODE_SUCCESS){
+            originalMap.remove(key+lvlCode);
+            return;
+        }
+        
         if(revoked.type() == OperateType.QUERY){
             data.put("data", result.getData());
             data.put("revoke", listOps.size(key+REVOKE_KEY));

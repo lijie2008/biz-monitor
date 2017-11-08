@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
@@ -984,7 +983,7 @@ public class MonitorServiceImpl implements MonitorService {
     }
 
     /***
-     * 删除节点资源
+     * 删除节点资源 - 单个操作
      * @param key redis key
      * @param levelCode 节点层及编码
      * @param resourceId 资源ID
@@ -992,7 +991,6 @@ public class MonitorServiceImpl implements MonitorService {
      */
     @Override
     public String deleteNodeResource(String key,String lvlCode,String resourceId) {
-        // TODO Auto-generated method stub
         NodeTo node=hasOps.get(key, lvlCode);
         if(node!=null){
             List<ResourceTo> resourceList=node.getResources();
@@ -1019,12 +1017,17 @@ public class MonitorServiceImpl implements MonitorService {
             logger.info("deleteNodeResource方法==>未找到节点!!!");
             throw new ServiceException("deleteNodeResource方法==>未找到节点!!!");
         }
+        
+        // 清空公式设计器对资源的筛选条件
+        node.setRelateCnd(null);
+        node.setRelateCndText(null);
+        
         hasOps.put(key, lvlCode, node);
         return resourceId;
     }
 
     /***
-     * 添加节点资源
+     * 添加节点资源 - 单点操作
      * @param key redis key
      * @param levelCode 节点层级编码
      * @param resourceId 资源ID
@@ -1049,6 +1052,11 @@ public class MonitorServiceImpl implements MonitorService {
             resource.setText(resourceText);
             resourceList.add(resource);
             node.setResources(resourceList);
+            
+            // 清空公式设计器对资源的筛选条件
+            node.setRelateCnd(null);
+            node.setRelateCndText(null);
+            
             hasOps.put(key, lvlCode, node);
         }else{
             logger.info("addResource方法==>未找到节点!!!");
@@ -1370,44 +1378,6 @@ public class MonitorServiceImpl implements MonitorService {
             throw new RuntimeException("日期转换错误"+ str);
         }
     }
-    /***
-     * 公式计算的资源保存
-     */
-    @Override
-	public List<ResourceTo> formula(NodeTo node) {
-		// TODO Auto-generated method stub
-    	String key=node.getKey();
-    	String lvlCode=node.getLvlCode();
-    	List<ResourceTo> listAll=node.getResources();
-    	if(listAll==null || listAll.size()==0){//如果
-    		logger.info("公式未筛查出资源！");
-    		throw new ServiceException("公式未筛查出资源！");
-    	}
-    	//获取节点信息
-    	NodeTo curNode=hasOps.get(key, lvlCode);
-    	List<ResourceTo> listUsed=curNode.getResources();
-    	//调用未使用资源接口
-    	JSONObject notUsingObj=orderTree.queryNotUsingResource(key, lvlCode, 1, 20);
-    	List<ResourceTo> notUsingArr=null;
-    	if(notUsingObj!=null){
-    		notUsingArr=JSONArray.parseArray(JSON.toJSONString(notUsingObj.getJSONArray("data")), 
-    				ResourceTo.class);
-    	}
-    	notUsingArr=(notUsingArr==null?new ArrayList<ResourceTo>():notUsingArr);
-    	//节点未使用资源和使用资源交集==》组合成节点可用资源
-    	notUsingArr.addAll(listUsed);
-    	//公式返回资源和可用资源取交集
-    	List<ResourceTo> listNew=new ArrayList<ResourceTo>();
-    	for(ResourceTo allTo :listAll){
-    		for(ResourceTo notUsingTo :notUsingArr){
-    			if(StringUtil.isEqual(allTo.getResId(), notUsingTo.getResId())){
-    				listNew.add(notUsingTo);
-    				continue;
-    			}
-    		}
-    	}
-		return listNew;
-	}
     
     public String getStaffText(String id){
         
@@ -1460,4 +1430,94 @@ public class MonitorServiceImpl implements MonitorService {
             throw new ServiceException(formatResult.getErrMsg());
         return null;
     }
+
+    @Override
+    public List<ResourceTo> formula(NodeTo node) {
+        
+       String key = node.getKey();
+       String lvlCode = node.getLvlCode();
+       List<ResourceTo> f_resources = node.getResources();
+       
+       NodeTo o_node = hasOps.get(key, lvlCode);
+       
+       if(o_node == null || StringUtil.isNullOrEmpty(key) || StringUtil.isNullOrEmpty(lvlCode)
+               || f_resources == null || f_resources.isEmpty())
+           ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(), ErrorMessage._60004.getMsg());
+       
+       List<ResourceTo> o_resources = o_node.getResources();
+       
+       // 先将节点的已选资源清空
+       if(o_resources != null && !o_resources.isEmpty()){
+           o_node.setResources(null);
+           hasOps.put(key, lvlCode, o_node);
+       }
+       
+       // 获取当前节点未使用的资源
+       JSONObject unusedRes = orderTree.queryNotUsingResource(key, lvlCode, Integer.MAX_VALUE, Integer.MAX_VALUE);
+       
+       JSONArray datas = unusedRes.getJSONArray("data");
+       
+       if(datas == null || datas.isEmpty()){
+           o_node.setResources(o_resources);
+           hasOps.put(key, lvlCode, o_node);
+           ApplicationException.throwCodeMesg(ErrorMessage._60020.getCode(), ErrorMessage._60020.getMsg());
+       }
+       
+       List<ResourceTo> u_resources = JSONArray.parseArray(JSONArray.toJSONString(datas), ResourceTo.class);
+       
+       // 取出新 和 未使用资源的集合的差集
+       List<ResourceTo> n_resources = new ArrayList<ResourceTo>();
+       
+       for(ResourceTo re : f_resources){
+           String resId = re.getResId();
+           for(ResourceTo rs : u_resources){
+               if(rs.getResId().equals(resId)){
+                   n_resources.add(rs);
+                   break;
+               }
+           }
+       }
+       
+       // 没有满足公式的资源 - 或者 是岗位树 但是资源不是一个
+       if(n_resources.isEmpty() || 
+               (StringUtil.isEqual(Constant.JOBPOSITIONCLASSID, key.split(KEY_SEP)[1]) && n_resources.size() != 1)){
+           o_node.setResources(o_resources);
+           hasOps.put(key, lvlCode, o_node);
+           ApplicationException.throwCodeMesg(ErrorMessage._60022.getCode(), ErrorMessage._60022.getMsg());
+       }else{
+           o_node.setResources(n_resources);
+           o_node.setRelateCnd(node.getRelateCnd());
+           o_node.setRelateCndText(node.getRelateCndText());
+           
+           if(StringUtil.isEqual(Constant.JOBPOSITIONCLASSID, key.split(KEY_SEP)[1])){
+               o_node.setNodeName(n_resources.get(0).getText());
+           }
+           
+           // 主责岗位的值需要修改
+           List<BackTo> backSet = o_node.getBackSet();
+           
+           if(backSet != null && !backSet.isEmpty()){
+               BackTo bk = backSet.get(0);
+               String bk1 = bk.getBk1();
+               if(!StringUtil.isNullOrEmpty(bk1)){
+                   boolean flag = false;
+                   for(ResourceTo rrr : n_resources){
+                       if(rrr.getResId().equals(bk1)){
+                           flag = true;
+                           break;
+                       }
+                   }
+                   
+                   if(!flag)
+                       o_node.setBackSet(null);
+               }
+           }
+           hasOps.put(key, lvlCode, o_node);
+       }
+        return n_resources;
+    }
+    
+    
+    
+    
 }

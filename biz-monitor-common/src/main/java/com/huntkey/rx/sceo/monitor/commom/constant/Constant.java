@@ -153,5 +153,7 @@ public interface Constant {
     String ENDTIME = " 23:59:59";
 
     String JOBPOSITIONCLASSID = "6fa512bf66e211e7b2e4005056bc4879";
+    
+    String DEPTTREECLASSID = "6fa512bf66e211e7b2e4005056bc4879";
 }
 

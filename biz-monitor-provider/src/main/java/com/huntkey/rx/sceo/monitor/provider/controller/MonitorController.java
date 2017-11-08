@@ -237,8 +237,9 @@ public class MonitorController {
      * @param node 节点信息
      * @return
      */
+    @Revoked(type=OperateType.DETAIL)
     @RequestMapping(value = "/formula", method = RequestMethod.POST)
-    public Result formula(@RequestBody NodeTo node) {
+    public Result formula(@RequestBody @Revoked NodeTo node) {
     	Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(service.formula(node));
