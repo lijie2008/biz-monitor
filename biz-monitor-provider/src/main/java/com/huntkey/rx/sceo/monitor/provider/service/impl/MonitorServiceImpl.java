@@ -1453,7 +1453,7 @@ public class MonitorServiceImpl implements MonitorService {
        }
        
        // 获取当前节点未使用的资源
-       JSONObject unusedRes = orderTree.queryNotUsingResource(key, lvlCode, Integer.MAX_VALUE, Integer.MAX_VALUE);
+       JSONObject unusedRes = orderTree.queryNotUsingResource(key, lvlCode, 1, Integer.MAX_VALUE);
        
        JSONArray datas = unusedRes.getJSONArray("data");
        
@@ -1512,6 +1512,7 @@ public class MonitorServiceImpl implements MonitorService {
                        o_node.setBackSet(null);
                }
            }
+           
            hasOps.put(key, lvlCode, o_node);
        }
         return n_resources;
