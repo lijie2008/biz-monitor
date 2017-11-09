@@ -1026,6 +1026,8 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     bkObj.put("mtor_bk1", bk.getBk1());
                     bkObj.put("mtor_bk2", bk.getBk2());
                     bkObj.put("mtor_bk3", bk.getBk3());
+                    bkObj.put("creuser", CREUSER);
+                    bkObj.put("moduser", MODUSER);
                     bkSet.add(bkObj);
                 }
                 node.put("mtor_bk_set", bkSet);
