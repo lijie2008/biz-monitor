@@ -905,6 +905,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     node.remove("cretime");
                     node.remove("modtime");
                     node.remove("is_del");
+                    node.remove("edm_code");
                     node.put("creuser", CREUSER);
                     node.put("moduser", MODUSER);
                     if(edmName.endsWith("depttree")){

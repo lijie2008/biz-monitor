@@ -136,7 +136,7 @@ public interface Constant {
     
     String NULL="";//空标记
     
-    String STAFF="staff";//员工表
+    String STAFF="employee";//员工表
     
     String STAF002="staf002";//员工姓名字段
     
@@ -144,7 +144,7 @@ public interface Constant {
     
     String MAXINVALIDDATE="9999-12-31";//最大失效日期
     
-    String STAFFCLASSID="6f913ed266e211e7b2e4005056bc4879";
+    String STAFFCLASSID="2d6b8cd2abcb11e78bba005056bc4879";
     
     String EDMPCODE = "moni_sub_res";
     
