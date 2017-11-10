@@ -909,6 +909,8 @@ public class MonitorServiceImpl implements MonitorService {
         nodeDetail.setLvl(oldNode.getLvl());
         nodeDetail.setType(oldNode.getType());
         nodeDetail.setRelateId(oldNode.getRelateId());
+        nodeDetail.setRelateCnd(oldNode.getRelateCnd());
+        nodeDetail.setRelateCndText(oldNode.getRelateCndText());
         List<BackTo> backSet = nodeDetail.getBackSet();
         
         if(backSet != null && !backSet.isEmpty())
