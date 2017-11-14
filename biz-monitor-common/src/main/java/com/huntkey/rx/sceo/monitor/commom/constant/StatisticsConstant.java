@@ -133,7 +133,12 @@ public interface StatisticsConstant {
      * PEID006:查询返回添加字段    展示名称   PEID001 + SYMBOL_F + PEID005
      */
     public String PEID006 = "peid006";
-    
+
+    /**
+     * 本期累计值
+     */
+    String STAT_CURAMT = "stat_curamt";
+
     /**
      * SYMBOL_F:符号F
      */

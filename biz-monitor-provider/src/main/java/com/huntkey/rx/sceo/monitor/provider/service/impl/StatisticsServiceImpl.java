@@ -40,13 +40,13 @@ public class StatisticsServiceImpl implements StatisticsService {
     /**edm类名*/
     private String EDM_NAME = "statistics";
     /**所属监管类*/
-    private String STAT001 = "stat001";
+    private String STAT001 = "stat_moniclass";
     /**所属监管类对象*/
-    private String STAT002 = "stat002";
+    private String STAT002 = "stat_moniobj";
     /**属性id*/
-    private String STAT003 = "stat003";
+    private String STAT003 = "stat_moniattr";
     /**周期类id*/
-    private String STAT013 = "stat013";
+    private String STAT013 = "stat_pridobj";
 
     @Autowired
     ServiceCenterClient serviceCenterClient;

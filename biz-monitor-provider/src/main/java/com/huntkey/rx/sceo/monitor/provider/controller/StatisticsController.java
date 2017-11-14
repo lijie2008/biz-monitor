@@ -10,9 +10,7 @@
 package com.huntkey.rx.sceo.monitor.provider.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
@@ -40,6 +38,14 @@ public class StatisticsController {
     @RequestMapping("/query/statistics")
     public Result getStatistics(@RequestBody JSONObject data) {
         return statisticsBiz.queryStatistics(data);
+    }
+
+    @GetMapping("/curamt")
+    public Result getStatistics(@RequestParam String edmId,
+                                @RequestParam String objId,
+                                @RequestParam String periodId,
+                                @RequestParam String attributeId){
+        return statisticsBiz.queryStatistics(edmId,objId,periodId,attributeId);
     }
 
 }

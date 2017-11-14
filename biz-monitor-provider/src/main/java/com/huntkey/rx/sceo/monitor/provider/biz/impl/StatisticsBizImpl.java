@@ -4,13 +4,14 @@
  * Package Name:com.huntkey.rx.sceo.monitor.provider.biz.impl
  * Date:2017年8月8日下午3:08:01
  * Copyright (c) 2017 嘉源锐信 All Rights Reserved.
- *
-*/
+ */
 
 package com.huntkey.rx.sceo.monitor.provider.biz.impl;
 
 import java.util.Calendar;
 
+import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
+import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +35,9 @@ import com.huntkey.rx.sceo.monitor.provider.service.StatisticsService;
  * ClassName:StatisticsBizImpl
  * Function: 统计数据查询业务逻辑
  * Date:     2017年8月8日 下午3:08:01
- * @author   caozhenx
- * @version  
- * @see 	 
+ * @author caozhenx
+ * @version
+ * @see
  */
 @Service("statisticsBiz")
 public class StatisticsBizImpl implements StatisticsBiz {
@@ -53,7 +54,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
     MonitorTreeService monitorTreeService;
 
     /**
-     * 
+     *
      * {
      *      id:周期类id,
      *      year:财年,
@@ -61,7 +62,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
      *      beginTime:开始时间,
      *      endTime:结束时间
      * }
-     * 
+     *
      */
     @Override
     public Result queryPeriod(JSONObject json) {
@@ -100,7 +101,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
      *             "nodeName":"节点名"
      *         }
      *     }
-     *     
+     *
      * 返回结果
      *       {
      *      "monitorId":"所属监管类id",
@@ -122,7 +123,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
      *                  {"attrId":"attrid2","attrName":"属性2","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"}
      *              ]
      *          },
-     *          
+     *
      *          {
      *          "nodeId":"节点id",
      *          "nodeName":"节点名",
@@ -225,7 +226,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
 
         if (StringUtils.isNotBlank(treeNodeId) && StringUtils.isNotBlank(edmcNameEn)) {
             JSONArray jsonArray = monitorTreeService.getChileNodes(treeNodeId, edmcNameEn);
-            LOG.info("查询子节点结果jsonArray:{}",jsonArray.toJSONString());
+            LOG.info("查询子节点结果jsonArray:{}", jsonArray.toJSONString());
             return jsonArray;
         }
 
@@ -240,15 +241,15 @@ public class StatisticsBizImpl implements StatisticsBiz {
      * @param periodId 周期类id
      * @param attributeIds 属性集
      * @return [
-                {"attrId":"attrid1","attrName":"属性1","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"},
-                {"attrId":"attrid2","attrName":"属性2","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"}
-            ]
+    {"attrId":"attrid1","attrName":"属性1","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"},
+    {"attrId":"attrid2","attrName":"属性2","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"}
+    ]
      */
     public JSONArray queryStatistics(String monitorId, String nodeId, String periodId,
                                      JSONArray attributeIds) {
 
         LOG.info("查询节点统计数据开始,monitorId:{},nodeId:{},periodId:{},attributeIds:{}",
-                new Object[] { monitorId, nodeId, periodId, JsonUtil.getJsonString(attributeIds) });
+                new Object[]{monitorId, nodeId, periodId, JsonUtil.getJsonString(attributeIds)});
         long time = System.currentTimeMillis();
 
         //当天 统计数据
@@ -287,10 +288,10 @@ public class StatisticsBizImpl implements StatisticsBiz {
      * @param lastYearCurrentMonthJson 去年同月数据
      * @param queryMonthJson 传入的财月数据
      * @param lastYearQueryMonthJson 传入财月  去年同月数据
-     * @return  [
-                {"attrId":"attrid1","attrName":"属性1","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"},
-                {"attrId":"attrid2","attrName":"属性2","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"}
-            ]
+     * @return [
+    {"attrId":"attrid1","attrName":"属性1","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"},
+    {"attrId":"attrid2","attrName":"属性2","dayValue":"日值","monthValue":"月值","monthLinkRelativeRatio":"环比值","monthLearOnYear":"同比值","queryMonthValue":"财年累计值","queryMonthLinkRelativeRatio":"财年累计同比值"}
+    ]
      */
     private JSONArray processResult(JSONArray attributeIds, JSONObject currentDayJson,
                                     JSONObject currentMonthJson, JSONObject lastMonthJson,
@@ -535,4 +536,22 @@ public class StatisticsBizImpl implements StatisticsBiz {
 
     }
 
+    @Override
+    public Result queryStatistics(String edmId, String objId, String periodId, String attributeId) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        JSONObject queryJson = statisticsService.queryStatistics(edmId, objId, periodId, attributeId);
+        JSONArray dataSet = queryJson.getJSONArray(ServiceCenterConstant.DATA_SET);
+        if (dataSet == null || dataSet.size() <= 0) {
+            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),ErrorMessage._60005.getMsg());
+        }
+        JSONObject statisticObj = dataSet.getJSONObject(0);
+
+        if (!statisticObj.containsKey(StatisticsConstant.STAT_CURAMT)){
+            ApplicationException.throwCodeMesg(ErrorMessage._60023.getCode(),ErrorMessage._60023.getMsg());
+        }
+        float curamt = statisticObj.getFloatValue(StatisticsConstant.STAT_CURAMT);
+        result.setData(curamt);
+        return result;
+    }
 }
