@@ -16,7 +16,7 @@
         <dependency>
             <groupId>com.huntkey.rx.commons.utils</groupId>
             <artifactId>sceo-commons-utils</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <artifactId>service-center-common</artifactId>
