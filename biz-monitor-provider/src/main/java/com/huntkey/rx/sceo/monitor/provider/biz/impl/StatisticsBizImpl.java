@@ -564,7 +564,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
         if (dataSet == null || dataSet.size() <= 0) {
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),ErrorMessage._60005.getMsg());
         }
-        result.setData(queryJson);
+        result.setData(dataSet);
         return result;
     }
     
