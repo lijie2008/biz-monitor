@@ -47,6 +47,8 @@ public class StatisticsController {
                                 @RequestParam String attributeId){
         return statisticsBiz.queryStatistics(edmId,objId,periodId,attributeId);
     }
+    
+    sdfsd
 
 }
 
