@@ -97,5 +97,15 @@ public interface StatisticsBiz {
      */
     Result queryStatistics(String edmId,String objId,String periodId,String attributeId);
 
+    /**
+     * queryStatistics:批量查询统计类
+     * @author caozhenx
+     * @param moniIds
+     * @param periodId
+     * @param attributeIds
+     * @return
+     */
+    Result queryStatistics(String moniIds, String periodId, String attributeIds);
+
 }
 

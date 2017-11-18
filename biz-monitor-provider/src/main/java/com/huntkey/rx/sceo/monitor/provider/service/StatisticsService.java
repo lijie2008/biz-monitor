@@ -29,5 +29,15 @@ public interface StatisticsService {
      * @return Result 查询结果
      */
     public JSONObject queryStatistics(String monitorClass,String monitorId,String periodId,String attributeId);
+
+    /**
+     * queryStatistics:批量查询统计类
+     * @author caozhenx
+     * @param moniIds
+     * @param periodId
+     * @param attributeIds
+     * @return
+     */
+    public JSONObject queryStatistics(String moniIds, String periodId, String attributeIds);
 }
 

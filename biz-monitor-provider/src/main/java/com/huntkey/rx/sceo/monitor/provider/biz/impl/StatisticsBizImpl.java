@@ -554,4 +554,19 @@ public class StatisticsBizImpl implements StatisticsBiz {
         result.setData(curamt);
         return result;
     }
+
+    @Override
+    public Result queryStatistics(String moniIds, String periodId, String attributeIds) {
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        JSONObject queryJson = statisticsService.queryStatistics(moniIds,periodId, attributeIds);
+        JSONArray dataSet = queryJson.getJSONArray(ServiceCenterConstant.DATA_SET);
+        if (dataSet == null || dataSet.size() <= 0) {
+            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),ErrorMessage._60005.getMsg());
+        }
+        result.setData(queryJson);
+        return result;
+    }
+    
+    
 }

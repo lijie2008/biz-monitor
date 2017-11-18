@@ -25,30 +25,32 @@ import com.huntkey.rx.sceo.monitor.provider.biz.StatisticsBiz;
 @RestController
 @RequestMapping("/statistics")
 public class StatisticsController {
-    
-    
+
     @Autowired
     StatisticsBiz statisticsBiz;
-    
+
     @RequestMapping("/query/period")
     public Result getPeriod(@RequestBody(required = false) JSONObject data) {
         return statisticsBiz.queryPeriod(data);
     }
-    
+
     @RequestMapping("/query/statistics")
     public Result getStatistics(@RequestBody JSONObject data) {
         return statisticsBiz.queryStatistics(data);
     }
 
     @GetMapping("/curamt")
-    public Result getStatistics(@RequestParam String edmId,
-                                @RequestParam String objId,
-                                @RequestParam String periodId,
-                                @RequestParam String attributeId){
-        return statisticsBiz.queryStatistics(edmId,objId,periodId,attributeId);
+    public Result getStatistics(@RequestParam String edmId, @RequestParam String objId, @RequestParam String periodId,
+                                @RequestParam String attributeId) {
+        return statisticsBiz.queryStatistics(edmId, objId, periodId, attributeId);
     }
-    
-    sdfsd
+
+    @RequestMapping("/statistics/curamts")
+    public Result getStatistic(@RequestParam(value = "moniIds") String moniIds,
+                               @RequestParam(value = "periodId") String periodId,
+                               @RequestParam(value = "attributeIds") String attributeIds){
+        return statisticsBiz.queryStatistics(moniIds,periodId,attributeIds);
+        
+    };
 
 }
-
