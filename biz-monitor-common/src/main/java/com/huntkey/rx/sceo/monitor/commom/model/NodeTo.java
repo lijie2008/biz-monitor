@@ -19,7 +19,6 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.huntkey.rx.commons.utils.string.StringUtil;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 
 /**
@@ -288,22 +287,6 @@ public class NodeTo implements Serializable{
                     
                 }
                 node.setResources(resources);
-            }
-            
-            JSONArray bks = to.getJSONArray("mtor_bk_set");
-            
-            if(bks != null && !bks.isEmpty()){
-                List<BackTo> bkList = new ArrayList<BackTo>();
-                for(int k = 0; k < bks.size(); k++){
-                    JSONObject bk = bks.getJSONObject(k);
-                    BackTo bkTo = new BackTo();
-                    bkTo.setBk1(bk.getString("mtor_bk1"));
-                    bkTo.setBk2(bk.getString("mtor_bk2"));
-                    if(!StringUtil.isNullOrEmpty(bk.getString("mtor_bk3")))
-                        bkTo.setBk3(Integer.valueOf(bk.getString("mtor_bk3")));
-                    bkList.add(bkTo);
-                }
-                node.setBackSet(bkList);
             }
             nodes.add(node);
         }

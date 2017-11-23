@@ -42,7 +42,6 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     private static final String ROOT_LVL_CODE = "1,";
     private static final String MONITOR_HISTORY_SET=".moni_his_set";
     private static final String MONITOR_VERSION = "monitortree";
-    private static final String SPE_HIS_SET = ".mdep_chag_set";
     
     @Autowired
     ServiceCenterClient serviceCenterClient;
@@ -103,35 +102,58 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             
             JSONObject version = versions.getJSONObject(i);
             
-            String[] edmNames = null;
-            if(edmcNameEn.endsWith("depttree"))
-                edmNames = new String[]{edmcNameEn,edmcNameEn+SPE_HIS_SET};
-            else
-                edmNames = new String[]{edmcNameEn,edmcNameEn+MONITOR_HISTORY_SET};
+            String[] edmNames = new String[]{edmcNameEn,edmcNameEn+MONITOR_HISTORY_SET};
                 
             for(String edmName : edmNames){
                 SearchParam requestParams = new SearchParam(edmName);
                 
-                String characters[] = new String[] { "id","moni_node_no", "moni_node_name", "moni_beg", "moni_end" };
-                requestParams.addColumns(characters);
-                requestParams
-                .addSortParam(new SortNode("moni_end",SortType.ASC))
-                .addCond_equals("moni_lvl_code", ROOT_LVL_CODE)
-                .addCond_equals("moni_lvl", ROOT_LVL)
-                .addSortParam(new SortNode("moni_beg", SortType.DESC));
+                String[] characters = null;
+                
+                if(edmName.endsWith(MONITOR_HISTORY_SET)){
+                    characters = new String[] { "id","moni_hnode_no", "moni_hnode_name", "moni_hbeg", "moni_hend" };
+                    requestParams.addColumns(characters);
+                    requestParams
+                    .addSortParam(new SortNode("moni_hend",SortType.ASC))
+                    .addCond_equals("moni_hlvl_code", ROOT_LVL_CODE)
+                    .addCond_equals("moni_hlvl", ROOT_LVL)
+                    .addSortParam(new SortNode("moni_hbeg", SortType.DESC));
+                }else{
+                    characters = new String[] { "id","moni_node_no", "moni_node_name", "moni_beg", "moni_end" };
+                    requestParams.addColumns(characters);
+                    requestParams
+                    .addSortParam(new SortNode("moni_end",SortType.ASC))
+                    .addCond_equals("moni_lvl_code", ROOT_LVL_CODE)
+                    .addCond_equals("moni_lvl", ROOT_LVL)
+                    .addSortParam(new SortNode("moni_beg", SortType.DESC));
+                }
+                
 
-                if (!StringUtil.isNullOrEmpty(treeName)) 
-                    requestParams.addCond_like("moni_node_name", treeName);
+                if (!StringUtil.isNullOrEmpty(treeName)){
+                    if(edmName.endsWith(MONITOR_HISTORY_SET))
+                        requestParams.addCond_like("moni_hnode_name", treeName);
+                    else
+                        requestParams.addCond_like("moni_node_name", treeName);
+                } 
                 
                 // ORM暂不支持or查询，先只根据失效时间过滤
                 if (!StringUtil.isNullOrEmpty(endTime)) {
-                    requestParams
-                    .addCond_lessOrEquals("moni_beg", endTime)
-                    .addCond_greaterOrEquals("moni_end", endTime);
+                    if(edmName.endsWith(MONITOR_HISTORY_SET))
+                        requestParams
+                        .addCond_lessOrEquals("moni_hbeg", endTime)
+                        .addCond_greaterOrEquals("moni_hend", endTime);
+                    else
+                        requestParams
+                        .addCond_lessOrEquals("moni_beg", endTime)
+                        .addCond_greaterOrEquals("moni_end", endTime);
                 }else{
-                    requestParams
-                    .addCond_greaterOrEquals("moni_beg", versions.getJSONObject(i).getString("beginTime") + Constant.STARTTIME)
-                    .addCond_lessOrEquals("moni_end", versions.getJSONObject(i).getString("endTime")+Constant.ENDTIME);
+                    if(edmName.endsWith(MONITOR_HISTORY_SET))
+                        requestParams
+                        .addCond_greaterOrEquals("moni_hbeg", versions.getJSONObject(i).getString("beginTime") + Constant.STARTTIME)
+                        .addCond_lessOrEquals("moni_hend", versions.getJSONObject(i).getString("endTime")+Constant.ENDTIME);
+                    else
+                        requestParams
+                        .addCond_greaterOrEquals("moni_beg", versions.getJSONObject(i).getString("beginTime") + Constant.STARTTIME)
+                        .addCond_lessOrEquals("moni_end", versions.getJSONObject(i).getString("endTime")+Constant.ENDTIME);
                 }
                 
                 Result treesResult = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
@@ -145,17 +167,26 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                             JSONObject temp = treeArray.getJSONObject(j);
                             JSONObject tree = new JSONObject();
                             tree.put("rootNodeId", temp.getString("id"));
-                            tree.put("rootNodeName", temp.getString("moni_node_name"));
-                            tree.put("beginTime", formatDateStr(new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(temp.getLong("moni_beg"))),Constant.YYYY_MM_DD));
-                            tree.put("endTime", formatDateStr(new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(temp.getLong("moni_end"))),Constant.YYYY_MM_DD));
+                            if(edmName.endsWith(MONITOR_HISTORY_SET)){
+                                tree.put("rootNodeName", temp.getString("moni_hnode_name"));
+                                tree.put("beginTime", formatDateStr(new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(temp.getLong("moni_hbeg"))),Constant.YYYY_MM_DD));
+                                tree.put("endTime", formatDateStr(new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(temp.getLong("moni_hend"))),Constant.YYYY_MM_DD));
+                            }else{
+                                tree.put("rootNodeName", temp.getString("moni_node_name"));
+                                tree.put("beginTime", formatDateStr(new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(temp.getLong("moni_beg"))),Constant.YYYY_MM_DD));
+                                tree.put("endTime", formatDateStr(new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).format(new Date(temp.getLong("moni_end"))),Constant.YYYY_MM_DD));
+                            }
                             tree.put("rootEdmcNameEn", edmName);
-                            
                             JSONArray rootNodes = version.getJSONArray("rootNodes") == null ? new JSONArray():version.getJSONArray("rootNodes");
                             rootNodes.add(tree);
                             version.put("rootNodes", rootNodes);
 
-                            if(version.getString("rootNodeId").equals(temp.getString("id")))
-                                version.put("rootNodeName", temp.getString("moni_node_name"));
+                            if(version.getString("rootNodeId").equals(temp.getString("id"))){
+                                if(edmName.endsWith(MONITOR_HISTORY_SET))
+                                    version.put("rootNodeName", temp.getString("moni_hnode_name"));
+                                else
+                                    version.put("rootNodeName", temp.getString("moni_node_name"));
+                            }
                         }
                     }
                 } else 
@@ -208,10 +239,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     	// 需要确定必须从哪里开始查-- 有根节点id 必须根据edmcNameEn 查一次就可以
     	String[] edmNames = null;
     	if(StringUtil.isNullOrEmpty(rootNodeId)){
-    	    if(rootEdmcNameEn.endsWith("depttree"))
-    	        edmNames = new String[]{rootEdmcNameEn,rootEdmcNameEn+SPE_HIS_SET};
-    	    else
-    	        edmNames = new String[]{rootEdmcNameEn,rootEdmcNameEn+MONITOR_HISTORY_SET};
+    	    edmNames = new String[]{rootEdmcNameEn,rootEdmcNameEn+MONITOR_HISTORY_SET};
     	}else
     	    edmNames = new String[]{rootEdmcNameEn};
     	
@@ -219,25 +247,48 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     	    //组装参数
     	    SearchParam requestParams = new SearchParam(edmName);
     	    
-            requestParams
-            .addSortParam(new SortNode("moni_lvl",SortType.ASC))
-            .addSortParam(new SortNode("moni_lvl_code",SortType.ASC));
-            if(StringUtil.isNullOrEmpty(endDate) || endDate.startsWith(Constant.ENDTIME)){
-                requestParams.addCond_lessOrEquals("moni_beg", startDate)
-                             .addCond_greater("moni_end", startDate);
+    	    if(edmName.endsWith(MONITOR_HISTORY_SET)){
+                requestParams
+                .addSortParam(new SortNode("moni_hlvl",SortType.ASC))
+                .addSortParam(new SortNode("moni_hlvl_code",SortType.ASC));
+                if(StringUtil.isNullOrEmpty(endDate) || endDate.startsWith(Constant.ENDTIME)){
+                    requestParams.addCond_lessOrEquals("moni_hbeg", startDate)
+                    .addCond_greater("moni_hend", startDate);
+                    
+                }else{
+                    requestParams.addCond_greaterOrEquals("moni_hbeg", startDate)
+                    .addCond_lessOrEquals("moni_hend", endDate);
+                }
                 
-            }else{
-                requestParams.addCond_greaterOrEquals("moni_beg", startDate)
-                .addCond_lessOrEquals("moni_end", endDate);
-            }
-            
-            if (StringUtil.isNullOrEmpty(rootNodeId)) {
-                requestParams
-                .addCond_equals("moni_lvl", ROOT_LVL)
-                .addCond_equals("moni_lvl_code", ROOT_LVL_CODE);
-            }else 
-                requestParams
-                .addCond_equals(Constant.ID, rootNodeId);
+                if (StringUtil.isNullOrEmpty(rootNodeId)) {
+                    requestParams
+                    .addCond_equals("moni_hlvl", ROOT_LVL)
+                    .addCond_equals("moni_hlvl_code", ROOT_LVL_CODE);
+                }else 
+                    requestParams
+                    .addCond_equals(Constant.ID, rootNodeId);
+    	    }else{
+    	        requestParams
+    	        .addSortParam(new SortNode("moni_lvl",SortType.ASC))
+    	        .addSortParam(new SortNode("moni_lvl_code",SortType.ASC));
+    	        if(StringUtil.isNullOrEmpty(endDate) || endDate.startsWith(Constant.ENDTIME)){
+    	            requestParams.addCond_lessOrEquals("moni_beg", startDate)
+    	            .addCond_greater("moni_end", startDate);
+    	            
+    	        }else{
+    	            requestParams.addCond_greaterOrEquals("moni_beg", startDate)
+    	            .addCond_lessOrEquals("moni_end", endDate);
+    	        }
+    	        
+    	        if (StringUtil.isNullOrEmpty(rootNodeId)) {
+    	            requestParams
+    	            .addCond_equals("moni_lvl", ROOT_LVL)
+    	            .addCond_equals("moni_lvl_code", ROOT_LVL_CODE);
+    	        }else 
+    	            requestParams
+    	            .addCond_equals(Constant.ID, rootNodeId);
+    	    }
+    	    
 
             Result rootNodeResult = serviceCenterClient
                     .queryServiceCenter(requestParams.toJSONString());
@@ -254,18 +305,35 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                     
                     // 表中存在需要的根节点 - 查找出所有的节点信息
                     SearchParam params = new SearchParam(edmName);
-                    params
-                    .addSortParam(new SortNode("moni_lvl",SortType.ASC))
-                    .addSortParam(new SortNode("moni_lvl_code",SortType.ASC))
-                    .addCond_like("moni_lvl_code", ROOT_LVL_CODE);
                     
-                    if(StringUtil.isNullOrEmpty(endDate) || endDate.startsWith(Constant.ENDTIME)){
-                        params.addCond_lessOrEquals("moni_beg", startDate)
-                                     .addCond_greater("moni_end", startDate);
+                    if(edmName.endsWith(MONITOR_HISTORY_SET)){
+                        params
+                        .addSortParam(new SortNode("moni_hlvl",SortType.ASC))
+                        .addSortParam(new SortNode("moni_hlvl_code",SortType.ASC))
+                        .addCond_like("moni_hlvl_code", ROOT_LVL_CODE);
                         
+                        if(StringUtil.isNullOrEmpty(endDate) || endDate.startsWith(Constant.ENDTIME)){
+                            params.addCond_lessOrEquals("moni_hbeg", startDate)
+                                         .addCond_greater("moni_hend", startDate);
+                            
+                        }else{
+                            params.addCond_greaterOrEquals("moni_hbeg", startDate)
+                            .addCond_lessOrEquals("moni_hend", endDate);
+                        }
                     }else{
-                        params.addCond_greaterOrEquals("moni_beg", startDate)
-                        .addCond_lessOrEquals("moni_end", endDate);
+                        params
+                        .addSortParam(new SortNode("moni_lvl",SortType.ASC))
+                        .addSortParam(new SortNode("moni_lvl_code",SortType.ASC))
+                        .addCond_like("moni_lvl_code", ROOT_LVL_CODE);
+                        
+                        if(StringUtil.isNullOrEmpty(endDate) || endDate.startsWith(Constant.ENDTIME)){
+                            params.addCond_lessOrEquals("moni_beg", startDate)
+                                         .addCond_greater("moni_end", startDate);
+                            
+                        }else{
+                            params.addCond_greaterOrEquals("moni_beg", startDate)
+                            .addCond_lessOrEquals("moni_end", endDate);
+                        }
                     }
                     
                     Result allResult = serviceCenterClient.queryServiceCenter(params.toJSONString());
@@ -327,19 +395,25 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     public JSONObject getNewMonitorTreeStartDate(String edmcNameEn) {
 
         JSONObject resultData = new JSONObject();
-
+        
         // 查找最大失效时间的树
         SearchParam requestParams = new SearchParam(edmcNameEn);
         
-        requestParams.addCond_equals("moni_lvl_code", ROOT_LVL_CODE);
-        requestParams.addCond_equals("moni_lvl", ROOT_LVL);
-
-        requestParams.addSortParam(new SortNode("moni_end", SortType.DESC));
-
-        requestParams.addPagenation(new PagenationNode(1, 1));
-
-        String characters[] = new String[] {"moni_end" };
-        requestParams.addColumns(characters);
+        String[] characters = null;
+        if(edmcNameEn.endsWith(MONITOR_HISTORY_SET)){
+            requestParams.addCond_equals("moni_hlvl_code", ROOT_LVL_CODE)
+            .addCond_equals("moni_hlvl", ROOT_LVL)
+            .addSortParam(new SortNode("moni_hend", SortType.DESC));
+            characters = new String[] {"moni_hend" };
+        }else{
+            requestParams.addCond_equals("moni_lvl_code", ROOT_LVL_CODE)
+                         .addCond_equals("moni_lvl", ROOT_LVL)
+                         .addSortParam(new SortNode("moni_end", SortType.DESC));
+            characters = new String[] {"moni_end" };
+        }
+            
+        requestParams.addPagenation(new PagenationNode(1, 1))
+                     .addColumns(characters);
 
         Result treeResult = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
         
@@ -356,8 +430,15 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             JSONArray rootArray = data.getJSONArray("dataset");
             
             if (rootArray != null && !rootArray.isEmpty()) {
-
-                String lastDate = new SimpleDateFormat(Constant.YYYY_MM_DD).format(new Date(rootArray.getJSONObject(0).getLong("moni_end")));
+                
+                String lastDate = null;
+                
+                if(edmcNameEn.endsWith(MONITOR_HISTORY_SET)){
+                    lastDate = new SimpleDateFormat(Constant.YYYY_MM_DD).format(new Date(rootArray.getJSONObject(0).getLong("moni_hend")));
+                }else{
+                    lastDate = new SimpleDateFormat(Constant.YYYY_MM_DD).format(new Date(rootArray.getJSONObject(0).getLong("moni_end")));
+                }
+                
                 DateFormat format =  new SimpleDateFormat(Constant.YYYY_MM_DD);
                 try {
                     Date tempDate = format.parse(lastDate);

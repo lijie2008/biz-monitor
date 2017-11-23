@@ -178,41 +178,5 @@ public class MonitorTreeOrderController {
         result.setData(service.store(orderId));
         return result;
     }
-    
-    
-    
-    // --------------------------------------------redis操作----------------------------------
-    
-    /**
-     * 
-     * : 查询revoke
-     * @author lijie
-     * @param key 临时单Key
-     * @return
-     */
-    @GetMapping("/key")
-    public Result query(@RequestParam(value="key") @NotBlank(message="临时单Key不能为空") String key){
-       
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_SUCCESS);
-        result.setData(opsList.range(key, 0, opsList.size(key)));
-        return result;
-    }
-    
-    /**
-     * 
-     * : 删除revoke
-     * @author lijie
-     * @param key 临时单Key
-     * @return
-     */
-    @GetMapping("/del")
-    public Result del(@RequestParam(value="key") @NotBlank(message="临时单Key不能为空") String key){
-       
-        Result result = new Result();
-        result.setRetCode(Result.RECODE_SUCCESS);
-        opsList.getOperations().delete(key);
-        return result;
-    }
 }
 

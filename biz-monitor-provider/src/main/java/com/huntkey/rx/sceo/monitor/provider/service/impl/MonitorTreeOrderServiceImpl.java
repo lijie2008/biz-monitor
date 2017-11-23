@@ -42,7 +42,6 @@ import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
-import com.huntkey.rx.sceo.monitor.commom.model.BackTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
@@ -76,7 +75,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     private static final String KEY_SEP = "-";
     private static final String MTOR_NODES_EDM = "monitortreeorder.mtor_node_set";
     private static final String PRE_VERSION = "V";
-    private static final String SPE_HIS_SET = ".mdep_chag_set"; 
     
     @Autowired
     private ServiceCenterClient client;
@@ -908,10 +906,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     node.remove("edm_code");
                     node.put("creuser", CREUSER);
                     node.put("moduser", MODUSER);
-                    if(edmName.endsWith("depttree")){
-                        node.put("mdep_beg", node.get("moni_beg"));
-                        node.put("mdep_end", node.get("moni_end"));
-                    }
                     
                     JSONArray nodeRes = new JSONArray();
                     // 当前节点关联的资源
@@ -929,15 +923,12 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     if(!nodeRes.isEmpty())
                         node.put("moni_res_set", nodeRes);
                     
-                    addNodes.add(node);
+                    addNodes.add(setHis(node));
                 }
                 
                 // 新增历史集
                 if(!addNodes.isEmpty()){
-                    if(edmName.endsWith("depttree"))
-                        edmName = edmName + SPE_HIS_SET;
-                    else
-                        edmName = edmName+".moni_his_set";
+                    edmName = edmName+".moni_his_set";
                     MergeParam hisParam = new MergeParam(edmName);
                     hisParam.addAllData(addNodes);
                     Result rest = client.add(hisParam.toJSONString());
@@ -985,6 +976,46 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     
         return orderId;
     }
+    
+    /**
+     * 
+     * setHis:正式表字段转成历史表字段信息
+     * @author lijie
+     * @param node
+     * @return
+     */
+    private JSONObject setHis(JSONObject node) {
+        JSONObject obj = new JSONObject();
+        obj.put(Constant.PID, node.getString(Constant.PID));
+        obj.put("moni_hnode_no", node.getString("moni_node_no"));
+        obj.put("moni_hnode_name", node.getString("moni_node_name"));
+        obj.put("moni_hnode_def", node.getString("moni_node_def"));
+        obj.put("moni_hmajor", node.getString("moni_major"));
+        obj.put("moni_hassit", node.getString("moni_assit"));
+        obj.put("moni_hbeg", node.getString("moni_beg"));
+        obj.put("moni_hend", node.getString("moni_end"));
+        obj.put("moni_hindex_conf", node.getString("moni_index_conf"));
+        obj.put("moni_hseq", node.get("moni_seq"));
+        obj.put("moni_hlvl_code", node.getString("moni_lvl_code"));
+        obj.put("moni_hlvl", node.get("moni_lvl"));
+        obj.put("moni_henum", node.getString("moni_enum"));
+        obj.put("moni_hrelate_cnd", node.getString("moni_relate_cnd"));
+        
+        JSONArray res = node.getJSONArray("moni_res_set");
+        if(res != null && !res.isEmpty() ){
+            JSONArray resources = new JSONArray();
+            for(int i = 0; i < res.size(); i++){
+                JSONObject reObj = new JSONObject();
+                reObj.put("moni_hres_id", res.getJSONObject(i).getString("moni_res_id"));
+                resources.add(reObj);
+            }
+            obj.put("moni_hres_set", resources);
+        }
+        
+        obj.put("creuser", CREUSER);
+        obj.put("moduser", MODUSER);
+        return obj;
+    }
 
     private JSONArray setValues(String key, List<NodeTo> nodes){
         
@@ -1018,20 +1049,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     resources.add(reObj);
                 }
                 node.put("mtor_res_set", resources);
-            }
-            
-            if(to.getBackSet() != null && !to.getBackSet().isEmpty() ){
-                JSONArray bkSet = new JSONArray();
-                for(BackTo bk : to.getBackSet()){
-                    JSONObject bkObj = new JSONObject();
-                    bkObj.put("mtor_bk1", bk.getBk1());
-                    bkObj.put("mtor_bk2", bk.getBk2());
-                    bkObj.put("mtor_bk3", bk.getBk3());
-                    bkObj.put("creuser", CREUSER);
-                    bkObj.put("moduser", MODUSER);
-                    bkSet.add(bkObj);
-                }
-                node.put("mtor_bk_set", bkSet);
             }
             node.put("creuser", CREUSER);
             node.put("moduser", MODUSER);
@@ -1081,15 +1098,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 node.put("moni_res_set", resources);
             }
             
-            // 特殊树的赋值
-            if(to.getBackSet() != null && !to.getBackSet().isEmpty() && edmName.endsWith("depttree")){
-                node.put("mdep_beg", to.getBegin());
-                node.put("mdep_end", to.getEnd());
-                for(BackTo bk : to.getBackSet()){
-                    node.put("mdep_leader_post", bk.getBk1());
-                    break;
-                }
-            }
             node.put("creuser", CREUSER);
             node.put("moduser", MODUSER);
             savaNodes.add(node);

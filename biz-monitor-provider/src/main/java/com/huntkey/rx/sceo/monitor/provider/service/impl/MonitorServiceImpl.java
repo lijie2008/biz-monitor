@@ -64,6 +64,7 @@ public class MonitorServiceImpl implements MonitorService {
     private static final String MTOR_NODES_EDM = "monitortreeorder.mtor_node_set";
     private static final String KEY_SEP = "-";
     private static final String DEFAULTNODENAME="未命名节点";
+    private static final String MONITOR_HISTORY_SET=".moni_his_set";
     
     private static final Logger logger = LoggerFactory.getLogger(MonitorServiceImpl.class);
     
@@ -346,23 +347,6 @@ public class MonitorServiceImpl implements MonitorService {
                         if(!node_res.isEmpty())
                             to.put("mtor_res_set", node_res);
                     }
-                    
-                    // 查询出备用属性集
-                    SearchParam seParams = new SearchParam(MTOR_NODES_EDM+".mtor_bk_set");
-                    seParams.addCond_equals(PID, to.getString(ID));
-                    Result mtor_bk_set = client.queryServiceCenter(seParams.toJSONString());
-                    
-                    if(mtor_bk_set.getRetCode() == Result.RECODE_SUCCESS){
-                        if(mtor_bk_set.getData() != null){
-                            JSONArray bk_set = JSONObject.parseObject(JSONObject.toJSONString(mtor_bk_set.getData()))
-                                    .getJSONArray(Constant.DATASET);
-                            
-                            if(bk_set != null && !bk_set.isEmpty())
-                                to.put("mtor_bk_set", bk_set);
-                        }
-                    }else{
-                    	throw new ServiceException(mtor_bk_set.getErrMsg());
-                    }
                 }
                 
                 list = NodeTo.setValue(nodes);
@@ -598,7 +582,7 @@ public class MonitorServiceImpl implements MonitorService {
         
         JSONObject temp = new JSONObject();
         
-        temp.put("orde_order_num","LS"+System.currentTimeMillis());
+        temp.put("orde_nbr","LS"+System.currentTimeMillis());
         temp.put("mtor_order_type", changeType);
         temp.put("mtor_cls_id", classId);
         temp.put("mtor_order_root", rootId);
@@ -684,8 +668,16 @@ public class MonitorServiceImpl implements MonitorService {
         if(rootNode == null)
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), ErrorMessage._60005.getMsg());
         
-        Date rootBegin = new Date(rootNode.getLong("moni_beg"));
-        Date rootEnd = new Date(rootNode.getLong("moni_end"));
+        Date rootBegin = null;
+        Date rootEnd = null;
+        
+        if(rootEdmcNameEn.endsWith(MONITOR_HISTORY_SET)){
+            rootBegin = new Date(rootNode.getLong("moni_hbeg"));
+            rootEnd = new Date(rootNode.getLong("moni_hend"));
+        }else{
+            rootBegin = new Date(rootNode.getLong("moni_beg"));
+            rootEnd = new Date(rootNode.getLong("moni_end"));
+        }
         
         if(!rootBegin.before(rootEnd))
             ApplicationException.throwCodeMesg(ErrorMessage._60009.getCode(), ErrorMessage._60009.getMsg());
@@ -702,36 +694,65 @@ public class MonitorServiceImpl implements MonitorService {
             case ADD:
                 // 正在生效的树复制                      moni_beg  <= now < moni_end
                 if(!rootBegin.after(now) && rootEnd.after(now)){
-                    params.addCond_lessOrEquals("moni_beg", new SimpleDateFormat(Constant.YYYY_MM_DD)
-                            .format(new Date())+STARTTIME);
-                    params.addCond_greater("moni_end", new SimpleDateFormat(Constant.YYYY_MM_DD)
-                            .format(new Date())+STARTTIME);
+                    if(rootEdmcNameEn.endsWith(MONITOR_HISTORY_SET)){
+                        params.addCond_lessOrEquals("moni_hbeg", new SimpleDateFormat(Constant.YYYY_MM_DD)
+                                .format(new Date())+STARTTIME)
+                              .addCond_greater("moni_hend", new SimpleDateFormat(Constant.YYYY_MM_DD)
+                                .format(new Date())+STARTTIME);
+                    }else{
+                        params.addCond_lessOrEquals("moni_beg", new SimpleDateFormat(Constant.YYYY_MM_DD)
+                                .format(new Date())+STARTTIME)
+                              .addCond_greater("moni_end", new SimpleDateFormat(Constant.YYYY_MM_DD)
+                                .format(new Date())+STARTTIME);
+                    }
                 }else{
                     // 历史树和 未来树复制  需要  moni_end = 根节点失效时间
-                    params.addCond_equals("moni_end", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
-                            .format(new Date(rootNode.getLong("moni_end"))));
+                    if(rootEdmcNameEn.endsWith(MONITOR_HISTORY_SET)){
+                        params.addCond_equals("moni_hend", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
+                                .format(rootEnd));
+                    }else{
+                        params.addCond_equals("moni_end", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
+                                .format(rootEnd));
+                    }
                 }
+                
                 break;
                 
             case UPDATE:
                 if(!rootEnd.after(now))
                     ApplicationException.throwCodeMesg(ErrorMessage._60009.getCode(), "历史树不能维护");
                 // 维护 时 复制 需要 moni_end > 当前时间
-                params.addCond_greater("moni_end", new SimpleDateFormat(Constant.YYYY_MM_DD)
-                        .format(new Date())+STARTTIME);
+                if(rootEdmcNameEn.endsWith(MONITOR_HISTORY_SET)){
+                    params.addCond_greater("moni_hend", new SimpleDateFormat(Constant.YYYY_MM_DD)
+                            .format(new Date())+STARTTIME);
+                }else{
+                    params.addCond_greater("moni_end", new SimpleDateFormat(Constant.YYYY_MM_DD)
+                            .format(new Date())+STARTTIME);
+                }
+                
                 break;
 
             default:
                 ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(), "type类型[" + changeType +"]" +ErrorMessage._60004.getMsg());
         }
         
-        params.addCond_greaterOrEquals("moni_beg", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
-                .format(new Date(rootNode.getLong("moni_beg"))))
-                .addCond_lessOrEquals("moni_end", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
-                .format(new Date(rootNode.getLong("moni_end"))))
-                .addCond_like("moni_lvl_code", ROOT_LVL_CODE)
-                .addSortParam(new SortNode("moni_lvl", SortType.ASC))
-                .addSortParam(new SortNode("moni_seq", SortType.ASC));
+        if(rootEdmcNameEn.endsWith(MONITOR_HISTORY_SET)){
+            params.addCond_greaterOrEquals("moni_hbeg", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
+                    .format(rootBegin))
+                    .addCond_lessOrEquals("moni_hend", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
+                    .format(rootEnd))
+                    .addCond_like("moni_hlvl_code", ROOT_LVL_CODE)
+                    .addSortParam(new SortNode("moni_hlvl", SortType.ASC))
+                    .addSortParam(new SortNode("moni_hseq", SortType.ASC));
+        }else{
+            params.addCond_greaterOrEquals("moni_beg", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
+                    .format(rootBegin))
+                    .addCond_lessOrEquals("moni_end", new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS)
+                    .format(rootEnd))
+                    .addCond_like("moni_lvl_code", ROOT_LVL_CODE)
+                    .addSortParam(new SortNode("moni_lvl", SortType.ASC))
+                    .addSortParam(new SortNode("moni_seq", SortType.ASC));
+        }
         
         Result result = client.queryServiceCenter(params.toJSONString());
         
@@ -792,27 +813,52 @@ public class MonitorServiceImpl implements MonitorService {
             JSONObject to = nodes.getJSONObject(i);
             JSONObject node = new JSONObject();
             node.put(PID, orderId);
-            node.put("mtor_node_no", to.getString("moni_node_no"));
-            node.put("mtor_node_name", to.getString("moni_node_name"));
-            node.put("mtor_node_def", to.getString("moni_node_def"));
-            node.put("mtor_major", to.getString("moni_major"));
-            node.put("mtor_assit", to.getString("moni_assit"));
-            node.put("mtor_index_conf", to.getString("moni_index_conf"));
-            node.put("mtor_seq", to.getString("moni_seq"));
-            node.put("mtor_lvl_code", to.getString("moni_lvl_code"));
-            node.put("mtor_lvl", to.getString("moni_lvl"));
-            node.put("mtor_enum", to.getString("moni_enum"));
-            node.put("mtor_relate_cnd", to.getString("moni_relate_cnd"));
-            node.put("creuser", CREUSER);
-            if(type == ChangeType.ADD){
-                node.put("mtor_type", ChangeType.ADD.getValue());
-                node.put("mtor_beg", getDate(beginDate,Constant.YYYY_MM_DD_HH_MM_SS).getTime());
-                node.put("mtor_end", getDate(endDate,Constant.YYYY_MM_DD_HH_MM_SS).getTime());
+            if(rootEdmcNameEn.endsWith(MONITOR_HISTORY_SET)){
+                node.put("mtor_node_no", to.getString("moni_hnode_no"));
+                node.put("mtor_node_name", to.getString("moni_hnode_name"));
+                node.put("mtor_node_def", to.getString("moni_hnode_def"));
+                node.put("mtor_major", to.getString("moni_hmajor"));
+                node.put("mtor_assit", to.getString("moni_hassit"));
+                node.put("mtor_index_conf", to.getString("moni_hindex_conf"));
+                node.put("mtor_seq", to.get("moni_hseq"));
+                node.put("mtor_lvl_code", to.getString("moni_hlvl_code"));
+                node.put("mtor_lvl", to.getString("moni_hlvl"));
+                node.put("mtor_enum", to.getString("moni_henum"));
+                node.put("mtor_relate_cnd", to.getString("moni_hrelate_cnd"));
+                node.put("creuser", CREUSER);
+                if(type == ChangeType.ADD){
+                    node.put("mtor_type", ChangeType.ADD.getValue());
+                    node.put("mtor_beg", getDate(beginDate,Constant.YYYY_MM_DD_HH_MM_SS).getTime());
+                    node.put("mtor_end", getDate(endDate,Constant.YYYY_MM_DD_HH_MM_SS).getTime());
+                }else{
+                    node.put("mtor_type", ChangeType.UPDATE.getValue());
+                    node.put("mtor_relate_id", to.getString(ID));
+                    node.put("mtor_beg", to.getLong("moni_hbeg"));
+                    node.put("mtor_end", to.getLong("moni_hend"));
+                }
             }else{
-                node.put("mtor_type", ChangeType.UPDATE.getValue());
-                node.put("mtor_relate_id", to.getString(ID));
-                node.put("mtor_beg", to.getLong("moni_beg"));
-                node.put("mtor_end", to.getLong("moni_end"));
+                node.put("mtor_node_no", to.getString("moni_node_no"));
+                node.put("mtor_node_name", to.getString("moni_node_name"));
+                node.put("mtor_node_def", to.getString("moni_node_def"));
+                node.put("mtor_major", to.getString("moni_major"));
+                node.put("mtor_assit", to.getString("moni_assit"));
+                node.put("mtor_index_conf", to.getString("moni_index_conf"));
+                node.put("mtor_seq", to.getString("moni_seq"));
+                node.put("mtor_lvl_code", to.getString("moni_lvl_code"));
+                node.put("mtor_lvl", to.getString("moni_lvl"));
+                node.put("mtor_enum", to.getString("moni_enum"));
+                node.put("mtor_relate_cnd", to.getString("moni_relate_cnd"));
+                node.put("creuser", CREUSER);
+                if(type == ChangeType.ADD){
+                    node.put("mtor_type", ChangeType.ADD.getValue());
+                    node.put("mtor_beg", getDate(beginDate,Constant.YYYY_MM_DD_HH_MM_SS).getTime());
+                    node.put("mtor_end", getDate(endDate,Constant.YYYY_MM_DD_HH_MM_SS).getTime());
+                }else{
+                    node.put("mtor_type", ChangeType.UPDATE.getValue());
+                    node.put("mtor_relate_id", to.getString(ID));
+                    node.put("mtor_beg", to.getLong("moni_beg"));
+                    node.put("mtor_end", to.getLong("moni_end"));
+                }
             }
             
             // 资源集 
@@ -827,19 +873,8 @@ public class MonitorServiceImpl implements MonitorService {
                     obj.put("creuser", CREUSER);
                     mtorRes.add(obj);
                 }
+                
                 node.put("mtor_res_set", mtorRes);
-            }
-            // 备用字段集 - 特殊树 部门树 主责岗位
-            if(rootEdmcNameEn.endsWith("depttree") &&
-                    !StringUtil.isNullOrEmpty(to.getString("mdep_leader_post"))){
-                
-                // TODO - 部门树的历史集情况需要特殊处理
-                
-                JSONArray bkSet = new JSONArray();
-                JSONObject obj = new JSONObject();
-                obj.put("mtor_bk1", to.getString("mdep_leader_post"));
-                bkSet.add(obj);
-                node.put("mtor_bk_set", bkSet);
             }
             no.add(node);
         }

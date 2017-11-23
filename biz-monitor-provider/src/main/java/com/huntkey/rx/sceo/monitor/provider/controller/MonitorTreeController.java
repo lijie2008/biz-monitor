@@ -27,7 +27,9 @@ import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
 @RequestMapping("/monitors")
 @Validated
 public class MonitorTreeController {
-
+    
+    private static final String MONITOR_HISTORY_SET=".moni_his_set";
+    
     @Autowired
     MonitorTreeService monitorTreeService;
     
@@ -94,6 +96,39 @@ public class MonitorTreeController {
         
         if(nodes == null || nodes.isEmpty())
             return result;
+        
+        if(obj.getString("edmName").endsWith(MONITOR_HISTORY_SET)){
+            for(int i = 0; i < nodes.size(); i++){
+                JSONObject data = nodes.getJSONObject(i);
+                data.put("moni_node_no", data.getString("moni_hnode_no"));
+                data.put("moni_node_name", data.getString("moni_hnode_name"));
+                data.put("moni_node_def", data.getString("moni_hnode_def"));
+                data.put("moni_beg", data.get("moni_hbeg"));
+                data.put("moni_end", data.get("moni_hend"));
+                data.put("moni_index_conf", data.getString("moni_hindex_conf"));
+                data.put("moni_lvl_code", data.getString("moni_hlvl_code"));
+                data.put("moni_lvl", data.get("moni_hlvl"));
+                data.put("moni_relate_cnd", data.getString("moni_hrelate_cnd"));
+                data.put("moni_enum", data.get("moni_henum"));
+                data.put("moni_major", data.getString("moni_hmajor"));
+                data.put("moni_assit", data.getString("moni_hassit"));
+                data.put("moni_seq", data.get("moni_hseq"));
+                
+                data.remove("moni_hnode_no");
+                data.remove("moni_hnode_name");
+                data.remove("moni_hnode_def");
+                data.remove("moni_hbeg");
+                data.remove("moni_hend");
+                data.remove("moni_hindex_conf");
+                data.remove("moni_hlvl_code");
+                data.remove("moni_hlvl");
+                data.remove("moni_hrelate_cnd");
+                data.remove("moni_henum");
+                data.remove("moni_hmajor");
+                data.remove("moni_hassit");
+                data.remove("moni_hseq");
+            }
+        }
         
         result.setData(obj);
         
