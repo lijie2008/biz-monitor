@@ -87,5 +87,25 @@ public interface StatisticsBiz {
      */
     Result queryStatistics(JSONObject data);
 
+    /**
+     * 查询指定周期的类的对象的属性统计值
+     * @param edmId edm类id
+     * @param objId 对象id
+     * @param periodId 周期对象id
+     * @param attributeId 属性ID
+     * @return
+     */
+    Result queryStatistics(String edmId,String objId,String periodId,String attributeId);
+
+    /**
+     * queryStatistics:批量查询统计类
+     * @author caozhenx
+     * @param moniIds
+     * @param periodId
+     * @param attributeIds
+     * @return
+     */
+    Result queryStatistics(String moniIds, String periodId, String attributeIds);
+
 }
 
