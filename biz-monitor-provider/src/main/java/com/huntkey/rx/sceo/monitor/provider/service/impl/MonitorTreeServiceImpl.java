@@ -42,6 +42,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     private static final String ROOT_LVL_CODE = "1,";
     private static final String MONITOR_HISTORY_SET=".moni_his_set";
     private static final String MONITOR_VERSION = "monitortree";
+    private static final String PAR = "monitor";
     
     @Autowired
     ServiceCenterClient serviceCenterClient;
@@ -105,8 +106,14 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             String[] edmNames = new String[]{edmcNameEn,edmcNameEn+MONITOR_HISTORY_SET};
                 
             for(String edmName : edmNames){
-                SearchParam requestParams = new SearchParam(edmName);
+                SearchParam requestParams = null;
                 
+                if(edmName.endsWith(MONITOR_HISTORY_SET)){
+                    requestParams = new SearchParam(PAR + MONITOR_HISTORY_SET);
+                    requestParams.addCond_equals("classname", edmcNameEn);
+                }else
+                    requestParams = new SearchParam(edmName);
+                        
                 String[] characters = null;
                 
                 if(edmName.endsWith(MONITOR_HISTORY_SET)){
@@ -245,9 +252,11 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
     	
     	for(String edmName : edmNames){
     	    //组装参数
-    	    SearchParam requestParams = new SearchParam(edmName);
+    	    SearchParam requestParams = null;
     	    
     	    if(edmName.endsWith(MONITOR_HISTORY_SET)){
+    	        requestParams = new SearchParam(PAR + MONITOR_HISTORY_SET);
+    	        requestParams.addCond_equals("classname", edmName.split("\\.")[0]);
                 requestParams
                 .addSortParam(new SortNode("moni_hlvl",SortType.ASC))
                 .addSortParam(new SortNode("moni_hlvl_code",SortType.ASC));
@@ -268,6 +277,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                     requestParams
                     .addCond_equals(Constant.ID, rootNodeId);
     	    }else{
+    	        requestParams = new SearchParam(edmName);
     	        requestParams
     	        .addSortParam(new SortNode("moni_lvl",SortType.ASC))
     	        .addSortParam(new SortNode("moni_lvl_code",SortType.ASC));
@@ -304,9 +314,11 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                 if (rootArray.size() == 1) {
                     
                     // 表中存在需要的根节点 - 查找出所有的节点信息
-                    SearchParam params = new SearchParam(edmName);
+                    SearchParam params = null;
                     
                     if(edmName.endsWith(MONITOR_HISTORY_SET)){
+                        params = new SearchParam(PAR + MONITOR_HISTORY_SET);
+                        params.addCond_equals("classname", edmName.split("\\.")[0]);
                         params
                         .addSortParam(new SortNode("moni_hlvl",SortType.ASC))
                         .addSortParam(new SortNode("moni_hlvl_code",SortType.ASC))
@@ -321,6 +333,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                             .addCond_lessOrEquals("moni_hend", endDate);
                         }
                     }else{
+                        params = new SearchParam(edmName);
                         params
                         .addSortParam(new SortNode("moni_lvl",SortType.ASC))
                         .addSortParam(new SortNode("moni_lvl_code",SortType.ASC))
@@ -397,15 +410,18 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         JSONObject resultData = new JSONObject();
         
         // 查找最大失效时间的树
-        SearchParam requestParams = new SearchParam(edmcNameEn);
+        SearchParam requestParams = null;
         
         String[] characters = null;
         if(edmcNameEn.endsWith(MONITOR_HISTORY_SET)){
+            requestParams = new SearchParam(PAR+MONITOR_HISTORY_SET);
+            requestParams.addCond_equals("classname",edmcNameEn.split("\\.")[0] );
             requestParams.addCond_equals("moni_hlvl_code", ROOT_LVL_CODE)
             .addCond_equals("moni_hlvl", ROOT_LVL)
             .addSortParam(new SortNode("moni_hend", SortType.DESC));
             characters = new String[] {"moni_hend" };
         }else{
+            requestParams = new SearchParam(edmcNameEn);
             requestParams.addCond_equals("moni_lvl_code", ROOT_LVL_CODE)
                          .addCond_equals("moni_lvl", ROOT_LVL)
                          .addSortParam(new SortNode("moni_end", SortType.DESC));

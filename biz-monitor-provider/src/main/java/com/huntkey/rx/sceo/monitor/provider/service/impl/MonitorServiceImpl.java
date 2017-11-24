@@ -65,6 +65,7 @@ public class MonitorServiceImpl implements MonitorService {
     private static final String KEY_SEP = "-";
     private static final String DEFAULTNODENAME="未命名节点";
     private static final String MONITOR_HISTORY_SET=".moni_his_set";
+    private static final String PAR = "monitor";
     
     private static final Logger logger = LoggerFactory.getLogger(MonitorServiceImpl.class);
     
@@ -647,7 +648,15 @@ public class MonitorServiceImpl implements MonitorService {
      */
     private JSONArray copyTree(String rootEdmcNameEn,String classId, String rootId,String tempId,int changeType,String beginDate,String endDate) {
         // 查询根节点信息
-        SearchParam params = new SearchParam(rootEdmcNameEn);
+        SearchParam params =null;
+        
+        if(rootEdmcNameEn.endsWith(MONITOR_HISTORY_SET)){
+            params = new SearchParam(PAR+MONITOR_HISTORY_SET);
+            params.addCond_equals("classname",rootEdmcNameEn.split("\\.")[0] );
+        }else{
+            params = new SearchParam(rootEdmcNameEn);
+        }
+        
         params.addCond_equals(Constant.ID, rootId);
         
         Result rootResult = client.queryServiceCenter(params.toJSONString());
