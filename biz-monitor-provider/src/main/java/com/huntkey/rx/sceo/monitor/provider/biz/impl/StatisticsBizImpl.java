@@ -39,7 +39,7 @@ import com.huntkey.rx.sceo.monitor.provider.service.StatisticsService;
  * @version
  * @see
  */
-@Service("statisticsBiz")
+//@Service("statisticsBiz")
 public class StatisticsBizImpl implements StatisticsBiz {
 
     private static final Logger LOG = LoggerFactory.getLogger(StatisticsBizImpl.class);

@@ -38,7 +38,7 @@ import com.huntkey.rx.sceo.serviceCenter.common.model.SortNode;
  * @version  
  * @see 	 
  */
-@Service("periodService")
+//@Service("periodService")
 public class PeriodServiceImpl implements PeriodService {
 
     private static final Logger LOG = LoggerFactory.getLogger(PeriodServiceImpl.class);

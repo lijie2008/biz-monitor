@@ -26,8 +26,8 @@ import com.huntkey.rx.sceo.monitor.provider.biz.EdmPropertyGroupBiz;
  * @version  
  * @see 	 
  */
-@RestController
-@RequestMapping("/edmPropertyGroup")
+//@RestController
+//@RequestMapping("/edmPropertyGroup")
 public class EdmPropertyGroupController {
     
     @Autowired

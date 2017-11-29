@@ -29,7 +29,7 @@ import com.huntkey.rx.sceo.monitor.provider.orm.dao.EdmPropertyGroupDataMapper;
  * @version  
  * @see 	 
  */
-@Service("edmPropertyGroupBiz")
+//@Service("edmPropertyGroupBiz")
 public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
 
     private String dot_split = ".";

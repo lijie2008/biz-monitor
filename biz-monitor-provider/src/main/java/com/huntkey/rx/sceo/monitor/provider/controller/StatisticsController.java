@@ -22,8 +22,8 @@ import com.huntkey.rx.sceo.monitor.provider.biz.StatisticsBiz;
  * Date:     2017年8月7日 上午10:07:18
  * @author   caozhenx
  */
-@RestController
-@RequestMapping("/statistics")
+//@RestController
+//@RequestMapping("/statistics")
 public class StatisticsController {
 
     @Autowired

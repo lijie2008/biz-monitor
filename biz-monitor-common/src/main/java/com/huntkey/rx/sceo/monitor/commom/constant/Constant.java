@@ -28,7 +28,7 @@ public interface Constant {
     String ROOT_LVL_CODE = "1,";
     
     // 实体类所在路径
-    String ENTITY_PATH = "com.huntkey.rx.edm.entity";
+    String ENTITY_PATH = "com.huntkey.rx.edm.entity.";
     
     // 年-月-日 
     String YYYY_MM_DD = "yyyy-MM-dd";

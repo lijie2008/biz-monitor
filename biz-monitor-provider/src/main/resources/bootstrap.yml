@@ -24,7 +24,11 @@ eureka:
 logging:
   config: classpath:log4j2.xml
   level:
-    root: debug
+    root: info
+
+mybatis:
+  mapperLocations: classpath:mapper/*.xml
+
 druid:
   jdbc:
     driveClassName: com.mysql.jdbc.Driver

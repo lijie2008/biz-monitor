@@ -110,7 +110,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             
             OrmParam ormParam = new OrmParam();
             ormParam.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
-            ormParam.setWhereExp(ormParam.getEqualXML("motr_edm_id",temp.getString("id")));
+            ormParam.setWhereExp(ormParam.getEqualXML("motr_edm_id",temp.getString(Constant.ID)));
             
             if (!StringUtil.isNullOrEmpty(endTime)) 
                 ormParam.setWhereExp(OrmParam.and(ormParam.getWhereExp(), 
@@ -127,7 +127,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             
             // 查询监管树正式表
             ormParam.clearOrmParmas();
-            ormParam.addColumn(Constant.ID);
+            ormParam.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
             ormParam.setWhereExp(OrmParam.and(ormParam.getEqualXML("moni_lvl_code", Constant.ROOT_LVL_CODE), 
                     ormParam.getEqualXML("moni_lvl", Constant.ROOT_LVL)));
             if (!StringUtil.isNullOrEmpty(treeName))
@@ -148,7 +148,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             
             // 查询监管树历史属性集
             ormParam.clearOrmParmas();
-            ormParam.addColumn(Constant.ID);
+            ormParam.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
             ormParam.setWhereExp(OrmParam.and(ormParam.getEqualXML("moni_hlvl_code", Constant.ROOT_LVL_CODE), 
                     ormParam.getEqualXML("moni_hlvl", Constant.ROOT_LVL),ormParam.getEqualXML("classname", searchEdmName)));
             if (!StringUtil.isNullOrEmpty(treeName))
@@ -183,11 +183,10 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         JSONArray versions = new JSONArray();
         
         OrmParam ormParam = new OrmParam();
-        ormParam.addColumn("motr_ver_code")
-                .addColumn("motr_beg")
-                .addColumn("motr_end")
-                .addColumn("motr_root_id")
-                .setOrderExp(SQLSortEnum.DESC, "motr_beg");
+        
+        ormParam.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
+        
+        ormParam.setOrderExp(SQLSortEnum.DESC, "motr_beg");
         
         ormParam.setWhereExp(ormParam.getEqualXML("motr_edm_id", edmId));
                 
@@ -217,12 +216,11 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             
             // 根据版本信息去 监管树正式表查询
             ormParam.clearOrmParmas();
-            ormParam.addColumn(Constant.ID)
-                    .addColumn("moni_node_no")
-                    .addColumn("moni_node_name")
-                    .addColumn("moni_beg")
-                    .addColumn("moni_end");
-//TODO                    .setOrderExp("moni_beg desc,moni_end asc");
+            
+            ormParam.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
+            
+            ormParam.addOrderExpElement(SQLSortEnum.DESC, "moni_beg")
+                    .addOrderExpElement(SQLSortEnum.ASC, "moni_end");
             
             ormParam.setWhereExp(OrmParam.and(ormParam.getEqualXML("moni_lvl_code", Constant.ROOT_LVL_CODE), 
                     ormParam.getEqualXML("moni_lvl", Constant.ROOT_LVL)));
@@ -266,12 +264,9 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             
             // 根据版本信息去 监管树历史表查询
             ormParam.clearOrmParmas();
-            ormParam.addColumn(Constant.ID)
-                    .addColumn("moni_hnode_no")
-                    .addColumn("moni_hnode_name")
-                    .addColumn("moni_hbeg")
-                    .addColumn("moni_hend");
-//TODO                    .setOrderExp("moni_hbeg desc,moni_hend asc");
+            ormParam.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
+            ormParam.addOrderExpElement(SQLSortEnum.DESC, "moni_hbeg")
+            .addOrderExpElement(SQLSortEnum.ASC, "moni_hend");
             
             ormParam.setWhereExp(OrmParam.and(ormParam.getEqualXML("moni_hlvl_code", Constant.ROOT_LVL_CODE), 
                     ormParam.getEqualXML("moni_hlvl", Constant.ROOT_LVL), ormParam.getEqualXML("classname", edmcNameEn)));
@@ -364,7 +359,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                              String rootNodeId) throws Exception {
         OrmParam param = new OrmParam();
         
-        param.addColumn(Constant.ID);
+        param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
         
         param.setWhereExp(param.getEqualXML("classname", rootEdmcNameEn.split("\\.")[0]));
         
@@ -386,8 +381,6 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             param.setWhereExp(OrmParam.and(param.getWhereExp(), 
                                            param.getEqualXML(Constant.ID, rootNodeId)));
         
-//TODO        param.setOrderExp("moni_hlvl asc,moni_hlvl_code asc");
-        
         List<MoniMoniHisSetaEntity> rootList = ormService.selectBeanList(MoniMoniHisSetaEntity.class, param);
         
         if(rootList == null || rootList.isEmpty())
@@ -398,19 +391,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         
         param.clearOrmParmas();
         
-        param.addColumn("moni_hnode_no")
-             .addColumn("moni_hnode_name")
-             .addColumn("moni_hnode_def")
-             .addColumn("moni_hbeg")
-             .addColumn("moni_hend")
-             .addColumn("moni_hindex_conf")
-             .addColumn("moni_hlvl_code")  
-             .addColumn("moni_hlvl")
-             .addColumn("moni_hrelate_cnd")
-             .addColumn("moni_henum")
-             .addColumn("moni_hmajor")
-             .addColumn("moni_hassit")
-             .addColumn("moni_hseq");
+        param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
         
         param.setWhereExp(param.getEqualXML("classname", rootEdmcNameEn.split("\\.")[0]));
         
@@ -426,8 +407,9 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         param.setWhereExp(OrmParam.and(param.getWhereExp(), 
                                        param.getMatchLeftXML("moni_hlvl_code", Constant.ROOT_LVL_CODE)));
         
-//TODO        param.setOrderExp("moni_hlvl asc,moni_hlvl_code asc");
-
+        param.addOrderExpElement(SQLSortEnum.ASC, "moni_hlvl")
+        .addOrderExpElement(SQLSortEnum.ASC, "moni_hlvl_code");
+        
         List<MoniMoniHisSetaEntity> nodes = ormService.selectBeanList(MoniMoniHisSetaEntity.class, param);
         
         return JSON.parseArray(JSON.toJSONString(nodes));
@@ -439,7 +421,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         
         OrmParam param = new OrmParam();
         
-        param.addColumn(Constant.ID);
+        param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
         
         // 查询出当前树的根节点信息
         if(StringUtil.isNullOrEmpty(endDate) || endDate.startsWith(Constant.ENDTIME))
@@ -457,7 +439,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             param.setWhereExp(OrmParam.and(param.getWhereExp(), 
                                            param.getEqualXML(Constant.ID, rootNodeId)));
         
-//TODO        param.setOrderExp("moni_lvl asc,moni_lvl_code asc");
+        param.addOrderExpElement(SQLSortEnum.ASC, "moni_lvl")
+        .addOrderExpElement(SQLSortEnum.ASC, "moni_lvl_code");
         
         @SuppressWarnings("rawtypes")
         Class cls = Class.forName(Constant.ENTITY_PATH + PersistentUtil.convertClassName(rootEdmcNameEn));
@@ -473,19 +456,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         
         param.clearOrmParmas();
         
-        param.addColumn("moni_node_no")
-             .addColumn("moni_node_name")
-             .addColumn("moni_node_def")
-             .addColumn("moni_beg")
-             .addColumn("moni_end")
-             .addColumn("moni_index_conf")
-             .addColumn("moni_lvl_code")  
-             .addColumn("moni_lvl")
-             .addColumn("moni_relate_cnd")
-             .addColumn("moni_enum")
-             .addColumn("moni_major")
-             .addColumn("moni_assit")
-             .addColumn("moni_seq");
+        param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
         
         if(StringUtil.isNullOrEmpty(endDate) || endDate.startsWith(Constant.ENDTIME))
             param.setWhereExp(OrmParam.and(param.getLessThanAndEqualXML("moni_beg", startDate), 
@@ -497,7 +468,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         param.setWhereExp(OrmParam.and(param.getWhereExp(), 
                                        param.getMatchLeftXML("moni_lvl_code", Constant.ROOT_LVL_CODE)));
         
-//TODO        param.setOrderExp("moni_lvl asc,moni_lvl_code asc");
+        param.addOrderExpElement(SQLSortEnum.ASC, "moni_lvl")
+        .addOrderExpElement(SQLSortEnum.ASC, "moni_lvl_code");
 
         @SuppressWarnings("unchecked")
         List<? extends MonitorEntity> nodes = ormService.selectBeanList(cls, param);
@@ -548,8 +520,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             param.clearOrmParmas();
             if(type == 1){
                 if(edmcNameEn.endsWith(Constant.MONITOR_HISTORY_SET)){
-                    param.addColumn(Constant.ID)
-                         .addColumn("moni_hres_id");
+                    param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
                     
                     param.setWhereExp(OrmParam.and(param.getEqualXML("classname", edmcNameEn.split("\\.")[0]),
                                                    param.getEqualXML(Constant.PID, nodes.get(i))));
@@ -566,8 +537,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                         });
                     
                 }else{
-                    param.addColumn(Constant.ID)
-                         .addColumn("moni_res_id");
+                    param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
                     param.setWhereExp(OrmParam.and(param.getEqualXML("classname", edmcNameEn.split("\\.")[0]),
                                                    param.getEqualXML(Constant.PID, nodes.get(i))));
                     
@@ -583,8 +553,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                         });
                 }
             }else if(type == 2){
-                param.addColumn(Constant.ID)
-                     .addColumn("mtor_res_id");
+                param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
                 param.setWhereExp(param.getEqualXML(Constant.PID, nodes.get(i)));
                 
                 List<MtorMtorResSetbEntity> res = ormService.selectBeanList(MtorMtorResSetbEntity.class, param);
@@ -675,9 +644,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             characterArray.toArray(resourceFields);
             
             OrmParam ormParam = new OrmParam();
-            ormParam.addColumn(Constant.ID);
-            for(String str : resourceFields)
-                ormParam.addColumn(str);
+            ormParam.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
             ormParam.setWhereExp(ormParam.getConditionForInXML(Constant.ID, ids.toArray()));
             
             Class cls = Class.forName(Constant.ENTITY_PATH + PersistentUtil.convertClassName(resourcesEdmName));
@@ -740,7 +707,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         String lastDate = "";
         
         if(edmcNameEn.endsWith(Constant.MONITOR_HISTORY_SET)){
-            param.addColumn("moni_hend");
+            param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
             param.setWhereExp(OrmParam.and(param.getEqualXML("classname", edmcNameEn.split("\\.")[0]), 
                                            param.getEqualXML("moni_hlvl_code", Constant.ROOT_LVL_CODE),
                                            param.getEqualXML("moni_hlvl", Constant.ROOT_LVL)));
@@ -760,7 +727,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                 lastDate = (new SimpleDateFormat(Constant.YYYY_MM_DD).format(hNode.get(0).getMoni_hend()));
             }
         }else{
-            param.addColumn("moni_end");
+            param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
             param.setWhereExp(OrmParam.and(param.getEqualXML("moni_lvl_code", Constant.ROOT_LVL_CODE),
                                            param.getEqualXML("moni_lvl", Constant.ROOT_LVL)));
             
@@ -879,6 +846,8 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         JSONArray resourceObjList = new JSONArray();
         
         OrmParam param = new OrmParam();
+        
+        param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
         
         if(fields == null || fields.length <= 0) // 精确查找
             param.setWhereExp(param.getEqualXML(Constant.ID, fieldValue));

@@ -33,7 +33,7 @@ import com.huntkey.rx.sceo.serviceCenter.common.model.SearchParam;
  * @version  
  * @see 	 
  */
-@Service("statisticsService")
+//@Service("statisticsService")
 public class StatisticsServiceImpl implements StatisticsService {
     private static final Logger LOG = LoggerFactory.getLogger(StatisticsServiceImpl.class);
 
