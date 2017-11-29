@@ -171,7 +171,7 @@ public class MonitorTreeOrderController {
      * @return
      */
     @RequestMapping("/{orderId}")
-    public Result store(@PathVariable(value="orderId") @NotBlank(message="临时单Id不能为空") String orderId){
+    public Result store(@PathVariable(value="orderId") @NotBlank(message="临时单Id不能为空") String orderId) throws Exception{
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);

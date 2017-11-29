@@ -12,19 +12,28 @@ import com.huntkey.rx.commons.utils.rest.Result;
  */
 public interface MonitorTreeService {
     
-    Result getEntityByVersionAndEnglishName(String treeName, String beginTime, String endTime);
+    /**
+     * 
+     * getEntityByVersionAndEnglishName:查询监管树列表清单
+     * @author lijie
+     * @param treeName 树名称
+     * @param beginTime 开始时间
+     * @param endTime 结束时间
+     * @return
+     */
+    Result getEntityByVersionAndEnglishName(String treeName, String beginTime, String endTime) throws Exception;
     
-    JSONArray getMonitorTrees(String treeName, String edmcNameEn, String edmId, String beginTime, String endTime);
+    JSONArray getMonitorTrees(String treeName, String edmcNameEn, String edmId, String beginTime, String endTime) throws Exception;
 
-    JSONObject getMonitorTreeNodes(String rootEdmcNameEn, String startDate, String endDate, String rootNodeId);
+    JSONObject getMonitorTreeNodes(String rootEdmcNameEn, String startDate, String endDate, String rootNodeId) throws Exception;
 
-    JSONArray getNodeResources(String name, List<String> nodes, String edmId, String edmName,int type);
+    JSONArray getNodeResources(String name, List<String> nodes, String edmId, String edmName,int type) throws Exception;
 
     JSONArray getConProperties(String edmcNameEn, boolean enable);
 
-    JSONObject getNewMonitorTreeStartDate(String edmcNameEn);
+    JSONObject getNewMonitorTreeStartDate(String edmcNameEn) throws Exception;
     
     JSONArray getChileNodes(String nodeId ,String edmcNameEn);
     
-    JSONArray searchResourceObj(String resourceClassId,String resourceValue);
+    JSONArray searchResourceObj(String resourceClassId,String resourceValue) throws Exception;
 }

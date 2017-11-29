@@ -39,32 +39,39 @@ public class MonitorTreeController {
      * @param beginTime
      * @param endTime
      * @return
+     * @throws Exception 
      */
     @GetMapping
     public Result getMonitors(@RequestParam(required = false) String treeName,
                               @RequestParam(required = false) String beginTime,
-                                  @RequestParam(required = false) @Pattern(regexp ="([0-9]{4}-[0-9]{2}-[0-9]{2}|$)",message = "日期格式不正确")String endTime){
+                              @RequestParam(required = false) @Pattern(regexp ="([0-9]{4}-[0-9]{2}-[0-9]{2}|$)",message = "日期格式不正确")String endTime) 
+                              throws Exception{
+        
         Result result = new Result();
+        
         result.setRetCode(Result.RECODE_SUCCESS);
+        
         result.setData(monitorTreeService.getEntityByVersionAndEnglishName(treeName,beginTime,endTime));
+        
         return result;
     }
     
     /**
      * 根据监管类英文名查询监管类下的监管树
-     * @param treeName
-     * @param edmcNameEn
-     * @param edmId
-     * @param beginTime
-     * @param endTime
+     * @param treeName 监管树名称
+     * @param edmcNameEn 监管类英文名
+     * @param edmId 监管类edmId
+     * @param beginTime 开始时间
+     * @param endTime 结束时间
      * @return
+     * @throws Exception 
      */
     @GetMapping("/trees")
     public Result getMonitorTrees(@RequestParam(required = false) String treeName,
                                   @RequestParam @NotBlank(message = "类英文名不能为空") String edmcNameEn,
                                   @RequestParam @NotBlank(message = "edmId 不能为空") String edmId,
                                   @RequestParam(required = false) String beginTime,
-                                  @RequestParam(required = false) String endTime){
+                                  @RequestParam(required = false) String endTime) throws Exception{
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(monitorTreeService.getMonitorTrees(treeName,edmcNameEn,edmId,beginTime,endTime));
@@ -87,7 +94,7 @@ public class MonitorTreeController {
                                       @RequestParam @NotBlank(message = "查询日期不能为空") String searchDate,
                                       @RequestParam(required = false,defaultValue = "") String rootNodeId,
                                       @RequestParam(required = true) String edmId,
-                                      @RequestParam(defaultValue = "false") boolean flag){
+                                      @RequestParam(defaultValue = "false") boolean flag)  throws Exception{
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         
@@ -151,7 +158,7 @@ public class MonitorTreeController {
      */
     @GetMapping("/conproperties")
     public Result getConProperties(@RequestParam(value = "edmcNameEn") @NotBlank(message = "类英文名不能为空") String edmcNameEn,
-                                   @RequestParam(value = "enable",defaultValue = "true") boolean enable){
+                                   @RequestParam(value = "enable",defaultValue = "true") boolean enable) {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(monitorTreeService.getConProperties(edmcNameEn,enable));
@@ -167,7 +174,7 @@ public class MonitorTreeController {
      */
     @GetMapping("/newDate")
     public Result getNewMonitorTreeStartDate(@RequestParam(value = "edmcNameEn") 
-                                             @NotBlank(message = "类英文名不能为空") String edmcNameEn){
+                                             @NotBlank(message = "类英文名不能为空") String edmcNameEn) throws Exception{
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(monitorTreeService.getNewMonitorTreeStartDate(edmcNameEn));
@@ -176,7 +183,7 @@ public class MonitorTreeController {
     
     @GetMapping("/search")
     public Result searchResourceObj(@RequestParam(value = "resourceClassId") @NotBlank(message = "资源类ID不能为空") String resourceClassId,
-                                    @RequestParam(value = "resourceValue") @NotBlank(message = "资源对象值不能为空")  String resourceValue){
+                                    @RequestParam(value = "resourceValue") @NotBlank(message = "资源对象值不能为空")  String resourceValue) throws Exception{
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(monitorTreeService.searchResourceObj(resourceClassId,resourceValue));

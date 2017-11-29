@@ -36,7 +36,7 @@ public class MonitorController {
     @RequestMapping(value = "/checkOrder")
     public Result checkOrder(@RequestParam(value = "classId") @NotBlank(message="监管类ID不能为空") String classId,
                              @RequestParam(value = "rootId",defaultValue="") String rootId,
-                             @RequestParam(value = "type") @Range(min=1,max=2)  int type){
+                             @RequestParam(value = "type") @Range(min=1,max=2)  int type) throws Exception{
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(service.checkOrder(classId, rootId, type));
@@ -52,7 +52,7 @@ public class MonitorController {
      */
     @RequestMapping(value = "/edit")
     public Result editBefore(@RequestParam(value = "key") @NotBlank(message="redis的Key不能为空") String key,
-                             @RequestParam(value = "flag",defaultValue="false") boolean flag){
+                             @RequestParam(value = "flag",defaultValue="false") boolean flag) throws Exception{
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(service.editBefore(key, flag));
@@ -72,7 +72,7 @@ public class MonitorController {
     public Result tempTree(@RequestParam(value = "key")  @Revoked(key="key") String key,
                            @RequestParam(value = "validDate") String validDate, 
                            @RequestParam(value = "type", defaultValue="1") int type,
-                           @RequestParam(value = "flag", defaultValue="false") boolean flag) {
+                           @RequestParam(value = "flag", defaultValue="false") boolean flag) throws Exception{
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(service.tempTree(key, validDate, type, flag));
@@ -86,7 +86,7 @@ public class MonitorController {
      * @return
      */
     @RequestMapping(value = "/addMonitorTree", method = RequestMethod.POST)
-    public Result addMonitorTree(@RequestBody AddMonitorTreeTo addMonitorTreeTo) {
+    public Result addMonitorTree(@RequestBody AddMonitorTreeTo addMonitorTreeTo) throws Exception{
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(service.addMonitorTree(addMonitorTreeTo));
@@ -104,7 +104,7 @@ public class MonitorController {
     @RequestMapping(value = "/treeMaintaince")
     public Result treeMaintaince(@RequestParam(value = "classId") String classId,
                                  @RequestParam(value = "rootId") String rootId,
-                                 @RequestParam(value = "rootEdmcNameEn") String rootEdmcNameEn) {
+                                 @RequestParam(value = "rootEdmcNameEn") String rootEdmcNameEn) throws Exception{
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(service.treeMaintaince(classId, rootId, rootEdmcNameEn));

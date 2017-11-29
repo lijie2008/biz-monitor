@@ -85,6 +85,20 @@ public class ModelerClientFallback implements ModelerClient{
         result.setRetCode(Result.RECODE_ERROR);
         result.setErrMsg("biz monitor provider client getPropertyFormula fallback");
         return result;
+    }
+
+    @Override
+    public Result getPropertyValue(String classId, String edmpCode) {
+        
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Result getEdmByid(String edmId) {
+        
+        // TODO Auto-generated method stub
+        return null;
     }	
 }
 

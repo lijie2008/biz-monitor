@@ -1,55 +1,44 @@
+edm: 
+  edmMonitorId: 6f8a46a066e211e7b2e4005056bc4879
+  version: v1.0
+  edmcNameEn:
+    monitor: monitor
 spring:
   application:
     name: biz-monitor-provider
-  cloud:
-    config:
-      profile: dev
-      uri: http://10.3.98.153:9999
-  messages:
-    encoding: UTF-8
-    basename: i18n/base
   redis:
-   cluster:
-     nodes:
-       - 10.3.98.153:7000
-       - 10.3.98.153:7001
-       - 10.3.98.154:7002
-       - 10.3.98.154:7003
-       - 10.3.98.155:7004
-       - 10.3.98.155:7005
-#server:
-#  port: 7002
-#eureka:
-#  client:
-#    serviceUrl:
-#      defaultZone: http://localhost:1111/eureka/  #注册中心地址
-#  instance:
-#      hostname: localhost
-#      instanceId: http://localhost:7002
-hystrix:
-  command:
-    default:
-      execution:
-        timeout:
-          enabled: false #调试用 超时不熔断
+    cluster:
+      nodes:
+        - 10.3.98.153:7000
+        - 10.3.98.153:7001
+        - 10.3.98.154:7002
+        - 10.3.98.154:7003
+        - 10.3.98.155:7004
+        - 10.3.98.155:7005
+server:
+  port: 7002
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/  #注册中心地址
 logging:
   config: classpath:log4j2.xml
   level:
-    root: info
-#druid:
-#  jdbc:
-#    driveClassName: com.mysql.jdbc.Driver
-#    jdbcUrl: jdbc:mysql://192.168.13.52:3306/biz_modeler
-#    jdbcUsername: root
-#    jdbcPassword: hk123
-#    maxActive: 20
-#    initialSize: 1
-#    maxWait: 60000
-#    minIdle: 3
-#    timeBetweenEvictionRunsMillis: 60000
-#    minEvictableIdleTimeMillis: 300000
-#    validationQuery: SELECT 'x'
-#    testWhileIdle: true
-#    testOnBrowwon: false
-#    testOnReturn: false
-#    filters: stat,wall
+    root: debug
+druid:
+  jdbc:
+    driveClassName: com.mysql.jdbc.Driver
+    jdbcUrl: jdbc:mysql://10.3.98.153:3306/edmdb?useSSL=true
+    jdbcUsername: ruixin
+    jdbcPassword: Huntkey11!
+    maxActive: 20
+    initialSize: 1
+    maxWait: 60000
+    minIdle: 3
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 'x'
+    testWhileIdle: true
+    testOnBrowwon: false
+    testOnReturn: false
+    filters: stat,wall

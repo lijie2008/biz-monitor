@@ -3,7 +3,6 @@ package com.huntkey.rx.sceo.monitor.provider.service.impl;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.ENDTIME;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.ID;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.MONITORTREEORDER;
-import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.NULL;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.PID;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.STARTTIME;
 import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.YYYY_MM_DD;
@@ -97,14 +96,15 @@ public class MonitorServiceImpl implements MonitorService {
 	 *     4.1 选择是 调用 临时单查询 type 选择 redis、 复制选择 不复制
 	 *     4.2 选择 否 调用临时单查询 type 选择 临时单表、 复制选择 复制 
 	 * 5. 不存在 返回false 前端调用 临时单查询 、type 选择临时单 、  复制选择到redis 
+	 * @throws Exception 
 	 * 
 	 */
-	public JSONObject checkOrder(String classId, String rootId, int type){
+	public JSONObject checkOrder(String classId, String rootId, int type) throws Exception{
 	    
 	    JSONObject obj = new JSONObject();
 	    
 	    if(StringUtil.isNullOrEmpty(rootId))
-            rootId = NULL;
+            rootId = "";
 	    
 	    SearchParam params = new SearchParam(MONITORTREEORDER);
 	    params.addCond_equals("mtor_cls_id", classId);
@@ -219,9 +219,10 @@ public class MonitorServiceImpl implements MonitorService {
 	 * flag
 	 *    true 继续上一步操作 - 直接返回key
 	 *    false - 不继续上一步操作 
+	 * @throws Exception 
 	 */
 	@Override
-    public String editBefore(String key, boolean flag){
+    public String editBefore(String key, boolean flag) throws Exception{
 	    
 	    if(!hasOps.getOperations().hasKey(key))
 	        ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), ErrorMessage._60005.getMsg());
@@ -245,7 +246,7 @@ public class MonitorServiceImpl implements MonitorService {
     }
     
     @Override
-    public List<NodeTo> tempTree(String tempId, String validDate,int type,boolean flag) {
+    public List<NodeTo> tempTree(String tempId, String validDate,int type,boolean flag) throws Exception {
         
         List<NodeTo> list = new ArrayList<NodeTo>();
         
@@ -395,16 +396,17 @@ public class MonitorServiceImpl implements MonitorService {
      * type： 1 - 新增  2 - 复制新增 
      * @param addMonitorTreeTo
      * @return
+	 * @throws Exception 
      */
     @Override
-    public String addMonitorTree(AddMonitorTreeTo addMonitorTreeTo) {
+    public String addMonitorTree(AddMonitorTreeTo addMonitorTreeTo) throws Exception {
         
         int type=addMonitorTreeTo.getType(); 
         
         String beginDate=addMonitorTreeTo.getBeginDate(); 
         String endDate=addMonitorTreeTo.getEndDate(); 
         String classId=addMonitorTreeTo.getClassId();
-        String rootId=StringUtil.isNullOrEmpty(addMonitorTreeTo.getRootId()) ? NULL : addMonitorTreeTo.getRootId();
+        String rootId=StringUtil.isNullOrEmpty(addMonitorTreeTo.getRootId()) ? "" : addMonitorTreeTo.getRootId();
         String rootEdmcNameEn = addMonitorTreeTo.getRootEdmcNameEn();
         
         // 检查临时单是否存在
@@ -497,7 +499,7 @@ public class MonitorServiceImpl implements MonitorService {
     }
     
     @Override
-    public String treeMaintaince(String classId, String rootId, String rootEdmcNameEn) {
+    public String treeMaintaince(String classId, String rootId, String rootEdmcNameEn) throws Exception {
         
         SearchParam params = new SearchParam(MONITORTREEORDER);
         params.addCond_equals("mtor_order_root", rootId);
@@ -622,18 +624,18 @@ public class MonitorServiceImpl implements MonitorService {
         node.put("mtor_node_no", "NODE"+System.currentTimeMillis());
         node.put("mtor_node_name", "未命名节点");
         node.put("mtor_node_def", "未命名节点");
-        node.put("mtor_major", NULL);
-        node.put("mtor_assit", NULL);
+        node.put("mtor_major", "");
+        node.put("mtor_assit", "");
         node.put("mtor_beg", getDate(beginDate, Constant.YYYY_MM_DD_HH_MM_SS).getTime());
         node.put("mtor_end", getDate(endDate, Constant.YYYY_MM_DD_HH_MM_SS).getTime());
-        node.put("mtor_index_conf", NULL);
+        node.put("mtor_index_conf", "");
         node.put("mtor_seq", 1);
         node.put("mtor_lvl_code", ROOT_LVL_CODE);
         node.put("mtor_lvl", 1);
-        node.put("mtor_enum", NULL);
-        node.put("mtor_relate_cnd", NULL);
+        node.put("mtor_enum", "");
+        node.put("mtor_relate_cnd", "");
         node.put("mtor_type", ChangeType.ADD.getValue());
-        node.put("mtor_relate_id", NULL);
+        node.put("mtor_relate_id", "");
         node.put("creuser", CREUSER);
         
         return node;
@@ -645,8 +647,9 @@ public class MonitorServiceImpl implements MonitorService {
      * @param rootId 根节点ID
      * @param tempId 临时单ID
      * @param changeType 变更类型 1 - 复制(历史树、未来树  和 正在生效树)  、2 - 维护(正在生效树和未来树)
+     * @throws Exception 
      */
-    private JSONArray copyTree(String rootEdmcNameEn,String classId, String rootId,String tempId,int changeType,String beginDate,String endDate) {
+    private JSONArray copyTree(String rootEdmcNameEn,String classId, String rootId,String tempId,int changeType,String beginDate,String endDate) throws Exception {
         // 查询根节点信息
         SearchParam params =null;
         

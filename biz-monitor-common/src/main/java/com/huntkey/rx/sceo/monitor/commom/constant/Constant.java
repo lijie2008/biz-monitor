@@ -17,18 +17,72 @@ package com.huntkey.rx.sceo.monitor.commom.constant;
  * @see 	 
  */
 public interface Constant {
-   
-    // 总账树类
-    String BOOKING = "booking";
     
-    // 部门树类
-    String DEPTTREE = "depttree";
+    //监管类的从属资源类字段名
+    String MONITOR_CLASS_PROP_RESOURCES = "moni_resource_class";
     
-    // 部门树类
-    String REPORTINGLINE = "reportingline";
+    // 根节点层级
+    String ROOT_LVL = "1";
     
-    // 设施系统类
-    String FACILITY = "facility";
+    // 根节点层级编码
+    String ROOT_LVL_CODE = "1,";
+    
+    // 实体类所在路径
+    String ENTITY_PATH = "com.huntkey.rx.edm.entity";
+    
+    // 年-月-日 
+    String YYYY_MM_DD = "yyyy-MM-dd";
+    
+    // 年-月-日 时:分:秒
+    String YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
+    
+    // 监管树历史集
+    String MONITOR_HISTORY_SET="moni_his_set";
+    
+    // 主键ID
+    String ID = "id";
+    
+    // pid 属性集的外键
+    String PID = "pid";
+    
+    // 开始时分秒
+    String STARTTIME = " 00:00:00";
+    
+    // 结束时分秒
+    String ENDTIME = " 23:59:59";
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     // 授权ID
     String EMPO_001 = "empo_001";
@@ -36,20 +90,13 @@ public interface Constant {
     // 查询结果集名称
     String DATASET = "dataset";
     
-    // id EDM类的ID
-    String ID = "id";
     
     // 变更对象
     String OID = "oid";
-    
-    // pid 属性集的外键
-    String PID = "pid";
-    
+
     // 日期类型的特殊转换
     String YYYYMMDD = "yyyyMMdd";
     
-    String YYYY_MM_DD = "yyyy-MM-dd";
-    String YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
     
 
     /**
@@ -99,43 +146,7 @@ public interface Constant {
     String FLAG = "flag";
     
     String MONITORTREEORDER="monitortreeorder";//监管树临时单表
-    
-    String MTOR001="mtor001";//单据编号
-    
-    String MTOR002="mtor002";//变更类型
-    
-    String MTOR003="mtor003";//变更监管树类
-    
-    String MTOR004="mtor004";//变更树对象根节点
-    
-    String MTOR005="monitortreeorder.mtor005";//监管树临时单_节点集合表
-    
-    String MTOR019="monitortreeorder.mtor005.mtor019";//监管树临时单_资源集合表
-    
-    String MTOR009="mtor009";//主管人
-    
-    String MTOR010="mtor010";//协管人
-    
-    String MTOR011="mtor011";//监管树临时单_资源集合表_生效时间字段
-    
-    String MTOR012="mtor012";//监管树临时单_资源集合表_失效时间字段
-    
-    String MTOR020="mtor020";//资源对象ID
-    
-    String MTOR013="mtor013";//父节点
-    
-    String MTOR014="mtor014";//子节点
-    
-    String MTOR015="mtor015";//左节点
-    
-    String MTOR016="mtor016";//右节点
-    
-    String MTOR021="mtor021";//监管更新标记
-    
-    String MTOR023="mtor023";//旧ID
-    
-    String NULL="";//空标记
-    
+   
     String STAFF="employee";//员工表
     
     String STAF002="staf002";//员工姓名字段
@@ -149,8 +160,6 @@ public interface Constant {
     String EDMPCODE = "moni_resource_class";
     
     String VALUE = "value";
-    String STARTTIME = " 00:00:00";
-    String ENDTIME = " 23:59:59";
 
     String JOBPOSITIONCLASSID = "6fa512bf66e211e7b2e4005056bc4879";
     

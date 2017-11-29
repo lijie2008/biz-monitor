@@ -573,7 +573,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     }
     
     @Override
-    public String store(String orderId) {
+    public String store(String orderId) throws Exception {
         
         orderId = orderId.split(KEY_SEP)[0];
         

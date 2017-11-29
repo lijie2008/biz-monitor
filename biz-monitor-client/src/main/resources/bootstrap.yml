@@ -1,22 +1,19 @@
 spring:
   application:
     name: biz-monitor-client
-  cloud:
-    config:
-      profile: dev
-      uri: http://10.3.98.153:9999
+#  cloud:
+#    config:
+#      profile: dev
+#      uri: http://10.3.98.153:9999
   messages:
     encoding: UTF-8
     basename: i18n/base
-#server:
-#  port: 7002
-#eureka:
-#  client:
-#    serviceUrl:
-#      defaultZone: http://localhost:1111/eureka/  #注册中心地址
-#  instance:
-#      hostname: localhost
-#      instanceId: http://localhost:7002
+server:
+  port: 7001
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/  #注册中心地址
 hystrix:
   command:
     default:

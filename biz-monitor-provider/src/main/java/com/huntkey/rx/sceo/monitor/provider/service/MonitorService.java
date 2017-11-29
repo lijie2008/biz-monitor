@@ -8,15 +8,15 @@ import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 public interface MonitorService {
     
-    String addMonitorTree(AddMonitorTreeTo addMonitorTreeTo);
+    String addMonitorTree(AddMonitorTreeTo addMonitorTreeTo) throws Exception;
 
-    String treeMaintaince(String classId,String rootId,String rootEdmcNameEn);
+    String treeMaintaince(String classId,String rootId,String rootEdmcNameEn) throws Exception;
     
-    JSONObject checkOrder(String classId, String rootId, int type);
+    JSONObject checkOrder(String classId, String rootId, int type) throws Exception;
     
-    String editBefore(String key, boolean flag);
+    String editBefore(String key, boolean flag) throws Exception;
     
-    List<NodeTo> tempTree(String key,String validDate, int type,boolean flag);
+    List<NodeTo> tempTree(String key,String validDate, int type,boolean flag) throws Exception;
     
   	//节点详情查询
   	NodeTo nodeDetail(String key,String lvlCode);
