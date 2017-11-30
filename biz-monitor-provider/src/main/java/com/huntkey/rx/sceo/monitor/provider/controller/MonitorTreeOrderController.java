@@ -9,6 +9,8 @@
 
 package com.huntkey.rx.sceo.monitor.provider.controller;
 
+import java.util.List;
+
 import javax.annotation.Resource;
 import javax.validation.constraints.Pattern;
 
@@ -22,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.alibaba.fastjson.JSONArray;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.sceo.monitor.commom.constant.ValidBean;
 import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
@@ -62,7 +63,7 @@ public class MonitorTreeOrderController {
     public Result queryNotUsingResource(@RequestParam @NotBlank(message = "临时单Key不能为空") String key,
                                         @RequestParam @NotBlank(message = "节点层级编码不能为空") String lvlCode,
                                         @RequestParam(defaultValue = "1",required=false) int currentPage, 
-                                        @RequestParam(defaultValue="20",required=false) int pageSize){
+                                        @RequestParam(defaultValue="20",required=false) int pageSize) throws Exception{
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(service.queryNotUsingResource(key, lvlCode, currentPage, pageSize));
@@ -99,12 +100,12 @@ public class MonitorTreeOrderController {
      * @return
      */
     @GetMapping("/other/resource")
-    public Result checkAvailableResource(@RequestParam @NotBlank(message="临时单Key不能为空") String key){
+    public Result checkAvailableResource(@RequestParam @NotBlank(message="临时单Key不能为空") String key) throws Exception{
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         
-        JSONArray datas = service.queryAvailableResource(key);
+        List<?> datas = service.queryAvailableResource(key);
        
         if(datas == null || datas.isEmpty())
             result.setData(false);
@@ -123,7 +124,7 @@ public class MonitorTreeOrderController {
      */
     @Revoked(type=OperateType.NODE)
     @GetMapping("/other")
-    public Result addOtherNode(@RequestParam @NotBlank(message="临时单Key不能为空") @Revoked(key="key") String key){
+    public Result addOtherNode(@RequestParam @NotBlank(message="临时单Key不能为空") @Revoked(key="key") String key) throws Exception{
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
@@ -139,7 +140,7 @@ public class MonitorTreeOrderController {
      * @return
      */
     @RequestMapping("/save/{key}")
-    public Result save(@PathVariable(value="key") @NotBlank(message="临时单Key不能为空") String key){
+    public Result save(@PathVariable(value="key") @NotBlank(message="临时单Key不能为空") String key) throws Exception{
        
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);

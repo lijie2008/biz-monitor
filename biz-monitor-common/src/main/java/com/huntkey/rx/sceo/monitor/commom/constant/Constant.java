@@ -8,6 +8,9 @@
 */
 
 package com.huntkey.rx.sceo.monitor.commom.constant;
+
+import java.math.BigDecimal;
+
 /**
  * ClassName:Constant
  * Function: 常量
@@ -22,10 +25,13 @@ public interface Constant {
     String MONITOR_CLASS_PROP_RESOURCES = "moni_resource_class";
     
     // 根节点层级
-    String ROOT_LVL = "1";
+    Integer ROOT_LVL = 1;
     
     // 根节点层级编码
     String ROOT_LVL_CODE = "1,";
+    
+    // 根节点序号
+    BigDecimal ROOT_SEQ = BigDecimal.valueOf(1L);
     
     // 实体类所在路径
     String ENTITY_PATH = "com.huntkey.rx.edm.entity.";
@@ -51,18 +57,40 @@ public interface Constant {
     // 结束时分秒
     String ENDTIME = " 23:59:59";
     
+    // 员工表的EDMID
+    String STAFFCLASSID="2d6b8cd2abcb11e78bba005056bc4879";
     
+    // 新增人
+    String ADDUSER = "addUser";
     
+    // 修改人
+    String MODUSER = "modUser";
     
+    //初始化节点名称
+    String INITNODENAME="未命名节点";
     
+    // 回退节点的关键字
+    String REVOKE_KEY = "REVOKE";
     
+    // 临时单节点集合
+    String MTOR_NODES_EDM = "monitortreeorder.mtor_node_set";
     
+    // 缓存关键字分隔符
+    String KEY_SEP = "-";
     
+    // 层级编码分隔符
+    String LVSPLIT = ",";
     
+    String VALUE = "value";
     
+    // 监管类下 从属资源类 常量名称
+    String EDMPCODE = "moni_resource_class";
     
+    // 特殊类 岗位类EDM ID
+    String JOBPOSITIONCLASSID = "6fa512bf66e211e7b2e4005056bc4879";
     
-    
+    // 版本的前缀
+    String PRE_VERSION = "V";
     
     
     
@@ -151,17 +179,9 @@ public interface Constant {
     
     String STAF002="staf002";//员工姓名字段
     
-    String INITNODENAME="未命名节点";//初始化节点名称
     
     String MAXINVALIDDATE="9999-12-31";//最大失效日期
     
-    String STAFFCLASSID="2d6b8cd2abcb11e78bba005056bc4879";
-    
-    String EDMPCODE = "moni_resource_class";
-    
-    String VALUE = "value";
-
-    String JOBPOSITIONCLASSID = "6fa512bf66e211e7b2e4005056bc4879";
     
     String DEPTTREECLASSID = "6fa512bf66e211e7b2e4005056bc4879";
 }

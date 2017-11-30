@@ -9,8 +9,11 @@
 
 package com.huntkey.rx.sceo.monitor.provider.service;
 
+import java.util.List;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.huntkey.rx.edm.entity.ResourceEntity;
 import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
 
 /**
@@ -22,15 +25,15 @@ import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
  */
 public interface MonitorTreeOrderService {
     
-    JSONObject queryNotUsingResource(String key,String lvlCode,int currentPage, int pageSize);
+    JSONObject queryNotUsingResource (String key,String lvlCode,int currentPage, int pageSize) throws Exception;
     
     boolean checkDate(String key, String lvlCode,String startDate, String endDate);
     
-    JSONArray queryAvailableResource(String key);
+    List<?> queryAvailableResource(String key) throws Exception;
     
-    String addOtherNode(String key);
+    String addOtherNode(String key) throws Exception;
 
-    String save(String key);
+    String save(String key) throws Exception;
     
     RevokedTo revoke(String key);
 

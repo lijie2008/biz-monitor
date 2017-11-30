@@ -108,21 +108,16 @@
         
         <!-- ################### biz-orm-starter ##########################################-->
         <dependency>
-            <groupId>com.huntkey.rx</groupId>
-            <artifactId>biz-orm-starter</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        
+		    <groupId>com.huntkey.rx</groupId>
+		    <artifactId>biz-class-starter</artifactId>
+		    <version>0.0.1-SNAPSHOT</version>
+		    <exclusions>
+		        <exclusion>
+		            <groupId>org.springframework.boot</groupId>
+		            <artifactId>spring-boot-starter-logging</artifactId>
+		        </exclusion>
+		    </exclusions>
+		</dependency>
     </dependencies>
 
     <dependencyManagement>

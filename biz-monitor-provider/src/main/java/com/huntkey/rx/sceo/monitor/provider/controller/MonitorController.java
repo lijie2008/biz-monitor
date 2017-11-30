@@ -239,7 +239,7 @@ public class MonitorController {
      */
     @Revoked(type=OperateType.DETAIL)
     @RequestMapping(value = "/formula", method = RequestMethod.POST)
-    public Result formula(@RequestBody @Revoked NodeTo node) {
+    public Result formula(@RequestBody @Revoked NodeTo node) throws Exception{
     	Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         result.setData(service.formula(node));

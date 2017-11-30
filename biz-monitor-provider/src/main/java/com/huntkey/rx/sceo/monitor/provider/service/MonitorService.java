@@ -35,5 +35,5 @@ public interface MonitorService {
   	// 获取临时单中当前节点所有子节点
   	List<NodeTo> getChildNode(String key,String lvlCode);
   	
-  	List<ResourceTo> formula(NodeTo node);
+  	List<ResourceTo> formula(NodeTo node) throws Exception;
 }

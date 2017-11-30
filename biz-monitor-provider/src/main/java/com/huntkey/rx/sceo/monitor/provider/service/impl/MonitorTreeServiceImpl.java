@@ -508,16 +508,17 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             throw new ServiceException("EDM类信息中未找到类英文名！");
         }
         
-        // 资源id集合
-        List<MoniMoniResSetaEntity> reIds = new ArrayList<MoniMoniResSetaEntity>();
-        
-        List<String> ids = new ArrayList<String>();
         
         // 循环查询资源信息
         OrmParam param = new OrmParam();
         
         for (int i = 0; i < nodes.size(); i++) {
             param.clearOrmParmas();
+            // 资源id集合
+            List<MoniMoniResSetaEntity> reIds = new ArrayList<MoniMoniResSetaEntity>();
+            
+            List<String> ids = new ArrayList<String>();
+            
             if(type == 1){
                 if(edmcNameEn.endsWith(Constant.MONITOR_HISTORY_SET)){
                     param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
@@ -731,7 +732,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             param.setWhereExp(OrmParam.and(param.getEqualXML("moni_lvl_code", Constant.ROOT_LVL_CODE),
                                            param.getEqualXML("moni_lvl", Constant.ROOT_LVL)));
             
-            param.setOrderExp(SQLSortEnum.DESC, "moni_hend");
+            param.setOrderExp(SQLSortEnum.DESC, "moni_end");
             
             param.setPageNo(1);
             param.setPageSize(1);
@@ -856,7 +857,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                 if(StringUtil.isNullOrEmpty(param.getWhereExp()))
                     param.setWhereExp(param.getMatchMiddleXML(fieldName, fieldValue));
                 else
-                    param.setWhereExp(OrmParam.and(param.getWhereExp(), param.getMatchMiddleXML(fieldName, fieldValue)));
+                    param.setWhereExp(OrmParam.or(param.getWhereExp(), param.getMatchMiddleXML(fieldName, fieldValue)));
             }
         }
         
