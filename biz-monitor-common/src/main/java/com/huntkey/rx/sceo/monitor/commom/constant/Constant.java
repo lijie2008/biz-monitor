@@ -95,8 +95,13 @@ public interface Constant {
     // 变更对象
     String OID = "oid";
     
-    String MAXINVALIDDATE="9999-12-31";//最大失效日期
+    //最大失效日期
+    String MAXINVALIDDATE="9999-12-31";
     
-    String DATA_SET = "dataset";
+    // 关键字key
+    String KEY = "key";
+    
+    // 关键字层级编码的key
+    String LVLCODE = "lvlCode";
 }
 

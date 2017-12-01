@@ -9,12 +9,20 @@
 
 package com.huntkey.rx.sceo.monitor.provider.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import java.math.BigDecimal;
+import java.util.List;
 
-import com.alibaba.fastjson.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.huntkey.rx.commons.utils.rest.Result;
-import com.huntkey.rx.sceo.monitor.provider.biz.StatisticsDBiz;
+import com.huntkey.rx.edm.entity.StatisticsEntity;
+import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
+import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
+import com.huntkey.rx.sceo.monitor.provider.service.StatisticsDService;
 
 /**
  * ClassName:StatisticsReportController
@@ -25,31 +33,48 @@ import com.huntkey.rx.sceo.monitor.provider.biz.StatisticsDBiz;
 @RestController
 @RequestMapping("/statistics")
 public class StatisticsController {
-
+    
     @Autowired
-    StatisticsDBiz statisticsBiz;
-
-    @RequestMapping("/query/period")
-    public Result getPeriod(@RequestBody(required = false) JSONObject data) {
-        return statisticsBiz.queryPeriod(data);
-    }
-
-    @RequestMapping("/query/statistics")
-    public Result getStatistics(@RequestBody JSONObject data) {
-        return statisticsBiz.queryStatistics(data);
-    }
+    StatisticsDService statisticsService;
 
     @GetMapping("/curamt")
     public Result getStatistics(@RequestParam String edmId, @RequestParam String objId, @RequestParam String periodId,
                                 @RequestParam String attributeId) throws Exception{
-        return statisticsBiz.queryStatistics(edmId, objId, periodId, attributeId);
+        
+        Result result = new Result();
+        
+        result.setRetCode(Result.RECODE_SUCCESS);
+        
+        List<StatisticsEntity> queryJson = statisticsService.queryStatistics(edmId, objId, periodId, attributeId);
+        
+        if (queryJson == null || queryJson.size() <= 0) 
+            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),ErrorMessage._60005.getMsg());
+        
+        StatisticsEntity statisticObj = queryJson.get(0);
+
+        BigDecimal curamt = statisticObj.getStat_curamt();
+        
+        result.setData(curamt);
+        
+        return result;
     }
 
     @RequestMapping("/statistics/curamts")
     public Result getStatistic(@RequestParam(value = "moniIds") String moniIds,
                                @RequestParam(value = "periodId") String periodId,
                                @RequestParam(value = "attributeIds") String attributeIds) throws Exception{
-        return statisticsBiz.queryStatistics(moniIds,periodId,attributeIds);
+        
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        
+        List<StatisticsEntity> datas = statisticsService.queryStatistics(moniIds,periodId, attributeIds);
+        
+        if (datas == null || datas.size() <= 0) 
+            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),ErrorMessage._60005.getMsg());
+        
+        result.setData(datas);
+        
+        return result;
         
     };
 

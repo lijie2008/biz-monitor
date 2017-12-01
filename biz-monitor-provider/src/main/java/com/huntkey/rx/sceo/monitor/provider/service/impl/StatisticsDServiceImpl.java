@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.huntkey.rx.edm.entity.StatisticsEntity;
-import com.huntkey.rx.sceo.monitor.provider.controller.client.ServiceCenterClient;
 import com.huntkey.rx.sceo.monitor.provider.service.StatisticsDService;
 import com.huntkey.rx.sceo.orm.common.model.OrmParam;
 import com.huntkey.rx.sceo.orm.common.type.SQLSymbolEnum;
@@ -35,9 +34,6 @@ import com.huntkey.rx.sceo.orm.service.OrmService;
 @Service("statisticsDService")
 public class StatisticsDServiceImpl implements StatisticsDService {
     private static final Logger LOG = LoggerFactory.getLogger(StatisticsDServiceImpl.class);
-
-    @Autowired
-    ServiceCenterClient serviceCenterClient;
     
     @Autowired 
     OrmService ormService;
@@ -56,7 +52,6 @@ public class StatisticsDServiceImpl implements StatisticsDService {
     public List<StatisticsEntity> queryStatistics(String monitorClass, String monitorId, String periodId,
                                       String attributeId) throws Exception {
         LOG.info("查询统计类信息开始,monitorClass:{},monitorId:{},periodId:{},attributeId:{}",new Object [] {monitorClass,monitorId,periodId,attributeId});
-        long time = System.currentTimeMillis();
         
         OrmParam param = getQueryString(monitorClass, monitorId, periodId, attributeId);
         
@@ -107,7 +102,6 @@ public class StatisticsDServiceImpl implements StatisticsDService {
 
     @Override
     public List<StatisticsEntity> queryStatistics(String moniIds, String periodId, String attributeIds) throws Exception{
-        long time = System.currentTimeMillis();
         
         OrmParam queryString = getQueryString(moniIds, periodId, attributeIds);
         

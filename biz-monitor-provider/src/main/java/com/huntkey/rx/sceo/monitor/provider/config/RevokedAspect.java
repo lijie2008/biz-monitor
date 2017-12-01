@@ -31,6 +31,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.commons.utils.string.StringUtil;
+import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
@@ -48,11 +49,6 @@ import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
 @Component
 public class RevokedAspect {
     
-    private static final String REVOKE_KEY = "REVOKE";
-    
-    private static final String KEY = "key";
-    private static final String LVLCODE = "lvlCode";
-    
     private static final Map<String,Object> originalMap = new ConcurrentHashMap<String, Object>();
     
     @Resource(name="redisTemplate")
@@ -67,8 +63,8 @@ public class RevokedAspect {
         
         JSONObject args = getKey(point);
         
-        String key = args.getString(KEY);
-        String lvlCode = args.getString(LVLCODE);
+        String key = args.getString(Constant.KEY);
+        String lvlCode = args.getString(Constant.LVLCODE);
 
         if(StringUtil.isNullOrEmpty(key))
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), "临时单key" + ErrorMessage._60005.getMsg());
@@ -77,7 +73,7 @@ public class RevokedAspect {
             return;
         
         if(OperateType.DETAIL == revoked.type() && StringUtil.isNullOrEmpty(lvlCode))
-            ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(), LVLCODE + ErrorMessage._60004.getMsg());
+            ApplicationException.throwCodeMesg(ErrorMessage._60004.getCode(), Constant.LVLCODE + ErrorMessage._60004.getMsg());
         
         // 提前保留一份记录
         List<NodeTo> nodes = hashOps.values(key);
@@ -100,9 +96,9 @@ public class RevokedAspect {
         JSONObject data = new JSONObject();
         JSONObject args = getKey(point);
         
-        String key = args.getString(KEY);
+        String key = args.getString(Constant.KEY);
         
-        String lvlCode = args.getString(LVLCODE);
+        String lvlCode = args.getString(Constant.LVLCODE);
         
         // 服务不成功 不保存回退信息
         if(result.getRetCode() != Result.RECODE_SUCCESS){
@@ -112,19 +108,19 @@ public class RevokedAspect {
         
         if(revoked.type() == OperateType.QUERY){
             data.put("data", result.getData());
-            data.put("revoke", listOps.size(key+REVOKE_KEY));
+            data.put("revoke", listOps.size(key+Constant.REVOKE_KEY));
             result.setData(data);
             return;
         }
         
         
-        listOps.leftPush(key+REVOKE_KEY, (RevokedTo)originalMap.get(key+lvlCode));
+        listOps.leftPush(key+Constant.REVOKE_KEY, (RevokedTo)originalMap.get(key+lvlCode));
         
         originalMap.remove(key+lvlCode);
         
         if(OperateType.DETAIL == revoked.type()){
             data.put("data", result.getData());
-            data.put("revoke", listOps.size(key+REVOKE_KEY));
+            data.put("revoke", listOps.size(key+Constant.REVOKE_KEY));
             result.setData(data);
         }
     }
@@ -135,8 +131,8 @@ public class RevokedAspect {
         
         JSONObject args = getKey(point);
         
-        String key = args.getString(KEY);
-        String lvlCode = args.getString(LVLCODE);
+        String key = args.getString(Constant.KEY);
+        String lvlCode = args.getString(Constant.LVLCODE);
         
         if(!StringUtil.isNullOrEmpty(key))
             originalMap.remove(key+lvlCode);
@@ -169,8 +165,8 @@ public class RevokedAspect {
                         obj.put(revoked.key(), (String)point.getArgs()[i]);
                     }else{
                         JSONObject node = JSON.parseObject(JSON.toJSONString(arg));
-                        obj.put(KEY, node.getString(KEY));
-                        obj.put(LVLCODE, node.getString(LVLCODE));
+                        obj.put(Constant.KEY, node.getString(Constant.KEY));
+                        obj.put(Constant.LVLCODE, node.getString(Constant.LVLCODE));
                     }
                 }
             }
