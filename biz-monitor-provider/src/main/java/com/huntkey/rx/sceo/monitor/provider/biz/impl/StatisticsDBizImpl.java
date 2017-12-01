@@ -24,7 +24,6 @@ import com.huntkey.rx.commons.utils.datetime.DateUtil;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.edm.entity.StatisticsEntity;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
-import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
 import com.huntkey.rx.sceo.monitor.commom.constant.StatisticsConstant;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
@@ -364,7 +363,7 @@ public class StatisticsDBizImpl implements StatisticsDBiz {
     private Double getAttrCumulativeValue(JSONObject jsonObj, String attrId) {
 
         if (jsonObj != null && StringUtils.isNotBlank(attrId)) {
-            JSONArray dataSet = jsonObj.getJSONArray(ServiceCenterConstant.DATA_SET);
+            JSONArray dataSet = jsonObj.getJSONArray(Constant.DATA_SET);
             if (dataSet != null && !dataSet.isEmpty()) {
                 for (Object o : dataSet) {
                     JSONObject json = JsonUtil.getJson(o);
@@ -389,7 +388,7 @@ public class StatisticsDBizImpl implements StatisticsDBiz {
     private Double getAttrValue(JSONObject jsonObj, String attrId) {
 
         if (jsonObj != null && StringUtils.isNotBlank(attrId)) {
-            JSONArray dataSet = jsonObj.getJSONArray(ServiceCenterConstant.DATA_SET);
+            JSONArray dataSet = jsonObj.getJSONArray(Constant.DATA_SET);
             if (dataSet != null && !dataSet.isEmpty()) {
                 for (Object o : dataSet) {
                     JSONObject json = JsonUtil.getJson(o);
@@ -423,7 +422,7 @@ public class StatisticsDBizImpl implements StatisticsDBiz {
             return null;
         }
         //结果集
-        JSONArray dataset = periodIdJson.getJSONArray(ServiceCenterConstant.DATA_SET);
+        JSONArray dataset = periodIdJson.getJSONArray(Constant.DATA_SET);
 
         if (dataset == null || dataset.isEmpty()) {
             return null;
@@ -530,7 +529,7 @@ public class StatisticsDBizImpl implements StatisticsDBiz {
         }
 
         //周期类结果集
-        JSONArray dayArray = dayJson.getJSONArray(ServiceCenterConstant.DATA_SET);
+        JSONArray dayArray = dayJson.getJSONArray(Constant.DATA_SET);
 
         if (dayArray.isEmpty()) {
             return null;

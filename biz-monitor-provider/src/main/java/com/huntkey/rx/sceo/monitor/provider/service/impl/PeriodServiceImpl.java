@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
-import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
+import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.constant.StatisticsConstant;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
@@ -75,7 +75,7 @@ public class PeriodServiceImpl implements PeriodService {
         //处理查询结果 拼接财年显示内容    peid001+"F"+peid005 的格式拼接
         if (result.getData() != null && result.getRetCode() == Result.RECODE_SUCCESS) {
             JSONObject jsonObj = JsonUtil.getJson(result.getData());
-            JSONArray jsonArray = jsonObj.getJSONArray(ServiceCenterConstant.DATA_SET);
+            JSONArray jsonArray = jsonObj.getJSONArray(Constant.DATA_SET);
             if (jsonArray != null && !jsonArray.isEmpty()) {
                 StringBuilder sb = new StringBuilder();
                 for (Object obj : jsonArray) {

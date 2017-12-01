@@ -96,5 +96,7 @@ public interface Constant {
     String OID = "oid";
     
     String MAXINVALIDDATE="9999-12-31";//最大失效日期
+    
+    String DATA_SET = "dataset";
 }
 
