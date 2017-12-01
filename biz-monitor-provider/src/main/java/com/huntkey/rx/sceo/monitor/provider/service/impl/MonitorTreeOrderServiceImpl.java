@@ -9,8 +9,6 @@
 
 package com.huntkey.rx.sceo.monitor.provider.service.impl;
 
-import static com.huntkey.rx.sceo.monitor.commom.constant.Constant.MONITORTREEORDER;
-
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -64,7 +62,6 @@ import com.huntkey.rx.sceo.orm.common.type.SQLSortEnum;
 import com.huntkey.rx.sceo.orm.common.type.SQLSymbolEnum;
 import com.huntkey.rx.sceo.orm.common.util.PersistentUtil;
 import com.huntkey.rx.sceo.orm.service.OrmService;
-import com.huntkey.rx.sceo.serviceCenter.common.model.SearchParam;
 
 /**
  * ClassName:MonitorTreeOrderServiceImpl 临时单Impl
@@ -108,7 +105,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         if(node == null)
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"redis中节点层级编码["+ lvlCode +"]" + ErrorMessage._60005.getMsg());
             
-        Result resourceEdmClass = edmClient.getEdmcNameEn(key.split(Constant.KEY_SEP)[1], Constant.EDMPCODE);
+        Result resourceEdmClass = edmClient.getPropertyValue(key.split(Constant.KEY_SEP)[1], Constant.EDMPCODE);
         
         String resourceEdmcNameEn = "";
         
@@ -210,7 +207,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         if(StringUtil.isNullOrEmpty(edmId)){
             
-            Result resourceEdmClass = edmClient.getEdmcNameEn(classId, Constant.EDMPCODE);
+            Result resourceEdmClass = edmClient.getPropertyValue(classId, Constant.EDMPCODE);
             
             if(resourceEdmClass.getRetCode() == Result.RECODE_SUCCESS){
                 
@@ -361,7 +358,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         if(hashOps.size(key) == 0)
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"redis中 键值[" + key + "]"+ErrorMessage._60005.getMsg());
         
-        Result resourceEdmClass = edmClient.getEdmcNameEn(key.split(Constant.KEY_SEP)[1], Constant.EDMPCODE);
+        Result resourceEdmClass = edmClient.getPropertyValue(key.split(Constant.KEY_SEP)[1], Constant.EDMPCODE);
         
         String resourceEdmcNameEn = "";
         
@@ -513,9 +510,6 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         if(order == null)
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), "单据表中临时单["+key.split(Constant.KEY_SEP)[0]+"]"+ ErrorMessage._60005.getMsg());
         
-        SearchParam o_params = new SearchParam(MONITORTREEORDER);
-        o_params.addCond_equals(Constant.ID, key.split(Constant.KEY_SEP)[0]);
-        
         List<NodeTo> nodes = hashOps.values(key);
         
         // 检查节点合法性
@@ -584,7 +578,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         ChangeType type = ChangeType.valueOf(Integer.valueOf(order.getMtor_order_type()));
         
         // 根据classId 查询监管类信息
-        Result edmRet = edmClient.queryEdmClassById(classId);
+        Result edmRet = edmClient.getEdmByid(classId);
         String edmName = null;
         
         if(edmRet.getRetCode() == Result.RECODE_SUCCESS){

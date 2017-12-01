@@ -78,7 +78,7 @@ public class EdmPropertyGroupBizImpl implements EdmPropertyGroupBiz {
                     jsonObj.put("edpgEdmpId", edpgEdmpId);
 
                     //根据id查询edm类信息
-                    Result edmClassResult = modelerClient.queryEdmClassById(edpgEdmcId);
+                    Result edmClassResult = modelerClient.getEdmByid(edpgEdmcId);
                     if (edmClassResult.getRetCode() == Result.RECODE_SUCCESS && edmClassResult.getData() != null) {
 
                         JSONObject js = JsonUtil.getJson(edmClassResult.getData());

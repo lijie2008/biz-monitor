@@ -36,17 +36,6 @@ import com.huntkey.rx.sceo.orm.service.OrmService;
 public class StatisticsDServiceImpl implements StatisticsDService {
     private static final Logger LOG = LoggerFactory.getLogger(StatisticsDServiceImpl.class);
 
-    /**edm类名*/
-    private String EDM_NAME = "statistics";
-    /**所属监管类*/
-    private String STAT001 = "stat_moniclass";
-    /**所属监管类对象*/
-    private String STAT002 = "stat_moniobj";
-    /**属性id*/
-    private String STAT003 = "stat_moniattr";
-    /**周期类id*/
-    private String STAT013 = "stat_pridobj";
-
     @Autowired
     ServiceCenterClient serviceCenterClient;
     

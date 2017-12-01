@@ -11,9 +11,7 @@ package com.huntkey.rx.sceo.monitor.provider.service;
 
 import java.util.List;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.huntkey.rx.edm.entity.ResourceEntity;
 import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
 
 /**

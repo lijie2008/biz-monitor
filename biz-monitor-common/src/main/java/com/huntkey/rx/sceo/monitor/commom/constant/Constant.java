@@ -92,97 +92,9 @@ public interface Constant {
     // 版本的前缀
     String PRE_VERSION = "V";
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    // 授权ID
-    String EMPO_001 = "empo_001";
-    
-    // 查询结果集名称
-    String DATASET = "dataset";
-    
-    
     // 变更对象
     String OID = "oid";
-
-    // 日期类型的特殊转换
-    String YYYYMMDD = "yyyyMMdd";
-    
-    
-
-    /**
-     * 有权限/可用/可见 - 1
-     */
-    int AUTHORIZATION_YES = 1;
-
-    /**
-     * 无权限/不可用/不可见 - 0
-     */
-    int AUTHORIZATION_NO = 0;
-
-    /**
-     * 模糊查询 0
-     */
-    int FUZZY_QUERY_YES = 1;
-
-    /**
-     *  非模糊查询（即通过ID精确查询） 1
-     */
-    int FUZZY_QUERY_NO = 0;
-
-    /**
-     * 资源不存在 0
-     */
-    int RESOURCE_EXIST_NO = 0;
-
-    /**
-     * 资源存在 1
-     */
-    int RESOURCE_EXIST_YES = 1;
-
-
-    /**
-     *EDM模板id
-     */
-    String MODELER_ID = "9314121da04b4642a02e2c2f0e3920bd";
-    
-    /**
-     *分页的总页数
-     */
-    String TOTALSIZE = "totalSize";
-    
-    /**
-     *标记位
-     */
-    String FLAG = "flag";
-    
-    String MONITORTREEORDER="monitortreeorder";//监管树临时单表
-   
-    String STAFF="employee";//员工表
-    
-    String STAF002="staf002";//员工姓名字段
-    
     
     String MAXINVALIDDATE="9999-12-31";//最大失效日期
-    
-    
-    String DEPTTREECLASSID = "6fa512bf66e211e7b2e4005056bc4879";
 }
 

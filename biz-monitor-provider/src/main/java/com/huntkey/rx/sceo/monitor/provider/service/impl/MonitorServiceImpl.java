@@ -48,7 +48,6 @@ import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
-import com.huntkey.rx.sceo.monitor.commom.model.BackTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
@@ -855,10 +854,6 @@ public class MonitorServiceImpl implements MonitorService {
         nodeDetail.setRelateId(oldNode.getRelateId());
         nodeDetail.setRelateCnd(oldNode.getRelateCnd());
         nodeDetail.setRelateCndText(oldNode.getRelateCndText());
-        List<BackTo> backSet = nodeDetail.getBackSet();
-        
-        if(backSet != null && !backSet.isEmpty())
-            nodeDetail.setBackSet(backSet);
         
         //操作redis修改
         hasOps.put(key, lvlCode, nodeDetail);
@@ -945,12 +940,6 @@ public class MonitorServiceImpl implements MonitorService {
                     ResourceTo resource=resourceList.get(i);
                     if(StringUtil.isEqual(resourceId,resource.getResId())){
                         resourceList.remove(i);
-                        List<BackTo> backSet = node.getBackSet();
-                        if(backSet != null && !backSet.isEmpty()){
-                            String bk1 = backSet.get(0).getBk1();
-                            if(resourceId.equals(bk1))
-                                node.setBackSet(null);
-                        }
                         break;
                     }
                 }
@@ -1428,27 +1417,6 @@ public class MonitorServiceImpl implements MonitorService {
            if(StringUtil.isEqual(Constant.JOBPOSITIONCLASSID, key.split(Constant.KEY_SEP)[1])){
                o_node.setNodeName(n_resources.get(0).getText());
            }
-           
-           // 主责岗位的值需要修改
-           List<BackTo> backSet = o_node.getBackSet();
-           
-           if(backSet != null && !backSet.isEmpty()){
-               BackTo bk = backSet.get(0);
-               String bk1 = bk.getBk1();
-               if(!StringUtil.isNullOrEmpty(bk1)){
-                   boolean flag = false;
-                   for(ResourceTo rrr : n_resources){
-                       if(rrr.getResId().equals(bk1)){
-                           flag = true;
-                           break;
-                       }
-                   }
-                   
-                   if(!flag)
-                       o_node.setBackSet(null);
-               }
-           }
-           
            hasOps.put(key, lvlCode, o_node);
        }
         return n_resources;

@@ -62,95 +62,15 @@ public interface ModelerClient {
     Result getConProperties(@RequestParam(value = "edmdVer") String edmdVer,
                             @RequestParam(value = "edmcNameEn") String edmcNameEn);
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     /**
-     * 根据id查询EDM类
-     * @author 方坤
-     * @version
-     * @see
-     */
-    @RequestMapping(value = "/classes/{id}")
-    Result queryEdmClassById(@PathVariable(value = "id") String id);
-
-    /**
-     * 查询属性
+     * getPropertyFormula:根据卷积属性id查询公式
+     * @author caozhenx
      * @param id
      * @return
      */
-    @RequestMapping(value = "/classes/{id}/properties")
-    Result queryEdmClassProperties(@PathVariable(value = "id") String id);
-
-    /**
-     * 根据模型id + 类英文名称数组查询类树
-     * @param modelerId
-     * @param edmcNameEns
-     * @return
-     */
-    @RequestMapping(value = "/classes/classTree", method = RequestMethod.GET)
-    Result queryClassTree(@RequestParam(value = "modelerId") String modelerId,
-                          @RequestParam(value = "edmcNameEns") String[] edmcNameEns);
-
-    /**
-     * 
-     * getEdmcCode: 查询资源类信息
-     * @author lijie
-     * @param classId 监管树类ID
-     * @param edmpCode 属性编码
-     * @return
-     */
-    @RequestMapping(value = "/properties/values", method = RequestMethod.GET)
-    Result getEdmcNameEn(@RequestParam(value = "classId") String classId,
-                         @RequestParam(value = "edmpCode") String edmpCode);
-
-
+    @RequestMapping(value = "/convolutes/formula/{id}", method = RequestMethod.GET)
+    Result getPropertyFormula(@PathVariable(value = "id") String id);  
+    
     /**
      * checkIsChileNode:根据父类id 子类id来确认 子类是否为父类的  子孙类
      * @author caozhenx
@@ -161,24 +81,4 @@ public interface ModelerClient {
     @RequestMapping(value = "/classes/child/{id}/{sid}", method = RequestMethod.GET)
     Result checkIsChileNode(@PathVariable(value = "id") String id,
                             @PathVariable(value = "sid") String sid);
-
-
-    /**
-     * 将指定id的所有属性的is_visible字段更改为指定数值
-     * @param ids
-     * @param b （0或1）
-     */
-    @RequestMapping(value = "/properties/changeVisible", method = RequestMethod.POST)
-    Result changePropertiesVisible(@RequestParam(value = "ids") String[] ids,
-                                          @RequestParam(value = "b") byte b);
-    
-    /**
-     * getPropertyFormula:根据卷积属性id查询公式
-     * @author caozhenx
-     * @param id
-     * @return
-     */
-    @RequestMapping(value = "/convolutes/formula/{id}", method = RequestMethod.GET)
-    Result getPropertyFormula(@PathVariable(value = "id") String id);    
-
 }

@@ -12,7 +12,6 @@ package com.huntkey.rx.sceo.monitor.provider.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;

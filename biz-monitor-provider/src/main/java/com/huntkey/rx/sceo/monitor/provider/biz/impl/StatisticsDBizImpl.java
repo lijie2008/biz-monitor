@@ -23,7 +23,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.datetime.DateUtil;
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.edm.entity.StatisticsEntity;
-import com.huntkey.rx.sceo.monitor.commom.constant.DateConstant;
+import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
 import com.huntkey.rx.sceo.monitor.commom.constant.StatisticsConstant;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
@@ -508,7 +508,7 @@ public class StatisticsDBizImpl implements StatisticsDBiz {
      */
     private List<StatisticsEntity> getDayStatistics(Calendar cl, String monitorClass, String monitorId) throws Exception{
 
-        String time = DateUtil.parseFormatDate(cl.getTime(), DateConstant.FORMATE_YYYY_MM_DD);
+        String time = DateUtil.parseFormatDate(cl.getTime(), Constant.YYYY_MM_DD);
         String period = getPeriodId(time, time);
         return statisticsService.queryStatistics(monitorClass, monitorId, period, null);
     }

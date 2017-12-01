@@ -73,8 +73,6 @@ public class NodeTo implements Serializable{
     private int type;
     
     private String relateId;
-    
-    private List<BackTo> backSet;
 
     public String getNodeNo() {
         return nodeNo;
@@ -194,14 +192,6 @@ public class NodeTo implements Serializable{
 
     public void setRelateId(String relateId) {
         this.relateId = relateId;
-    }
-
-    public List<BackTo> getBackSet() {
-        return backSet;
-    }
-
-    public void setBackSet(List<BackTo> backSet) {
-        this.backSet = backSet;
     }
 
     public double getSeq() {
