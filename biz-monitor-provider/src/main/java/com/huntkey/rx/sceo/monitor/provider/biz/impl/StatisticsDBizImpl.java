@@ -8,10 +8,10 @@
 
 package com.huntkey.rx.sceo.monitor.provider.biz.impl;
 
+import java.math.BigDecimal;
 import java.util.Calendar;
+import java.util.List;
 
-import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
-import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,14 +22,17 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.datetime.DateUtil;
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.edm.entity.StatisticsEntity;
 import com.huntkey.rx.sceo.monitor.commom.constant.DateConstant;
 import com.huntkey.rx.sceo.monitor.commom.constant.ServiceCenterConstant;
 import com.huntkey.rx.sceo.monitor.commom.constant.StatisticsConstant;
+import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
+import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.utils.JsonUtil;
-import com.huntkey.rx.sceo.monitor.provider.biz.StatisticsBiz;
+import com.huntkey.rx.sceo.monitor.provider.biz.StatisticsDBiz;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
 import com.huntkey.rx.sceo.monitor.provider.service.PeriodService;
-import com.huntkey.rx.sceo.monitor.provider.service.StatisticsService;
+import com.huntkey.rx.sceo.monitor.provider.service.StatisticsDService;
 
 /**
  * ClassName:StatisticsBizImpl
@@ -39,16 +42,16 @@ import com.huntkey.rx.sceo.monitor.provider.service.StatisticsService;
  * @version
  * @see
  */
-//@Service("statisticsBiz")
-public class StatisticsBizImpl implements StatisticsBiz {
+@Service("statisticsDBiz")
+public class StatisticsDBizImpl implements StatisticsDBiz {
 
-    private static final Logger LOG = LoggerFactory.getLogger(StatisticsBizImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(StatisticsDBizImpl.class);
 
-    @Autowired
+//    @Autowired
     PeriodService periodService;
 
     @Autowired
-    StatisticsService statisticsService;
+    StatisticsDService statisticsService;
 
     @Autowired
     MonitorTreeService monitorTreeService;
@@ -248,34 +251,35 @@ public class StatisticsBizImpl implements StatisticsBiz {
     public JSONArray queryStatistics(String monitorId, String nodeId, String periodId,
                                      JSONArray attributeIds) {
 
-        LOG.info("查询节点统计数据开始,monitorId:{},nodeId:{},periodId:{},attributeIds:{}",
-                new Object[]{monitorId, nodeId, periodId, JsonUtil.getJsonString(attributeIds)});
-        long time = System.currentTimeMillis();
-
-        //当天 统计数据
-        JSONObject currentDayJson = getDayStatistics(Calendar.getInstance(), monitorId, nodeId);
-
-        //当月统计数据
-        JSONObject currentMonthJson = getMonthStatistics(Calendar.getInstance(), monitorId, nodeId);
-        //上个月统计数据
-        JSONObject lastMonthJson = getMonthStatistics(getLastMonth(), monitorId, nodeId);
-        //去年同一时期统计数据（去年的这个月）
-        JSONObject lastYearCurrentMonthJson = getMonthStatistics(getLastYearCurrentMonth(),
-                monitorId, nodeId);
-
-        //传入的财月 统计数据查询
-        JSONObject queryMonthJson = statisticsService.queryStatistics(monitorId, nodeId, periodId,
-                null);
-
-        JSONObject lastYearQueryMonthJson = getMonthStatistics(getLastYearQueryMonth(periodId),
-                monitorId, nodeId);
-
-        //最终统计结果
-        JSONArray obj = processResult(attributeIds, currentDayJson, currentMonthJson, lastMonthJson,
-                lastYearCurrentMonthJson, queryMonthJson, lastYearQueryMonthJson);
-        LOG.info("查询节点统计数据结束,结果:{},用时:{}", JsonUtil.getJsonString(obj),
-                System.currentTimeMillis() - time);
-        return obj;
+//        LOG.info("查询节点统计数据开始,monitorId:{},nodeId:{},periodId:{},attributeIds:{}",
+//                new Object[]{monitorId, nodeId, periodId, JsonUtil.getJsonString(attributeIds)});
+//        long time = System.currentTimeMillis();
+//
+//        //当天 统计数据
+//        JSONObject currentDayJson = JSON.parseObject(getDayStatistics(Calendar.getInstance(), monitorId, nodeId).toString());
+//
+//        //当月统计数据
+//        JSONObject currentMonthJson = getMonthStatistics(Calendar.getInstance(), monitorId, nodeId);
+//        //上个月统计数据
+//        JSONObject lastMonthJson = getMonthStatistics(getLastMonth(), monitorId, nodeId);
+//        //去年同一时期统计数据（去年的这个月）
+//        JSONObject lastYearCurrentMonthJson = getMonthStatistics(getLastYearCurrentMonth(),
+//                monitorId, nodeId);
+//
+//        //传入的财月 统计数据查询
+//        JSONObject queryMonthJson = JSONObject.parseObject(JSON.toJSONString(statisticsService.queryStatistics(monitorId, nodeId, periodId,
+//                null)));
+//
+//        JSONObject lastYearQueryMonthJson = getMonthStatistics(getLastYearQueryMonth(periodId),
+//                monitorId, nodeId);
+//
+//        //最终统计结果
+//        JSONArray obj = processResult(attributeIds, currentDayJson, currentMonthJson, lastMonthJson,
+//                lastYearCurrentMonthJson, queryMonthJson, lastYearQueryMonthJson);
+//        LOG.info("查询节点统计数据结束,结果:{},用时:{}", JsonUtil.getJsonString(obj),
+//                System.currentTimeMillis() - time);
+//        return obj;
+        return null;
     }
 
     /**
@@ -475,22 +479,23 @@ public class StatisticsBizImpl implements StatisticsBiz {
 
     private JSONObject getMonthStatistics(Calendar cl, String monitorClass, String monitorId) {
 
-        //查询时间为空时  会获取不到周期类，这样不准许查询（若准许结果集会很大）
-        if (cl == null) {
-            return null;
-        }
-
-        cl.set(Calendar.DAY_OF_MONTH, 1);
-        String firstDay = DateUtil.parseFormatDate(cl.getTime(), DateConstant.FORMATE_YYYY_MM_DD);
-
-        cl.add(Calendar.MONTH, 1);
-        cl.set(Calendar.DAY_OF_MONTH, 0);
-        String lastDay = DateUtil.parseFormatDate(cl.getTime(), DateConstant.FORMATE_YYYY_MM_DD);
-        String period = getPeriodId(firstDay, lastDay);
-
-        JSONObject json = statisticsService.queryStatistics(monitorClass, monitorId, period, null);
-
-        return json;
+//        //查询时间为空时  会获取不到周期类，这样不准许查询（若准许结果集会很大）
+//        if (cl == null) {
+//            return null;
+//        }
+//
+//        cl.set(Calendar.DAY_OF_MONTH, 1);
+//        String firstDay = DateUtil.parseFormatDate(cl.getTime(), DateConstant.FORMATE_YYYY_MM_DD);
+//
+//        cl.add(Calendar.MONTH, 1);
+//        cl.set(Calendar.DAY_OF_MONTH, 0);
+//        String lastDay = DateUtil.parseFormatDate(cl.getTime(), DateConstant.FORMATE_YYYY_MM_DD);
+//        String period = getPeriodId(firstDay, lastDay);
+//
+//        JSONObject json = statisticsService.queryStatistics(monitorClass, monitorId, period, null);
+//
+//        return json;
+        return null;
     }
 
     /**
@@ -501,7 +506,7 @@ public class StatisticsBizImpl implements StatisticsBiz {
      * @param monitorId 节点id
      * @return
      */
-    private JSONObject getDayStatistics(Calendar cl, String monitorClass, String monitorId) {
+    private List<StatisticsEntity> getDayStatistics(Calendar cl, String monitorClass, String monitorId) throws Exception{
 
         String time = DateUtil.parseFormatDate(cl.getTime(), DateConstant.FORMATE_YYYY_MM_DD);
         String period = getPeriodId(time, time);
@@ -537,34 +542,38 @@ public class StatisticsBizImpl implements StatisticsBiz {
     }
 
     @Override
-    public Result queryStatistics(String edmId, String objId, String periodId, String attributeId) {
+    public Result queryStatistics(String edmId, String objId, String periodId, String attributeId) throws Exception{
+        
         Result result = new Result();
+        
         result.setRetCode(Result.RECODE_SUCCESS);
-        JSONObject queryJson = statisticsService.queryStatistics(edmId, objId, periodId, attributeId);
-        JSONArray dataSet = queryJson.getJSONArray(ServiceCenterConstant.DATA_SET);
-        if (dataSet == null || dataSet.size() <= 0) {
+        
+        List<StatisticsEntity> queryJson = statisticsService.queryStatistics(edmId, objId, periodId, attributeId);
+        
+        if (queryJson == null || queryJson.size() <= 0) 
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),ErrorMessage._60005.getMsg());
-        }
-        JSONObject statisticObj = dataSet.getJSONObject(0);
+        
+        StatisticsEntity statisticObj = queryJson.get(0);
 
-        if (!statisticObj.containsKey(StatisticsConstant.STAT_CURAMT)){
-            ApplicationException.throwCodeMesg(ErrorMessage._60023.getCode(),ErrorMessage._60023.getMsg());
-        }
-        float curamt = statisticObj.getFloatValue(StatisticsConstant.STAT_CURAMT);
+        BigDecimal curamt = statisticObj.getStat_curamt();
+        
         result.setData(curamt);
+        
         return result;
     }
 
     @Override
-    public Result queryStatistics(String moniIds, String periodId, String attributeIds) {
+    public Result queryStatistics(String moniIds, String periodId, String attributeIds) throws Exception {
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
-        JSONObject queryJson = statisticsService.queryStatistics(moniIds,periodId, attributeIds);
-        JSONArray dataSet = queryJson.getJSONArray(ServiceCenterConstant.DATA_SET);
-        if (dataSet == null || dataSet.size() <= 0) {
+        
+        List<StatisticsEntity> datas = statisticsService.queryStatistics(moniIds,periodId, attributeIds);
+        
+        if (datas == null || datas.size() <= 0) 
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),ErrorMessage._60005.getMsg());
-        }
-        result.setData(dataSet);
+        
+        result.setData(datas);
+        
         return result;
     }
     

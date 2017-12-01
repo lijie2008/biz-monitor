@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
-import com.huntkey.rx.sceo.monitor.provider.biz.StatisticsBiz;
+import com.huntkey.rx.sceo.monitor.provider.biz.StatisticsDBiz;
 
 /**
  * ClassName:StatisticsReportController
@@ -22,12 +22,12 @@ import com.huntkey.rx.sceo.monitor.provider.biz.StatisticsBiz;
  * Date:     2017年8月7日 上午10:07:18
  * @author   caozhenx
  */
-//@RestController
-//@RequestMapping("/statistics")
+@RestController
+@RequestMapping("/statistics")
 public class StatisticsController {
 
     @Autowired
-    StatisticsBiz statisticsBiz;
+    StatisticsDBiz statisticsBiz;
 
     @RequestMapping("/query/period")
     public Result getPeriod(@RequestBody(required = false) JSONObject data) {
@@ -41,14 +41,14 @@ public class StatisticsController {
 
     @GetMapping("/curamt")
     public Result getStatistics(@RequestParam String edmId, @RequestParam String objId, @RequestParam String periodId,
-                                @RequestParam String attributeId) {
+                                @RequestParam String attributeId) throws Exception{
         return statisticsBiz.queryStatistics(edmId, objId, periodId, attributeId);
     }
 
     @RequestMapping("/statistics/curamts")
     public Result getStatistic(@RequestParam(value = "moniIds") String moniIds,
                                @RequestParam(value = "periodId") String periodId,
-                               @RequestParam(value = "attributeIds") String attributeIds){
+                               @RequestParam(value = "attributeIds") String attributeIds) throws Exception{
         return statisticsBiz.queryStatistics(moniIds,periodId,attributeIds);
         
     };

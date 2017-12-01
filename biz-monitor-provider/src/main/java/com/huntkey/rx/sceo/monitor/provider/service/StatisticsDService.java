@@ -9,7 +9,9 @@
 
 package com.huntkey.rx.sceo.monitor.provider.service;
 
-import com.alibaba.fastjson.JSONObject;
+import java.util.List;
+
+import com.huntkey.rx.edm.entity.StatisticsEntity;
 
 /**
  * ClassName:StatisticsService
@@ -17,7 +19,7 @@ import com.alibaba.fastjson.JSONObject;
  * Date:     2017年8月7日 上午10:17:43
  * @author   caozhenx
  */
-public interface StatisticsService {
+public interface StatisticsDService {
 
     /**
      * queryStatistics:查询统计报表指定卷积属性数据
@@ -28,7 +30,7 @@ public interface StatisticsService {
      * @author caozhenx
      * @return Result 查询结果
      */
-    public JSONObject queryStatistics(String monitorClass,String monitorId,String periodId,String attributeId);
+    public List<StatisticsEntity> queryStatistics(String monitorClass,String monitorId,String periodId,String attributeId) throws Exception;
 
     /**
      * queryStatistics:批量查询统计类
@@ -38,6 +40,6 @@ public interface StatisticsService {
      * @param attributeIds
      * @return
      */
-    public JSONObject queryStatistics(String moniIds, String periodId, String attributeIds);
+    public List<StatisticsEntity> queryStatistics(String moniIds, String periodId, String attributeIds) throws Exception;
 }
 

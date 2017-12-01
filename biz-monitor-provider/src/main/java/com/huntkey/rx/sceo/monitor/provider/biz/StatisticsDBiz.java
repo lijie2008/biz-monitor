@@ -20,7 +20,7 @@ import com.huntkey.rx.commons.utils.rest.Result;
  * @version  
  * @see 	 
  */
-public interface StatisticsBiz {
+public interface StatisticsDBiz {
 
     /**
      * queryPeriod:查询周期类
@@ -95,7 +95,7 @@ public interface StatisticsBiz {
      * @param attributeId 属性ID
      * @return
      */
-    Result queryStatistics(String edmId,String objId,String periodId,String attributeId);
+    Result queryStatistics(String edmId,String objId,String periodId,String attributeId) throws Exception;
 
     /**
      * queryStatistics:批量查询统计类
@@ -105,7 +105,7 @@ public interface StatisticsBiz {
      * @param attributeIds
      * @return
      */
-    Result queryStatistics(String moniIds, String periodId, String attributeIds);
+    Result queryStatistics(String moniIds, String periodId, String attributeIds) throws Exception;
 
 }
 
