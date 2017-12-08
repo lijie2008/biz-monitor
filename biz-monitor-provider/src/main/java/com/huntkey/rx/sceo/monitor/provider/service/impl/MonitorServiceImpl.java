@@ -852,8 +852,8 @@ public class MonitorServiceImpl implements MonitorService {
         nodeDetail.setLvl(oldNode.getLvl());
         nodeDetail.setType(oldNode.getType());
         nodeDetail.setRelateId(oldNode.getRelateId());
-        nodeDetail.setRelateCnd(oldNode.getRelateCnd());
-        nodeDetail.setRelateCndText(oldNode.getRelateCndText());
+        nodeDetail.setRelateCnd(nodeDetail.getRelateCnd());
+        nodeDetail.setRelateCndText(nodeDetail.getRelateCndText());
         
         //操作redis修改
         hasOps.put(key, lvlCode, nodeDetail);
