@@ -235,7 +235,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 String format = JSONObject.parseObject(JSONObject.toJSONString(formatResult.getData())).getString("format");
                 
                 if(character == null || format == null || character.isEmpty())
-                    ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"特征值" + ErrorMessage._60005.getMsg());
+                    ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), "资源无法呈现！");
                 
                 String[] resourceFields = new String[character.size()];
                 character.toArray(resourceFields);
@@ -258,7 +258,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     textRes.add(text);
                 });
             }else
-                ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"特征值" + ErrorMessage._60005.getMsg());
+                ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(),"资源无法呈现！");
         }else
             throw new ServiceException(formatResult.getErrMsg());
         
