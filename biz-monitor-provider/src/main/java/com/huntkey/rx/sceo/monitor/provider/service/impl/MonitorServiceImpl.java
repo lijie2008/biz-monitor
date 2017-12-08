@@ -236,6 +236,9 @@ public class MonitorServiceImpl implements MonitorService {
         
         MonitortreeorderEntity order = ormService.load(MonitortreeorderEntity.class, tempId);
         
+        if(order == null)
+            ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), "单据表中临时单["+ tempId +"]"+ ErrorMessage._60005.getMsg());
+      
         // 取出classId
         String classId = order.getMtor_cls_id();
         
