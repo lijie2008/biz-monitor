@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.method.register.plugin.annotation.MethodRegister;
+import com.huntkey.rx.sceo.method.register.plugin.entity.ProgramCate;
 import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
 
@@ -41,6 +43,13 @@ public class MonitorTreeController {
      * @return
      * @throws Exception 
      */
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITOR,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = " 查询监管树类列表，并根据查询条件统计监管类下监管树的数量",
+            getReqParamsNameNoPathVariable = {"treeName","beginTime","endTime"}
+    )
     @GetMapping
     public Result getMonitors(@RequestParam(required = false) String treeName,
                               @RequestParam(required = false) String beginTime,
@@ -66,6 +75,13 @@ public class MonitorTreeController {
      * @return
      * @throws Exception 
      */
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITOR,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "根据监管类英文名查询监管类下的监管树",
+            getReqParamsNameNoPathVariable = {"treeName","edmcNameEn","edmId","beginTime","endTime"}
+    )
     @GetMapping("/trees")
     public Result getMonitorTrees(@RequestParam(required = false) String treeName,
                                   @RequestParam @NotBlank(message = "类英文名不能为空") String edmcNameEn,
@@ -89,6 +105,13 @@ public class MonitorTreeController {
      * @param flag 是否包含节点 true代表包含
      * @return
      */
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITOR,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "查询某个时间的指定监管树所有节点",
+            getReqParamsNameNoPathVariable = {"rootEdmcNameEn","searchDate","rootNodeId","edmId","flag"}
+    )
     @GetMapping("/trees/nodes")
     public Result getMonitorTreeNodes(@RequestParam @NotBlank(message = "类英文名不能为空") String rootEdmcNameEn,
                                       @RequestParam @NotBlank(message = "查询日期不能为空") String searchDate,
@@ -156,6 +179,13 @@ public class MonitorTreeController {
      * @param edmcNameEn
      * @return
      */
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITOR,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "查询指定类的卷积属性清单",
+            getReqParamsNameNoPathVariable = {"edmcNameEn","enable"}
+    )
     @GetMapping("/conproperties")
     public Result getConProperties(@RequestParam(value = "edmcNameEn") @NotBlank(message = "类英文名不能为空") String edmcNameEn,
                                    @RequestParam(value = "enable",defaultValue = "true") boolean enable) {
@@ -172,6 +202,13 @@ public class MonitorTreeController {
      * @param classId 类id
      * @return
      */
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITOR,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "树新增 最大时间计算",
+            getReqParamsNameNoPathVariable = {"edmcNameEn"}
+    )
     @GetMapping("/newDate")
     public Result getNewMonitorTreeStartDate(@RequestParam(value = "edmcNameEn") 
                                              @NotBlank(message = "类英文名不能为空") String edmcNameEn) throws Exception{
@@ -181,6 +218,13 @@ public class MonitorTreeController {
         return result;
     }
     
+    @MethodRegister(
+            edmClass = Constant.EDM_EMPLOYEE,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "查询员工信息",
+            getReqParamsNameNoPathVariable = {"resourceClassId","resourceValue"}
+    )
     @GetMapping("/search")
     public Result searchResourceObj(@RequestParam(value = "resourceClassId") @NotBlank(message = "资源类ID不能为空") String resourceClassId,
                                     @RequestParam(value = "resourceValue") @NotBlank(message = "资源对象值不能为空")  String resourceValue) throws Exception{

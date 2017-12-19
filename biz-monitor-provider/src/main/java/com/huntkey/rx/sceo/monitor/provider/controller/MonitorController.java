@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.huntkey.rx.commons.utils.rest.Result;
+import com.huntkey.rx.sceo.method.register.plugin.annotation.MethodRegister;
+import com.huntkey.rx.sceo.method.register.plugin.entity.ProgramCate;
+import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.enums.OperateType;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
@@ -33,7 +36,14 @@ public class MonitorController {
      * @param type 1 - 树新增 、 2 - 树维护 
      * @return
      */
-    @RequestMapping(value = "/checkOrder")
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITOR,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "树新增、树维护时必须校验临时单中是否存在失效的临时树",
+            getReqParamsNameNoPathVariable = {"classId","rootId","type"}
+    )
+    @RequestMapping(value = "/checkOrder",method = RequestMethod.GET)
     public Result checkOrder(@RequestParam(value = "classId") @NotBlank(message="监管类ID不能为空") String classId,
                              @RequestParam(value = "rootId",defaultValue="") String rootId,
                              @RequestParam(value = "type") @Range(min=1,max=2)  int type) throws Exception{
@@ -50,7 +60,14 @@ public class MonitorController {
      * @param flag 确认框选择
      * @return
      */
-    @RequestMapping(value = "/edit")
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITOR,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "是否进行上次操作",
+            getReqParamsNameNoPathVariable = {"key","flag"}
+    )
+    @RequestMapping(value = "/edit",method = RequestMethod.GET)
     public Result editBefore(@RequestParam(value = "key") @NotBlank(message="redis的Key不能为空") String key,
                              @RequestParam(value = "flag",defaultValue="false") boolean flag) throws Exception{
         Result result = new Result();
@@ -67,8 +84,15 @@ public class MonitorController {
      * @param type 1 - 从redis中查询 2 - 从临时单表查询
      * @return
      */
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITORTREEORDER,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "查询监管树临时结构",
+            getReqParamsNameNoPathVariable = {"key","validDate","type","flag"}
+    )
     @Revoked(type=OperateType.QUERY)
-    @RequestMapping(value = "/tempTree")
+    @RequestMapping(value = "/tempTree",method = RequestMethod.GET)
     public Result tempTree(@RequestParam(value = "key")  @Revoked(key="key") String key,
                            @RequestParam(value = "validDate") String validDate, 
                            @RequestParam(value = "type", defaultValue="1") int type,
@@ -85,6 +109,12 @@ public class MonitorController {
      * @param beginDate
      * @return
      */
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITORTREEORDER,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "新增监管树临时单"
+    )
     @RequestMapping(value = "/addMonitorTree", method = RequestMethod.POST)
     public Result addMonitorTree(@RequestBody AddMonitorTreeTo addMonitorTreeTo) throws Exception{
         Result result = new Result();
@@ -101,7 +131,14 @@ public class MonitorController {
      * @param rootEdmcNameEn edm类型英文名  即监管树实体类表名
      * @return
      */
-    @RequestMapping(value = "/treeMaintaince")
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITORTREEORDER,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "维护监管树临时单",
+            getReqParamsNameNoPathVariable = {"classId","rootId","rootEdmcNameEn"}
+    )
+    @RequestMapping(value = "/treeMaintaince",method = RequestMethod.GET)
     public Result treeMaintaince(@RequestParam(value = "classId") String classId,
                                  @RequestParam(value = "rootId") String rootId,
                                  @RequestParam(value = "rootEdmcNameEn") String rootEdmcNameEn) throws Exception{
@@ -118,7 +155,14 @@ public class MonitorController {
 	 * @return 节点信息
 	 * @author fangkun 2017-10-21
 	 */
-    @RequestMapping(value = "/nodeDetail")
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITORTREEORDER,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "查询监管树临时单节点详细信息",
+            getReqParamsNameNoPathVariable = {"key","lvlCode"}
+    )
+    @RequestMapping(value = "/nodeDetail",method = RequestMethod.GET)
     public Result nodeDetail(@RequestParam(value = "key") String key,
     		@RequestParam(value = "lvlCode") String lvlCode) {
         Result result = new Result();
@@ -133,6 +177,12 @@ public class MonitorController {
 	 * @return 节点的层级编码
 	 * @author fangkun
 	 */
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITORTREEORDER,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "保存监管树临时节点详情"
+    )
     @Revoked(type=OperateType.NODE)
     @RequestMapping(value = "/saveNodeDetail", method = RequestMethod.POST)
     public Result saveNodeDetail(@RequestBody @Revoked NodeTo nodeDetail) {
@@ -149,8 +199,15 @@ public class MonitorController {
 	 * @param resourceId 资源ID
 	 * @return 被删除的节点ID
 	 */
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITORTREEORDER,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "删除临时单节点详情",
+            getReqParamsNameNoPathVariable = {"key","lvlCode","resourceId"}
+    )
     @Revoked(type=OperateType.DETAIL)
-    @RequestMapping(value = "/deleteNodeResource")
+    @RequestMapping(value = "/deleteNodeResource",method = RequestMethod.GET)
     public Result deleteNodeResource(@RequestParam(value = "key") @Revoked(key="key") String key,
     								 @RequestParam(value = "lvlCode")  @Revoked(key="lvlCode") String lvlCode,
                                      @RequestParam(value = "resourceId")   String resourceId) {
@@ -169,8 +226,15 @@ public class MonitorController {
 	 * @return 资源ID
 	 * @author fangkun 2017-10-24
 	 */
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITORTREEORDER,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "添加监管树临时单节点资源",
+            getReqParamsNameNoPathVariable = {"key","lvlCode","resourceId","resourceText"}
+    )
     @Revoked(type=OperateType.DETAIL)
-    @RequestMapping(value = "/addResource")
+    @RequestMapping(value = "/addResource",method = RequestMethod.GET)
     public Result addResource(
     		@RequestParam(value = "key") @NotBlank(message = "redis key不能为空") @Revoked(key="key") String key,
             @RequestParam(value = "lvlCode") @NotBlank(message = "节点层及编码不能为空") @Revoked(key="lvlCode") String lvlCode,        
@@ -190,6 +254,13 @@ public class MonitorController {
 	 * @return levelCode 节点层级编码
 	 * @author fangkun 2017-10-24
 	 */
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITORTREEORDER,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "新增临时单节点",
+            getReqParamsNameNoPathVariable = {"key","lvlCode","type"}
+    )
     @Revoked(type=OperateType.NODE)
     @RequestMapping(value = "/addNode", method = RequestMethod.GET)
     public Result addNode(@RequestParam(value = "key") @Revoked(key="key") String key,
@@ -209,6 +280,13 @@ public class MonitorController {
 	 * @return levelCode 节点层级编码
 	 * @author fangkun 2017-10-24 
 	 */
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITORTREEORDER,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "删除监管类临时单节点",
+            getReqParamsNameNoPathVariable = {"key","lvlCode","type"}
+    )
     @Revoked(type=OperateType.NODE)
     @RequestMapping(value = "/deleteNode", method = RequestMethod.GET)
     public Result deleteNode(@RequestParam(value = "key") @Revoked(key="key") String key,
@@ -220,6 +298,13 @@ public class MonitorController {
         return result;
     }
     
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITORTREEORDER,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "移动临时单节点",
+            getReqParamsNameNoPathVariable = {"key","moveLvlCode","desLvlCode","type"}
+    )
     @Revoked(type=OperateType.NODE)
     @RequestMapping(value = "/moveNode", method = RequestMethod.GET)
     public Result moveNode(@RequestParam(value = "key") @Revoked(key="key") String key,
@@ -232,11 +317,18 @@ public class MonitorController {
         result.setData(service.moveNode(key, moveLvlCode, desLvlCode, type));
         return result;
     }
+    
     /**
      * 调用公式
      * @param node 节点信息
      * @return
      */
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITORTREEORDER,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "查询节点的工时设计器条件"
+    )
     @Revoked(type=OperateType.DETAIL)
     @RequestMapping(value = "/formula", method = RequestMethod.POST)
     public Result formula(@RequestBody @Revoked NodeTo node) throws Exception{

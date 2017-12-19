@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.huntkey.rx.commons.utils.rest.Result;
 
-//@FeignClient(value = "MODELER-PROVIDER", url = "http://10.3.98.154:2002", fallback = ModelerClientFallback.class) //单机调试使用(注意不要提交此行)
-@FeignClient(value = "MODELER-PROVIDER", fallback = ModelerClientFallback.class)
+@FeignClient(value = "MODELER-PROVIDER", url = "http://10.3.98.154:2002", fallback = ModelerClientFallback.class) //单机调试使用(注意不要提交此行)
+//@FeignClient(value = "MODELER-PROVIDER", fallback = ModelerClientFallback.class)
 public interface ModelerClient {
     
     /**

@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.huntkey.rx.commons.utils.rest.Result;
 import com.huntkey.rx.edm.entity.StatisticsEntity;
+import com.huntkey.rx.sceo.method.register.plugin.annotation.MethodRegister;
+import com.huntkey.rx.sceo.method.register.plugin.entity.ProgramCate;
+import com.huntkey.rx.sceo.monitor.commom.constant.Constant;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.provider.service.StatisticsDService;
@@ -36,7 +39,14 @@ public class StatisticsController {
     
     @Autowired
     StatisticsDService statisticsService;
-
+    
+    @MethodRegister(
+            edmClass = Constant.EDM_STATISTICS,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "统计类查询",
+            getReqParamsNameNoPathVariable={"edmId","objId","periodId","attributeId"}
+    )
     @GetMapping("/curamt")
     public Result getStatistics(@RequestParam String edmId, @RequestParam String objId, @RequestParam String periodId,
                                 @RequestParam String attributeId) throws Exception{
@@ -58,7 +68,14 @@ public class StatisticsController {
         
         return result;
     }
-
+    
+    @MethodRegister(
+            edmClass = Constant.EDM_STATISTICS,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "统计类查询",
+            getReqParamsNameNoPathVariable={"moniIds","periodId","attributeIds"}
+    )
     @RequestMapping("/statistics/curamts")
     public Result getStatistic(@RequestParam(value = "moniIds") String moniIds,
                                @RequestParam(value = "periodId") String periodId,

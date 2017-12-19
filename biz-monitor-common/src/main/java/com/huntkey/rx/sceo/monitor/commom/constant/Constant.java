@@ -103,5 +103,17 @@ public interface Constant {
     
     // 关键字层级编码的key
     String LVLCODE = "lvlCode";
+    
+    // EDM 临时单类
+    String EDM_MONITORTREEORDER = "monitortreeorder";
+    
+    // EDM 监管树类
+    String EDM_MONITOR = "monitor";
+    
+    // EDM 员工类
+    String EDM_EMPLOYEE = "employee";
+    
+    // EDM 统计类
+    String EDM_STATISTICS = "statistics";
 }
 
