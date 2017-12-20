@@ -13,8 +13,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -47,7 +47,7 @@ public class StatisticsController {
             methodDesc = "统计类查询",
             getReqParamsNameNoPathVariable={"edmId","objId","periodId","attributeId"}
     )
-    @GetMapping("/curamt")
+    @RequestMapping(value = "/curamt",method = RequestMethod.GET)
     public Result getStatistics(@RequestParam String edmId, @RequestParam String objId, @RequestParam String periodId,
                                 @RequestParam String attributeId) throws Exception{
         
@@ -76,7 +76,7 @@ public class StatisticsController {
             methodDesc = "统计类查询",
             getReqParamsNameNoPathVariable={"moniIds","periodId","attributeIds"}
     )
-    @RequestMapping("/statistics/curamts")
+    @RequestMapping(value = "/statistics/curamts",method = RequestMethod.GET)
     public Result getStatistic(@RequestParam(value = "moniIds") String moniIds,
                                @RequestParam(value = "periodId") String periodId,
                                @RequestParam(value = "attributeIds") String attributeIds) throws Exception{
