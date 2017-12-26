@@ -444,8 +444,8 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         to.setBegin(rootNode.getBegin());
         to.setEnd(rootNode.getEnd());
         to.setLvl(2);
-        to.setNodeDef(Constant.INITNODENAME);
-        to.setNodeName(Constant.INITNODENAME);
+        to.setNodeDef("其他节点");
+        to.setNodeName("其他节点");
         to.setNodeNo("NODE"+System.currentTimeMillis());
         to.setType(ChangeType.ADD.getValue());
         
