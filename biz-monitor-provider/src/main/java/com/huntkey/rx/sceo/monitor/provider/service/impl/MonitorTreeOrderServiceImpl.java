@@ -920,8 +920,12 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         param.setWhereExp(param.getInXML(Constant.PID, ids));
         ormService.delete(MtorMtorResSetbEntity.class, param);
         
-        // 删除临时单
-        ormService.delete(MonitortreeorderEntity.class, orderId);
+        // 更新临时单 - 状态为 5 完成状态
+        MonitortreeorderEntity orderEntity = new MonitortreeorderEntity();
+        orderEntity.setId(orderId);
+        orderEntity.setOrde_status(Constant.ORDER_STATUS_COMMIT);
+        ormService.updateSelective(orderEntity);
+//        ormService.delete(MonitortreeorderEntity.class, orderId);
         
         hashOps.getOperations().delete(orderId+ Constant.KEY_SEP +classId);
         hashOps.getOperations().delete(orderId+ Constant.KEY_SEP +classId + Constant.REVOKE_KEY);

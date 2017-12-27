@@ -541,6 +541,8 @@ public class MonitorServiceImpl implements MonitorService {
         order.setOrde_adduser(session.getEmployeeId());
         order.setOrde_duty(session.getPositionId());
         
+        order.setOrde_status(Constant.ORDER_STATUS_TEMP);
+        
         order.setCreuser(session.getEmployeeId());
         return ormService.insertSelective(order).toString();
     }

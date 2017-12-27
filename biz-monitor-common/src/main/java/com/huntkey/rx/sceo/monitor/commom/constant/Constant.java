@@ -109,5 +109,11 @@ public interface Constant {
     
     // EDM 统计类
     String EDM_STATISTICS = "statistics";
+    
+    // 单据状态-临时
+    String ORDER_STATUS_TEMP = "1";
+    
+    // 单据状态-完成
+    String ORDER_STATUS_COMMIT = "5";
 }
 
