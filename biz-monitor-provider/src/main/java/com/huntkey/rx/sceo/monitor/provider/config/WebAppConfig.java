@@ -9,6 +9,7 @@
 
 package com.huntkey.rx.sceo.monitor.provider.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
@@ -22,11 +23,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  * @see 	 
  */
 public class WebAppConfig extends WebMvcConfigurerAdapter{
-
+    
+    @Autowired
+    private LoginInterceptor 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         
-        // TODO Auto-generated method stub
+        
         super.addInterceptors(registry);
     }
     
