@@ -36,5 +36,7 @@ public interface MonitorTreeOrderService {
     RevokedTo revoke(String key);
 
     String store(String orderId) throws Exception;
+    
+    void submitWorkFlow(String key, String orderInstanceId);
 }
 

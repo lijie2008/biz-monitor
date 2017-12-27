@@ -228,5 +228,20 @@ public class MonitorTreeOrderController {
         result.setData(service.store(orderId));
         return result;
     }
+    
+    @MethodRegister(
+            edmClass = Constant.EDM_MONITORTREEORDER,
+            methodCate = "监管类方法",
+            programCate = ProgramCate.Java,
+            methodDesc = "监管树单据类提交流程"
+    )
+    @RequestMapping(value = "/submitWorkFlow",method = RequestMethod.GET)
+    public Result submitWorkFlow(String key, String orderInstanceId){
+        Result result = new Result();
+        result.setRetCode(Result.RECODE_SUCCESS);
+        service.submitWorkFlow(key, orderInstanceId);
+        return result;
+    }
+    
 }
 

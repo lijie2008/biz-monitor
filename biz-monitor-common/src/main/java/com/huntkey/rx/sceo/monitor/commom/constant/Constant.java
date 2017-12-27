@@ -60,12 +60,6 @@ public interface Constant {
     // 员工表的EDMID
     String STAFFCLASSID="2d6b8cd2abcb11e78bba005056bc4879";
     
-    // 新增人
-    String ADDUSER = "addUser";
-    
-    // 修改人
-    String MODUSER = "modUser";
-    
     //初始化节点名称
     String INITNODENAME="未命名节点";
     

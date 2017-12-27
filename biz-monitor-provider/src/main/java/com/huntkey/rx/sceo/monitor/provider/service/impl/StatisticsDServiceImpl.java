@@ -118,9 +118,9 @@ public class StatisticsDServiceImpl implements StatisticsDService {
         //查询条件2 监管
         if (StringUtils.isNotBlank(moniIds)) {
             if(StringUtils.isNotBlank(param.getWhereExp()))
-                param.setWhereExp(OrmParam.and(param.getWhereExp(), param.getConditionForInXML("stat_moniobj", moniIds.split("\\,"))));
+                param.setWhereExp(OrmParam.and(param.getWhereExp(), param.getInXML("stat_moniobj", moniIds.split("\\,"))));
             else
-                param.setWhereExp(param.getConditionForInXML("stat_moniobj", moniIds.split("\\,")));
+                param.setWhereExp(param.getInXML("stat_moniobj", moniIds.split("\\,")));
         }
         
         //查询条件3 周期点id
@@ -134,9 +134,9 @@ public class StatisticsDServiceImpl implements StatisticsDService {
         //查询条件4 属性id
         if (StringUtils.isNotBlank(attributeIds)) {
             if(StringUtils.isNotBlank(param.getWhereExp()))
-                param.setWhereExp(OrmParam.and(param.getWhereExp(), param.getConditionForInXML("stat_moniattr", attributeIds.split("\\,"))));
+                param.setWhereExp(OrmParam.and(param.getWhereExp(), param.getInXML("stat_moniattr", attributeIds.split("\\,"))));
             else
-                param.setWhereExp(param.getConditionForInXML("stat_moniattr", attributeIds.split("\\,")));
+                param.setWhereExp(param.getInXML("stat_moniattr", attributeIds.split("\\,")));
         }
         return param;
     }
