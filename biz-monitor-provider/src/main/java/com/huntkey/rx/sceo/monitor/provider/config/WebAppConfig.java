@@ -25,7 +25,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 public class WebAppConfig extends WebMvcConfigurerAdapter{
     
     @Autowired
-    private LoginInterceptor 
+    private LoginInterceptor loginInterceptor;
+    
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         

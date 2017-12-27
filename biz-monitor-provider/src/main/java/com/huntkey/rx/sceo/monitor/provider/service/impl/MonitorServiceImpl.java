@@ -110,10 +110,25 @@ public class MonitorServiceImpl implements MonitorService {
 	    
 	    OrmParam param = new OrmParam();
 	    
+	    // 判断当前节点类型的临时单状态是否是 等待审批 和 等待批准
+        param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
+        param.setWhereExp(OrmParam.or(param.getEqualXML("orde_status", Constant.ORDER_STATUS_WAIT), 
+                param.getEqualXML("orde_status", Constant.ORDER_STATUS_WAIT_COMMIT)));
+        param.setWhereExp(OrmParam.and(param.getWhereExp(),param.getEqualXML("mtor_cls_id", classId), 
+                param.getEqualXML("mtor_order_type", String.valueOf(type)),
+                param.getEqualXML("mtor_order_root", rootId)));
+                                       
+        List<MonitortreeorderEntity> wait_list = ormService.selectBeanList(MonitortreeorderEntity.class, param);
+        
+        if(wait_list != null && !wait_list.isEmpty())
+            ApplicationException.throwCodeMesg(ErrorMessage._60024.getCode(), ErrorMessage._60024.getMsg());
+        
+        param.reset();
         param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
         param.setWhereExp(OrmParam.and(param.getEqualXML("mtor_cls_id", classId), 
                                        param.getEqualXML("mtor_order_type", String.valueOf(type)),
-                                       param.getEqualXML("mtor_order_root", rootId)));
+                                       param.getEqualXML("mtor_order_root", rootId),
+                                       param.getUnequalXML("orde_status", Constant.ORDER_STATUS_COMMIT)));
 	    
         List<MonitortreeorderEntity> o_list = ormService.selectBeanList(MonitortreeorderEntity.class, param);
 	    
@@ -382,11 +397,11 @@ public class MonitorServiceImpl implements MonitorService {
         param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
         param.setWhereExp(OrmParam.and(param.getEqualXML("mtor_order_root", rootId), 
                                        param.getEqualXML("mtor_order_type", String.valueOf(ChangeType.ADD.getValue())),
-                                       param.getEqualXML("mtor_cls_id", classId)));
+                                       param.getEqualXML("mtor_cls_id", classId),
+                                       param.getUnequalXML("orde_status", Constant.ORDER_STATUS_COMMIT)));
         
         List<MonitortreeorderEntity> o_list = ormService.selectBeanList(MonitortreeorderEntity.class, param);
         // 检查临时单是否存在
-        
         if(o_list != null && o_list.size() == 1)
             return o_list.get(0).getId() + Constant.KEY_SEP + classId;
         
@@ -464,7 +479,8 @@ public class MonitorServiceImpl implements MonitorService {
         
         param.setWhereExp(OrmParam.and(param.getEqualXML("mtor_order_root", rootId), 
                                        param.getEqualXML("mtor_order_type", String.valueOf(ChangeType.UPDATE.getValue())),
-                                       param.getEqualXML("mtor_cls_id", classId)));
+                                       param.getEqualXML("mtor_cls_id", classId),
+                                       param.getUnequalXML("orde_status", Constant.ORDER_STATUS_COMMIT)));
         
         List<MonitortreeorderEntity> order = ormService.selectBeanList(MonitortreeorderEntity.class,param);
         

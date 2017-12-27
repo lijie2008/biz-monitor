@@ -902,30 +902,31 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 ApplicationException.throwCodeMesg(ErrorMessage._60000.getCode(),"临时单变更类型" + ErrorMessage._60000.getMsg());
         }
         
-        // 查询出所有的节点id
-        param.reset();
-        param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
-        param.setWhereExp(param.getEqualXML(Constant.PID, orderId));
-        List<MtorMtorNodeSetaEntity> n_list = ormService.selectBeanList(MtorMtorNodeSetaEntity.class, param);
-        // TODO
-        Object[] ids = n_list.stream().map(MtorMtorNodeSetaEntity::getId).toArray();
-        
-        // 删除节点
-        param.reset();
-        param.setWhereExp(param.getInXML(Constant.ID, ids));
-        ormService.delete(MtorMtorNodeSetaEntity.class, param);
-        
-        // 删除资源
-        param.reset();
-        param.setWhereExp(param.getInXML(Constant.PID, ids));
-        ormService.delete(MtorMtorResSetbEntity.class, param);
+//        // 查询出所有的节点id
+//        param.reset();
+//        param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
+//        param.setWhereExp(param.getEqualXML(Constant.PID, orderId));
+//        List<MtorMtorNodeSetaEntity> n_list = ormService.selectBeanList(MtorMtorNodeSetaEntity.class, param);
+//        // TODO
+//        Object[] ids = n_list.stream().map(MtorMtorNodeSetaEntity::getId).toArray();
+//        
+//        // 删除节点
+//        param.reset();
+//        param.setWhereExp(param.getInXML(Constant.ID, ids));
+//        ormService.delete(MtorMtorNodeSetaEntity.class, param);
+//        
+//        // 删除资源
+//        param.reset();
+//        param.setWhereExp(param.getInXML(Constant.PID, ids));
+//        ormService.delete(MtorMtorResSetbEntity.class, param);
+          // 删除单据
+//        ormService.delete(MonitortreeorderEntity.class, orderId);
         
         // 更新临时单 - 状态为 5 完成状态
         MonitortreeorderEntity orderEntity = new MonitortreeorderEntity();
         orderEntity.setId(orderId);
         orderEntity.setOrde_status(Constant.ORDER_STATUS_COMMIT);
         ormService.updateSelective(orderEntity);
-//        ormService.delete(MonitortreeorderEntity.class, orderId);
         
         hashOps.getOperations().delete(orderId+ Constant.KEY_SEP +classId);
         hashOps.getOperations().delete(orderId+ Constant.KEY_SEP +classId + Constant.REVOKE_KEY);
@@ -1068,7 +1069,15 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     }
 
     @Override
-    public void submitWorkFlow(String key, String orderInstanceId) {
+    public void submitWorkFlow(String key, String orderInstanceId) throws Exception {
+        
+        // 更新单据状态 - 待审
+        MonitortreeorderEntity order = new MonitortreeorderEntity();
+        order.setId(key.split(Constant.KEY_SEP)[0]);
+        order.setOrde_status(Constant.ORDER_STATUS_WAIT);
+        ormService.updateSelective(order);
+        
+        // 提交流程
         formService.submitWorkFlow(key.split(Constant.KEY_SEP)[0], orderInstanceId);
     }
     

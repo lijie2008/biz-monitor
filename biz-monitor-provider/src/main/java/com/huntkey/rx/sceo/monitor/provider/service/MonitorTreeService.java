@@ -33,7 +33,5 @@ public interface MonitorTreeService {
 
     JSONObject getNewMonitorTreeStartDate(String edmcNameEn) throws Exception;
     
-    JSONArray getChileNodes(String nodeId ,String edmcNameEn);
-    
     JSONArray searchResourceObj(String resourceClassId,String resourceValue) throws Exception;
 }

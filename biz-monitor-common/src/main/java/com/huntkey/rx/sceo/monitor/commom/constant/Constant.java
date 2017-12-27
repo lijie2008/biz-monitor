@@ -113,7 +113,18 @@ public interface Constant {
     // 单据状态-临时
     String ORDER_STATUS_TEMP = "1";
     
+    // 单据状态 - 待审
+    String ORDER_STATUS_WAIT = "2";
+    
+    // 单据状态 - 待批
+    String ORDER_STATUS_WAIT_COMMIT = "4";
+    
     // 单据状态-完成
     String ORDER_STATUS_COMMIT = "5";
+    
+    // 单据状态 - 退回
+    String ORDER_STATUS_BACK = "6";
+    
+    
 }
 

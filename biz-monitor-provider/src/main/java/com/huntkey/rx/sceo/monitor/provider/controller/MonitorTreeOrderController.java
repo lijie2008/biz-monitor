@@ -236,7 +236,7 @@ public class MonitorTreeOrderController {
             methodDesc = "监管树单据类提交流程"
     )
     @RequestMapping(value = "/submitWorkFlow",method = RequestMethod.GET)
-    public Result submitWorkFlow(String key, String orderInstanceId){
+    public Result submitWorkFlow(String key, String orderInstanceId) throws Exception{
         Result result = new Result();
         result.setRetCode(Result.RECODE_SUCCESS);
         service.submitWorkFlow(key, orderInstanceId);

@@ -37,6 +37,6 @@ public interface MonitorTreeOrderService {
 
     String store(String orderId) throws Exception;
     
-    void submitWorkFlow(String key, String orderInstanceId);
+    void submitWorkFlow(String key, String orderInstanceId) throws Exception;
 }
 
