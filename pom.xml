@@ -16,15 +16,15 @@
     <packaging>pom</packaging>
 
     <modules>
-		<module>biz-monitor-provider</module>
-        <module>biz-monitor-client</module>
         <module>biz-monitor-common</module>
+        <module>biz-monitor-provider</module>
     </modules>
 
     <repositories>
         <repository>
-            <id>huntkey-maven-repository</id>
-            <url>http://192.168.13.53:8081/nexus/content/groups/public/</url>
+            <id>releases</id>
+            <name>releases</name>
+            <url>http://192.168.226.130:8081/repository/maven-public/</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -34,6 +34,19 @@
         </repository>
     </repositories>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>maven-public</id>
+            <name>maven-public</name>
+            <url>http://192.168.226.130:8081/repository/maven-public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
     <build>
         <plugins>
             <!--  添加编译插件 -->

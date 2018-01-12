@@ -4,32 +4,29 @@
  * Package Name:com.huntkey.rx.sceo.monitor.commom.enums
  * Date:2017年8月5日下午5:27:43
  * Copyright (c) 2017 嘉源锐信 All Rights Reserved.
- *
-*/
+ */
 
 package com.huntkey.rx.sceo.monitor.commom.enums;
-
-import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
  * ClassName:ChangeType 变更类型
  * Date:     2017年8月5日 下午5:27:43
- * @author   lijie
- * @version  
- * @see 	 
+ * @author lijie
+ * @version
+ * @see
  */
 public enum ChangeType {
-    
+
     ADD(1, "新增"),
-    
+
     UPDATE(2, "修改"),
-    
+
     INVALID(3, "失效");
 
     private int value;
-    
+
     private String text;
-    
+
     ChangeType(int value, String text) {
         this.value = value;
         this.text = text;
@@ -50,9 +47,9 @@ public enum ChangeType {
     public void setText(String text) {
         this.text = text;
     }
-    
+
     public static ChangeType valueOf(int value) {
-        
+
         switch (value) {
             case 1:
                 return ADD;
@@ -64,10 +61,11 @@ public enum ChangeType {
                 return null;
         }
     }
-    
-    @JsonValue
+
+    @Override
     public String toString() {
         return Integer.toString(this.value);
     }
 }
+
 

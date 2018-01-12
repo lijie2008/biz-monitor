@@ -17,11 +17,20 @@
             <groupId>com.huntkey.rx.commons.utils</groupId>
             <artifactId>sceo-commons-utils</artifactId>
             <version>1.0.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <artifactId>service-center-common</artifactId>
-            <groupId>com.huntkey.rx.sceo.serviceCenter</groupId>
-            <version>1.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>fastjson</artifactId>
+                    <groupId>com.alibaba</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>commons-lang</artifactId>
+                    <groupId>commons-lang</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -36,17 +45,23 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.32</version>
+        </dependency>
+
     </dependencies>
     <distributionManagement>
         <repository>
-            <id>releases</id>
+            <id>maven-releases</id>
             <name>Local Nexus Repository</name>
-            <url>http://192.168.13.53:8081/nexus/content/repositories/releases/</url>
+            <url>http://192.168.226.130:8081/repository/maven-releases/</url>
         </repository>
         <snapshotRepository>
-            <id>snapshots</id>
+            <id>maven-snapshots</id>
             <name>Local Nexus Repository</name>
-            <url>http://192.168.13.53:8081/nexus/content/repositories/snapshots</url>
+            <url>http://192.168.226.130:8081/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 </project>
