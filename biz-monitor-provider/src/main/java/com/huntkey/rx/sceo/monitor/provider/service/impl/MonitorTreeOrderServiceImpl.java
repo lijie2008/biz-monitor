@@ -49,10 +49,12 @@ import com.huntkey.rx.sceo.monitor.commom.enums.ChangeType;
 import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
+import com.huntkey.rx.sceo.monitor.commom.model.CurrentSessionEntity;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.commom.model.RevokedTo;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
+import com.huntkey.rx.sceo.monitor.provider.service.BizFormService;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
@@ -60,7 +62,7 @@ import com.huntkey.rx.sceo.orm.common.model.OrmParam;
 import com.huntkey.rx.sceo.orm.common.type.SQLCurdEnum;
 import com.huntkey.rx.sceo.orm.common.type.SQLSortEnum;
 import com.huntkey.rx.sceo.orm.common.type.SQLSymbolEnum;
-import com.huntkey.rx.sceo.orm.common.util.PersistentUtil;
+import com.huntkey.rx.sceo.orm.common.util.EdmUtil;
 import com.huntkey.rx.sceo.orm.service.OrmService;
 
 /**
@@ -91,6 +93,8 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
     @Resource(name="redisTemplate")
     private ListOperations<String, RevokedTo> listOps;
     
+    @Autowired
+    private BizFormService formService;
     
     @Override
     public JSONObject queryNotUsingResource(String key, String lvlCode, int currentPage, int pageSize) throws Exception{
@@ -128,7 +132,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
         
         @SuppressWarnings("rawtypes")
-        Class cls = Class.forName(Constant.ENTITY_PATH + PersistentUtil.convertClassName(resourceEdmcNameEn));
+        Class cls = Class.forName(Constant.ENTITY_PATH + EdmUtil.convertClassName(resourceEdmcNameEn));
         
         @SuppressWarnings("unchecked")
         List<? extends ResourceEntity> allResource = ormService.selectBeanList(cls, param);
@@ -383,7 +387,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
         
         @SuppressWarnings("rawtypes")
-        Class cls = Class.forName(Constant.ENTITY_PATH + PersistentUtil.convertClassName(resourceEdmcNameEn));
+        Class cls = Class.forName(Constant.ENTITY_PATH + EdmUtil.convertClassName(resourceEdmcNameEn));
         
         @SuppressWarnings("unchecked")
         List<? extends ResourceEntity> allResource = ormService.selectBeanList(cls, param);
@@ -533,29 +537,30 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
         
         OrmParam param = new OrmParam();
         if(resIds != null && !resIds.isEmpty()){
-            param.setWhereExp(param.getConditionForInXML(Constant.ID, resIds.toArray()));
+            param.setWhereExp(param.getInXML(Constant.ID, resIds.toArray()));
             ormService.delete(MtorMtorResSetbEntity.class, param);
         }
         
-        param.clearOrmParmas();
+        param.reset();
         if(nodeIds != null && !nodeIds.isEmpty()){
-            param.setWhereExp(param.getConditionForInXML(Constant.ID, nodeIds.toArray()));
+            param.setWhereExp(param.getInXML(Constant.ID, nodeIds.toArray()));
             ormService.delete(MtorMtorNodeSetaEntity.class, param);
         }
         
         // 新增资源 和 节点信息
         List<MtorMtorNodeSetaEntity> m_list = JSONArray.parseArray(setValues(key, nodes).toJSONString(), MtorMtorNodeSetaEntity.class);
         
+        CurrentSessionEntity session = formService.getCurrentSessionInfo();
         for(MtorMtorNodeSetaEntity n : m_list){
             //主表 - 临时单节点集合
-            n.setCreuser(Constant.ADDUSER);
-            n.setClassName(PersistentUtil.getEdmClassName(MonitortreeorderEntity.class));
+            n.setCreuser(session.getEmployeeId());
+            n.setClassName(EdmUtil.getEdmClassName(MonitortreeorderEntity.class));
             String id = ormService.insertSelective(n).toString();
             n.setId(id);
             //属性集 - 临时单节点的资源集合
             List<MtorMtorResSetbEntity> res = n.getMtor_res_set();
             if(res != null && !res.isEmpty()){
-                PersistentUtil.setPropertyBaseEntitiesSysColumns(MonitortreeorderEntity.class, n, res, SQLCurdEnum.INSERT);
+                EdmUtil.setPropertyBaseEntitiesSysColumns(MonitortreeorderEntity.class, n, res, SQLCurdEnum.INSERT);
                 ormService.insert(res);
             }
         }
@@ -621,8 +626,10 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), "根节点" + ErrorMessage._60005.getMsg());
         
         @SuppressWarnings("rawtypes")
-        Class cls = Class.forName(Constant.ENTITY_PATH + PersistentUtil.convertClassName(edmName));
+        Class cls = Class.forName(Constant.ENTITY_PATH + EdmUtil.convertClassName(edmName));
         
+        CurrentSessionEntity session = formService.getCurrentSessionInfo();
+
         switch(type){
             
             case ADD :  // 单据 - 新增类型
@@ -630,7 +637,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 List<? extends MonitorEntity> nn = JSONArray.parseArray(setMoni(o_nodes, edmName).toJSONString(), cls);
                 
                 for(MonitorEntity me : nn){
-                    me.setCreuser(Constant.ADDUSER);
+                    me.setCreuser(session.getEmployeeId());
                     String id = ormService.insertSelective(me).toString();
                     me.setId(id);
                     if(me.getMoni_lvl() == 1)
@@ -640,7 +647,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     List<MoniMoniResSetaEntity> _res = me.getMoni_res_set();
                     
                     if(_res != null && !_res.isEmpty()){
-                        PersistentUtil.setPropertyBaseEntitiesSysColumns(cls, me, _res, SQLCurdEnum.INSERT);
+                        EdmUtil.setPropertyBaseEntitiesSysColumns(cls, me, _res, SQLCurdEnum.INSERT);
                         ormService.insert(_res);
                     }
                 }
@@ -696,7 +703,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     MonitortreeEntity u_v = new MonitortreeEntity();
                     u_v.setMotr_end(new SimpleDateFormat(Constant.YYYY_MM_DD_HH_MM_SS).parse(rootNode.getEnd()));
                     u_v.setId(r_v.getId());
-                    u_v.setModuser(Constant.MODUSER);
+                    u_v.setModuser(session.getEmployeeId());
                     
                     ormService.updateSelective(u_v);
                 }
@@ -737,8 +744,8 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 }
                 
                 if(!d_nodes.isEmpty()){
-                    param.clearOrmParmas();
-                    param.setWhereExp(param.getConditionForInXML(Constant.ID, d_nodes.toArray()));
+                    param.reset();
+                    param.setWhereExp(param.getInXML(Constant.ID, d_nodes.toArray()));
                     ormService.delete(cls, param);
                 }
                 
@@ -749,8 +756,8 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                         JSONObject res = resources.getJSONObject(k);
                         resIds.add(res.getString(Constant.OID));
                     }
-                    param.clearOrmParmas();
-                    param.setWhereExp(param.getConditionForInXML(Constant.ID, resIds.toArray()));
+                    param.reset();
+                    param.setWhereExp(param.getInXML(Constant.ID, resIds.toArray()));
                     ormService.delete(MoniMoniResSetaEntity.class, param);
                 }
                 
@@ -786,7 +793,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     List<? extends MonitorEntity> datas = JSONArray.parseArray(addNodes.toJSONString(), cls);
                     
                     for(MonitorEntity me : datas){
-                        me.setCreuser(Constant.ADDUSER);
+                        me.setCreuser(session.getEmployeeId());
                         String id = ormService.insertSelective(me).toString();
                         me.setId(id);
                         
@@ -794,7 +801,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                         List<MoniMoniResSetaEntity> _res = me.getMoni_res_set();
                         
                         if(_res != null && !_res.isEmpty()){
-                            PersistentUtil.setPropertyBaseEntitiesSysColumns(cls, me, _res, SQLCurdEnum.INSERT);
+                            EdmUtil.setPropertyBaseEntitiesSysColumns(cls, me, _res, SQLCurdEnum.INSERT);
                             ormService.insert(_res);
                         }
                     }
@@ -803,7 +810,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 if(!updateNodes.isEmpty()){
                     List<? extends MonitorEntity> datas = JSONArray.parseArray(updateNodes.toJSONString(), cls);
                     for(MonitorEntity me : datas){
-                        me.setModuser(Constant.MODUSER);
+                        me.setModuser(session.getEmployeeId());
                         ormService.updateSelective(me);
                     }
                 }
@@ -811,8 +818,8 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 if(!addRes.isEmpty()){
                     List<MoniMoniResSetaEntity> datas = JSONArray.parseArray(addRes.toJSONString(), MoniMoniResSetaEntity.class);
                     for(MoniMoniResSetaEntity me : datas){
-                        me.setCreuser(Constant.ADDUSER);
-                        me.setClassName(PersistentUtil.getEdmClassName(cls));
+                        me.setCreuser(session.getEmployeeId());
+                        me.setClassName(EdmUtil.getEdmClassName(cls));
                         ormService.insertSelective(me);
                     }
                 }
@@ -874,8 +881,8 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                     List<MoniMoniHisSetaEntity> datas = JSONArray.parseArray(addNodes.toJSONString(), MoniMoniHisSetaEntity.class);
                     
                     for(MoniMoniHisSetaEntity me : datas){
-                        me.setCreuser(Constant.ADDUSER);
-                        me.setClassName(PersistentUtil.getEdmClassName(cls));
+                        me.setCreuser(session.getEmployeeId());
+                        me.setClassName(EdmUtil.getEdmClassName(cls));
                         String id = ormService.insertSelective(me).toString();
                         me.setId(id);
                         
@@ -883,7 +890,7 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                         List<MoniMoniHresSetbEntity> _res = me.getMoni_hres_set();
                         
                         if(_res != null && !_res.isEmpty()){
-                            PersistentUtil.setPropertyBaseEntitiesSysColumns(cls, me, _res, SQLCurdEnum.INSERT);
+                            EdmUtil.setPropertyBaseEntitiesSysColumns(cls, me, _res, SQLCurdEnum.INSERT);
                             ormService.insert(_res);
                         }
                     }
@@ -895,26 +902,31 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
                 ApplicationException.throwCodeMesg(ErrorMessage._60000.getCode(),"临时单变更类型" + ErrorMessage._60000.getMsg());
         }
         
-        // 查询出所有的节点id
-        param.clearOrmParmas();
-        param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
-        param.setWhereExp(param.getEqualXML(Constant.PID, orderId));
-        List<MtorMtorNodeSetaEntity> n_list = ormService.selectBeanList(MtorMtorNodeSetaEntity.class, param);
-        // TODO
-        Object[] ids = n_list.stream().map(MtorMtorNodeSetaEntity::getId).toArray();
+//        // 查询出所有的节点id
+//        param.reset();
+//        param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
+//        param.setWhereExp(param.getEqualXML(Constant.PID, orderId));
+//        List<MtorMtorNodeSetaEntity> n_list = ormService.selectBeanList(MtorMtorNodeSetaEntity.class, param);
+//        // TODO
+//        Object[] ids = n_list.stream().map(MtorMtorNodeSetaEntity::getId).toArray();
+//        
+//        // 删除节点
+//        param.reset();
+//        param.setWhereExp(param.getInXML(Constant.ID, ids));
+//        ormService.delete(MtorMtorNodeSetaEntity.class, param);
+//        
+//        // 删除资源
+//        param.reset();
+//        param.setWhereExp(param.getInXML(Constant.PID, ids));
+//        ormService.delete(MtorMtorResSetbEntity.class, param);
+          // 删除单据
+//        ormService.delete(MonitortreeorderEntity.class, orderId);
         
-        // 删除节点
-        param.clearOrmParmas();
-        param.setWhereExp(param.getConditionForInXML(Constant.ID, ids));
-        ormService.delete(MtorMtorNodeSetaEntity.class, param);
-        
-        // 删除资源
-        param.clearOrmParmas();
-        param.setWhereExp(param.getConditionForInXML(Constant.PID, ids));
-        ormService.delete(MtorMtorResSetbEntity.class, param);
-        
-        // 删除临时单
-        ormService.delete(MonitortreeorderEntity.class, orderId);
+        // 更新临时单 - 状态为 5 完成状态
+        MonitortreeorderEntity orderEntity = new MonitortreeorderEntity();
+        orderEntity.setId(orderId);
+        orderEntity.setOrde_status(Constant.ORDER_STATUS_COMMIT);
+        ormService.updateSelective(orderEntity);
         
         hashOps.getOperations().delete(orderId+ Constant.KEY_SEP +classId);
         hashOps.getOperations().delete(orderId+ Constant.KEY_SEP +classId + Constant.REVOKE_KEY);
@@ -1055,5 +1067,19 @@ public class MonitorTreeOrderServiceImpl implements MonitorTreeOrderService{
             }
         }
     }
+
+    @Override
+    public void submitWorkFlow(String key, String orderInstanceId) throws Exception {
+        
+        // 更新单据状态 - 待审
+        MonitortreeorderEntity order = new MonitortreeorderEntity();
+        order.setId(key.split(Constant.KEY_SEP)[0]);
+        order.setOrde_status(Constant.ORDER_STATUS_WAIT);
+        ormService.updateSelective(order);
+        
+        // 提交流程
+        formService.submitWorkFlow(key.split(Constant.KEY_SEP)[0], orderInstanceId);
+    }
+    
 }
 

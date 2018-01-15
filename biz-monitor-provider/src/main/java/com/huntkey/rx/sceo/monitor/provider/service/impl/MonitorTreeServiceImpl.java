@@ -34,7 +34,7 @@ import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
 import com.huntkey.rx.sceo.orm.common.model.OrmParam;
 import com.huntkey.rx.sceo.orm.common.type.SQLSortEnum;
 import com.huntkey.rx.sceo.orm.common.type.SQLSymbolEnum;
-import com.huntkey.rx.sceo.orm.common.util.PersistentUtil;
+import com.huntkey.rx.sceo.orm.common.util.EdmUtil;
 import com.huntkey.rx.sceo.orm.service.OrmService;
 
 /**
@@ -126,7 +126,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             }
             
             // 查询监管树正式表
-            ormParam.clearOrmParmas();
+            ormParam.reset();
             ormParam.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
             ormParam.setWhereExp(OrmParam.and(ormParam.getEqualXML("moni_lvl_code", Constant.ROOT_LVL_CODE), 
                     ormParam.getEqualXML("moni_lvl", Constant.ROOT_LVL)));
@@ -139,7 +139,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                         ormParam.getGreaterThanAndEqualXML("moni_end", endTime)));
             
             @SuppressWarnings("rawtypes")
-            Class cls = Class.forName(Constant.ENTITY_PATH + PersistentUtil.convertClassName(searchEdmName));
+            Class cls = Class.forName(Constant.ENTITY_PATH + EdmUtil.convertClassName(searchEdmName));
             
             @SuppressWarnings("unchecked")
             List<? extends MonitorEntity> list = ormService.selectBeanList(cls, ormParam);
@@ -147,7 +147,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             temp.put("count", list == null ? 0 : list.size());
             
             // 查询监管树历史属性集
-            ormParam.clearOrmParmas();
+            ormParam.reset();
             ormParam.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
             ormParam.setWhereExp(OrmParam.and(ormParam.getEqualXML("moni_hlvl_code", Constant.ROOT_LVL_CODE), 
                     ormParam.getEqualXML("moni_hlvl", Constant.ROOT_LVL),ormParam.getEqualXML("classname", searchEdmName)));
@@ -215,7 +215,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             JSONObject version = versions.getJSONObject(i);
             
             // 根据版本信息去 监管树正式表查询
-            ormParam.clearOrmParmas();
+            ormParam.reset();
             
             ormParam.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
             
@@ -237,7 +237,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
                         ormParam.getGreaterThanAndEqualXML("moni_beg", versions.getJSONObject(i).getString("beginTime") + Constant.STARTTIME)));
             
             @SuppressWarnings("rawtypes")
-            Class cls = Class.forName(Constant.ENTITY_PATH + PersistentUtil.convertClassName(edmcNameEn));
+            Class cls = Class.forName(Constant.ENTITY_PATH + EdmUtil.convertClassName(edmcNameEn));
             
             @SuppressWarnings("unchecked")
             List<? extends MonitorEntity> list = ormService.selectBeanList(cls, ormParam);
@@ -263,7 +263,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             }
             
             // 根据版本信息去 监管树历史表查询
-            ormParam.clearOrmParmas();
+            ormParam.reset();
             ormParam.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
             ormParam.addOrderExpElement(SQLSortEnum.DESC, "moni_hbeg")
             .addOrderExpElement(SQLSortEnum.ASC, "moni_hend");
@@ -389,7 +389,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         if(rootList.size() > 1)
             throw new ServiceException("监管树历史表数据异常，同一时间找到多个历史监管树！");
         
-        param.clearOrmParmas();
+        param.reset();
         
         param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
         
@@ -443,7 +443,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         .addOrderExpElement(SQLSortEnum.ASC, "moni_lvl_code");
         
         @SuppressWarnings("rawtypes")
-        Class cls = Class.forName(Constant.ENTITY_PATH + PersistentUtil.convertClassName(rootEdmcNameEn));
+        Class cls = Class.forName(Constant.ENTITY_PATH + EdmUtil.convertClassName(rootEdmcNameEn));
         
         @SuppressWarnings("unchecked")
         List<? extends MonitorEntity> rootList = ormService.selectBeanList(cls, param);
@@ -454,7 +454,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         if(rootList.size() > 1)
             throw new ServiceException("监管树正式表数据异常，同一时间找到多个监管树！");
         
-        param.clearOrmParmas();
+        param.reset();
         
         param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
         
@@ -513,7 +513,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         OrmParam param = new OrmParam();
         
         for (int i = 0; i < nodes.size(); i++) {
-            param.clearOrmParmas();
+            param.reset();
             // 资源id集合
             List<MoniMoniResSetaEntity> reIds = new ArrayList<MoniMoniResSetaEntity>();
             
@@ -646,9 +646,9 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             
             OrmParam ormParam = new OrmParam();
             ormParam.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
-            ormParam.setWhereExp(ormParam.getConditionForInXML(Constant.ID, ids.toArray()));
+            ormParam.setWhereExp(ormParam.getInXML(Constant.ID, ids.toArray()));
             
-            Class cls = Class.forName(Constant.ENTITY_PATH + PersistentUtil.convertClassName(resourcesEdmName));
+            Class cls = Class.forName(Constant.ENTITY_PATH + EdmUtil.convertClassName(resourcesEdmName));
             
             @SuppressWarnings("unchecked")
             List resourceObjs = ormService.selectBeanList(cls, ormParam);
@@ -738,7 +738,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
             param.setPageSize(1);
             
             @SuppressWarnings("rawtypes")
-            Class cls = Class.forName(Constant.ENTITY_PATH + PersistentUtil.convertClassName(edmcNameEn));
+            Class cls = Class.forName(Constant.ENTITY_PATH + EdmUtil.convertClassName(edmcNameEn));
             
             @SuppressWarnings("unchecked")
             List<? extends MonitorEntity> hNode = ormService.selectBeanList(cls, param);
@@ -862,7 +862,7 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         }
         
         @SuppressWarnings("rawtypes")
-        Class cls = Class.forName(Constant.ENTITY_PATH + PersistentUtil.convertClassName(edmName));
+        Class cls = Class.forName(Constant.ENTITY_PATH + EdmUtil.convertClassName(edmName));
         
         @SuppressWarnings("unchecked")
         List<?> objs = ormService.selectBeanList(cls, param);
@@ -873,68 +873,4 @@ public class MonitorTreeServiceImpl implements MonitorTreeService {
         return resourceObjList;
     }
     
-    /**
-     * getChileNodes:根据节点id查询其子节点信息
-     * @author caozhenx
-     * @param nodeId
-     * @return
-     */
-    public JSONArray getChileNodes(String nodeId, String edmcNameEn) {
-
-//        logger.info("查询子节点nodeId:{},edmcNameEn:{}", nodeId, edmcNameEn);
-//
-//        if (StringUtils.isNotBlank(nodeId) && StringUtils.isNotBlank(edmcNameEn)) {
-//
-//            SearchParam requestParams = new SearchParam(edmcNameEn);
-//            
-//            requestParams.addCond_equals(Constant.ID, nodeId);
-//            
-//            Result result = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
-//            
-//            JSONObject node = null;
-//            
-//            if(result.getRetCode() == Result.RECODE_SUCCESS){
-//                
-//                if(result.getData() != null){
-//                    JSONArray nodesArray = JSONObject.parseObject(JSONObject.toJSONString(result.getData()))
-//                            .getJSONArray(Constant.DATASET);
-//                    if(nodesArray != null && nodesArray.size() == 1)
-//                        node = nodesArray.getJSONObject(0);
-//                }
-//            }else
-//                throw new ServiceException(result.getErrMsg());
-//            
-//            if(node == null)
-//                ApplicationException.throwCodeMesg(ErrorMessage._60005.getCode(), "节点记录" + ErrorMessage._60005.getMsg());            
-//            
-//            String begin = new SimpleDateFormat(Constant.YYYY_MM_DD)
-//                    .format(new Date(node.getLong("moni_beg")));
-//            String end = new SimpleDateFormat(Constant.YYYY_MM_DD)
-//                    .format(new Date(node.getLong("moni_end")));
-//            
-//            requestParams.clearConditions();
-//            requestParams
-//                .addCond_greater("moni_lvl", String.valueOf(node.getInteger("moni_lvl")))
-//                .addCond_lessOrEquals("moni_beg", begin)
-//                .addCond_greater("moni_end", end)
-//                .addCond_like("moni_lvl_code", node.getString("moni_lvl_code"));
-//
-//            logger.info("查询json:{}", requestParams.toJSONString());
-//
-//            Result allRet = serviceCenterClient.queryServiceCenter(requestParams.toJSONString());
-//
-//            if (allRet != null && allRet.getRetCode() == Result.RECODE_SUCCESS) {
-//                if (allRet.getData() == null) {
-//                    return null;
-//                }
-//                return JSONObject.parseObject(JSONObject.toJSONString(allRet.getData()))
-//                        .getJSONArray(Constant.DATASET);
-//            } else {
-//                throw new ServiceException(allRet.getErrMsg());
-//            }
-//
-//        }
-//
-        return null;
-    }
 }

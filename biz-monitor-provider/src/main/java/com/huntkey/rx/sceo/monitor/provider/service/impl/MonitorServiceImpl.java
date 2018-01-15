@@ -48,9 +48,11 @@ import com.huntkey.rx.sceo.monitor.commom.enums.ErrorMessage;
 import com.huntkey.rx.sceo.monitor.commom.exception.ApplicationException;
 import com.huntkey.rx.sceo.monitor.commom.exception.ServiceException;
 import com.huntkey.rx.sceo.monitor.commom.model.AddMonitorTreeTo;
+import com.huntkey.rx.sceo.monitor.commom.model.CurrentSessionEntity;
 import com.huntkey.rx.sceo.monitor.commom.model.NodeTo;
 import com.huntkey.rx.sceo.monitor.commom.model.ResourceTo;
 import com.huntkey.rx.sceo.monitor.provider.controller.client.ModelerClient;
+import com.huntkey.rx.sceo.monitor.provider.service.BizFormService;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorService;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeOrderService;
 import com.huntkey.rx.sceo.monitor.provider.service.MonitorTreeService;
@@ -58,7 +60,7 @@ import com.huntkey.rx.sceo.orm.common.model.OrmParam;
 import com.huntkey.rx.sceo.orm.common.type.SQLCurdEnum;
 import com.huntkey.rx.sceo.orm.common.type.SQLSortEnum;
 import com.huntkey.rx.sceo.orm.common.type.SQLSymbolEnum;
-import com.huntkey.rx.sceo.orm.common.util.PersistentUtil;
+import com.huntkey.rx.sceo.orm.common.util.EdmUtil;
 import com.huntkey.rx.sceo.orm.service.OrmService;
 @Service
 public class MonitorServiceImpl implements MonitorService {
@@ -72,7 +74,10 @@ public class MonitorServiceImpl implements MonitorService {
     private MonitorTreeService treeService;
     
     @Autowired
-    private MonitorTreeOrderService orderTree ;
+    private MonitorTreeOrderService orderTree;
+    
+    @Autowired
+    private BizFormService formService;
     
     @Autowired
     private OrmService ormService;
@@ -105,10 +110,25 @@ public class MonitorServiceImpl implements MonitorService {
 	    
 	    OrmParam param = new OrmParam();
 	    
+	    // 判断当前节点类型的临时单状态是否是 等待审批 和 等待批准
+        param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
+        param.setWhereExp(OrmParam.or(param.getEqualXML("orde_status", Constant.ORDER_STATUS_WAIT), 
+                param.getEqualXML("orde_status", Constant.ORDER_STATUS_WAIT_COMMIT)));
+        param.setWhereExp(OrmParam.and(param.getWhereExp(),param.getEqualXML("mtor_cls_id", classId), 
+                param.getEqualXML("mtor_order_type", String.valueOf(type)),
+                param.getEqualXML("mtor_order_root", rootId)));
+                                       
+        List<MonitortreeorderEntity> wait_list = ormService.selectBeanList(MonitortreeorderEntity.class, param);
+        
+        if(wait_list != null && !wait_list.isEmpty())
+            ApplicationException.throwCodeMesg(ErrorMessage._60024.getCode(), ErrorMessage._60024.getMsg());
+        
+        param.reset();
         param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
         param.setWhereExp(OrmParam.and(param.getEqualXML("mtor_cls_id", classId), 
                                        param.getEqualXML("mtor_order_type", String.valueOf(type)),
-                                       param.getEqualXML("mtor_order_root", rootId)));
+                                       param.getEqualXML("mtor_order_root", rootId),
+                                       param.getUnequalXML("orde_status", Constant.ORDER_STATUS_COMMIT)));
 	    
         List<MonitortreeorderEntity> o_list = ormService.selectBeanList(MonitortreeorderEntity.class, param);
 	    
@@ -119,7 +139,7 @@ public class MonitorServiceImpl implements MonitorService {
             ApplicationException.throwCodeMesg(ErrorMessage._60019.getCode(), ErrorMessage._60019.getMsg());
         
 	    // 存在临时单 - 判断临时单是否失效
-        param.clearOrmParmas();
+        param.reset();
         param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
         param.setWhereExp(OrmParam.and(param.getLessThanAndEqualXML("mtor_end", new SimpleDateFormat(YYYY_MM_DD).format(new Date())), 
                                        param.getEqualXML("mtor_lvl", Constant.ROOT_LVL),
@@ -130,21 +150,20 @@ public class MonitorServiceImpl implements MonitorService {
         // 存在的临时单节点  已失效 - 需要将临时单  和 节点信息全部清除
         if(r_list != null && !r_list.isEmpty()){
             // 查询出所有的节点id
-            param.clearOrmParmas();
+            param.reset();
             param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
             param.setWhereExp(param.getEqualXML(Constant.PID, o_list.get(0).getId()));
             List<MtorMtorNodeSetaEntity> n_list = ormService.selectBeanList(MtorMtorNodeSetaEntity.class, param);
-            // TODO
             Object[] ids = n_list.stream().map(MtorMtorNodeSetaEntity::getId).toArray();
             
             // 删除节点
-            param.clearOrmParmas();
-            param.setWhereExp(param.getConditionForInXML(Constant.ID, ids));
+            param.reset();
+            param.setWhereExp(param.getInXML(Constant.ID, ids));
             ormService.delete(MtorMtorNodeSetaEntity.class, param);
             
             // 删除资源
-            param.clearOrmParmas();
-            param.setWhereExp(param.getConditionForInXML(Constant.PID, ids));
+            param.reset();
+            param.setWhereExp(param.getInXML(Constant.PID, ids));
             ormService.delete(MtorMtorResSetbEntity.class, param);
             
             // 删除临时单
@@ -378,11 +397,11 @@ public class MonitorServiceImpl implements MonitorService {
         param.addColumn(SQLSymbolEnum.ALLCOLUMNS.getSymbol());
         param.setWhereExp(OrmParam.and(param.getEqualXML("mtor_order_root", rootId), 
                                        param.getEqualXML("mtor_order_type", String.valueOf(ChangeType.ADD.getValue())),
-                                       param.getEqualXML("mtor_cls_id", classId)));
+                                       param.getEqualXML("mtor_cls_id", classId),
+                                       param.getUnequalXML("orde_status", Constant.ORDER_STATUS_COMMIT)));
         
         List<MonitortreeorderEntity> o_list = ormService.selectBeanList(MonitortreeorderEntity.class, param);
         // 检查临时单是否存在
-        
         if(o_list != null && o_list.size() == 1)
             return o_list.get(0).getId() + Constant.KEY_SEP + classId;
         
@@ -433,16 +452,17 @@ public class MonitorServiceImpl implements MonitorService {
         // 新增临时单节点信息
         List<MtorMtorNodeSetaEntity> m_list = JSONArray.parseArray(nodes.toJSONString(), MtorMtorNodeSetaEntity.class);
         
+        CurrentSessionEntity session = formService.getCurrentSessionInfo();
         for(MtorMtorNodeSetaEntity n : m_list){
             //主表 - 临时单节点集合
-            n.setCreuser(Constant.ADDUSER);
-            n.setClassName(PersistentUtil.getEdmClassName(MonitortreeorderEntity.class));
+            n.setCreuser(session.getEmployeeId());
+            n.setClassName(EdmUtil.getEdmClassName(MonitortreeorderEntity.class));
             String id = ormService.insertSelective(n).toString();
             n.setId(id);
             //属性集 - 临时单节点的资源集合
             List<MtorMtorResSetbEntity> res = n.getMtor_res_set();
             if(res != null && !res.isEmpty()){
-                PersistentUtil.setPropertyBaseEntitiesSysColumns(MonitortreeorderEntity.class,n, res, SQLCurdEnum.INSERT);
+                EdmUtil.setPropertyBaseEntitiesSysColumns(MonitortreeorderEntity.class,n, res, SQLCurdEnum.INSERT);
                 ormService.insert(res);
             }
         }
@@ -459,7 +479,8 @@ public class MonitorServiceImpl implements MonitorService {
         
         param.setWhereExp(OrmParam.and(param.getEqualXML("mtor_order_root", rootId), 
                                        param.getEqualXML("mtor_order_type", String.valueOf(ChangeType.UPDATE.getValue())),
-                                       param.getEqualXML("mtor_cls_id", classId)));
+                                       param.getEqualXML("mtor_cls_id", classId),
+                                       param.getUnequalXML("orde_status", Constant.ORDER_STATUS_COMMIT)));
         
         List<MonitortreeorderEntity> order = ormService.selectBeanList(MonitortreeorderEntity.class,param);
         
@@ -497,18 +518,18 @@ public class MonitorServiceImpl implements MonitorService {
         
         // 新增临时单节点信息
         List<MtorMtorNodeSetaEntity> m_list = JSONArray.parseArray(nodes.toJSONString(), MtorMtorNodeSetaEntity.class);
-        
+        CurrentSessionEntity session = formService.getCurrentSessionInfo();
         for(MtorMtorNodeSetaEntity n : m_list){
             
             //主表 - 临时单节点集合
-            n.setCreuser(Constant.ADDUSER);
-            n.setClassName(PersistentUtil.getEdmClassName(MonitortreeorderEntity.class));
+            n.setCreuser(session.getEmployeeId());
+            n.setClassName(EdmUtil.getEdmClassName(MonitortreeorderEntity.class));
             String id = ormService.insertSelective(n).toString();
             n.setId(id);
             //属性集 - 临时单节点的资源集合
             List<MtorMtorResSetbEntity> res = n.getMtor_res_set();
             if(res != null && !res.isEmpty()){
-                PersistentUtil.setPropertyBaseEntitiesSysColumns(MonitortreeorderEntity.class,n, res, SQLCurdEnum.INSERT);
+                EdmUtil.setPropertyBaseEntitiesSysColumns(MonitortreeorderEntity.class,n, res, SQLCurdEnum.INSERT);
                 ormService.insert(res);
             }
         }
@@ -531,7 +552,14 @@ public class MonitorServiceImpl implements MonitorService {
         order.setMtor_order_type(changeType);
         order.setMtor_cls_id(classId);
         order.setMtor_order_root(rootId);
-        order.setCreuser(Constant.ADDUSER);
+        CurrentSessionEntity session = formService.getCurrentSessionInfo();
+        // 制单人和 制单岗位
+        order.setOrde_adduser(session.getEmployeeId());
+        order.setOrde_duty(session.getPositionId());
+        
+        order.setOrde_status(Constant.ORDER_STATUS_TEMP);
+        
+        order.setCreuser(session.getEmployeeId());
         return ormService.insertSelective(order).toString();
     }
 	
@@ -561,7 +589,7 @@ public class MonitorServiceImpl implements MonitorService {
         root.setMtor_relate_cnd("");
         root.setMtor_type(ChangeType.ADD.getValue());
         root.setMtor_relate_id("");
-        root.setCreuser(Constant.ADDUSER);
+        root.setCreuser(formService.getCurrentSessionInfo().getEmployeeId());
         return JSONObject.parseObject(JSON.toJSONString(root));
     }
     
@@ -588,7 +616,7 @@ public class MonitorServiceImpl implements MonitorService {
             rootEnd = hisNode.getMoni_hend();
         }else{
             @SuppressWarnings("rawtypes")
-            Class cls = Class.forName(Constant.ENTITY_PATH + PersistentUtil.convertClassName(rootEdmcNameEn));
+            Class cls = Class.forName(Constant.ENTITY_PATH + EdmUtil.convertClassName(rootEdmcNameEn));
             @SuppressWarnings("unchecked")
             MonitorEntity node = (MonitorEntity)ormService.load(cls, rootId);
             
@@ -689,7 +717,7 @@ public class MonitorServiceImpl implements MonitorService {
                 nodes.add(JSON.parseObject(JSON.toJSONString(ee)));
         }else{
             @SuppressWarnings("rawtypes")
-            Class cls = Class.forName(Constant.ENTITY_PATH + PersistentUtil.convertClassName(rootEdmcNameEn));
+            Class cls = Class.forName(Constant.ENTITY_PATH + EdmUtil.convertClassName(rootEdmcNameEn));
             @SuppressWarnings("unchecked")
             List<? extends MonitorEntity>  nNodes= ormService.selectBeanList(cls, param);
             
@@ -1032,7 +1060,6 @@ public class MonitorServiceImpl implements MonitorService {
     	}
     	
         createNewNode(key,newLvlCode.split(Constant.LVSPLIT).length,newLvlCode,beginDate,endDate);
-        // TODO Auto-generated method stub
         return newLvlCode;
     }
     private String addChildNode(String key,String pLvlCode){
@@ -1139,7 +1166,6 @@ public class MonitorServiceImpl implements MonitorService {
      */
     @Override
     public String deleteNode(String key,String levelCode,int type) {
-        // TODO Auto-generated method stub
         if(type==0){
             NodeTo node=hasOps.get(key, levelCode);
             if(node!=null){
@@ -1172,7 +1198,6 @@ public class MonitorServiceImpl implements MonitorService {
      * @return
      */
     private void delNodes(String tempId,List<NodeTo> nodes) {
-        // TODO Auto-generated method stub
         NodeTo node=null;
         List<String> addList=new ArrayList<String>();//新增的节点需要删除的集合
         Map<String, NodeTo> updateNodes=new HashMap<String, NodeTo>();//失效节点集合
@@ -1295,7 +1320,6 @@ public class MonitorServiceImpl implements MonitorService {
         Collections.sort(list, new Comparator<NodeTo>() {//对节点按照层及编码升序排序
             @Override
             public int compare(NodeTo o1, NodeTo o2) {
-                // TODO Auto-generated method stub
             	double d=o1.getSeq()-o2.getSeq();
 				int ret=0;
 				if(d>0){

@@ -60,12 +60,6 @@ public interface Constant {
     // 员工表的EDMID
     String STAFFCLASSID="2d6b8cd2abcb11e78bba005056bc4879";
     
-    // 新增人
-    String ADDUSER = "addUser";
-    
-    // 修改人
-    String MODUSER = "modUser";
-    
     //初始化节点名称
     String INITNODENAME="未命名节点";
     
@@ -115,5 +109,22 @@ public interface Constant {
     
     // EDM 统计类
     String EDM_STATISTICS = "statistics";
+    
+    // 单据状态-临时
+    String ORDER_STATUS_TEMP = "1";
+    
+    // 单据状态 - 待审
+    String ORDER_STATUS_WAIT = "2";
+    
+    // 单据状态 - 待批
+    String ORDER_STATUS_WAIT_COMMIT = "4";
+    
+    // 单据状态-完成
+    String ORDER_STATUS_COMMIT = "5";
+    
+    // 单据状态 - 退回
+    String ORDER_STATUS_BACK = "6";
+    
+    
 }
 
