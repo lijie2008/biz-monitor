@@ -15,10 +15,10 @@ import com.huntkey.rx.sceo.method.register.plugin.annotation.EnableMethodRegiste
 @ComponentScan(basePackages = "com.huntkey.rx")
 @EnableDiscoveryClient
 @EnableFeignClients(basePackages = "com.huntkey.rx.sceo.monitor.provider.controller.client")
-@EnableMethodRegisterScanner(startApplicationClass = MonitorProviderApplication.class,
-edmServiceName = "${edmServiceName:modeler-provider}",
-serviceApplicationName = "${spring.application.name}")
-@EnableDriverMethod
+// @EnableMethodRegisterScanner(startApplicationClass = MonitorProviderApplication.class,
+// edmServiceName = "${edmServiceName:modeler-provider}",
+// serviceApplicationName = "${spring.application.name}")
+// @EnableDriverMethod
 public class MonitorProviderApplication {
     public static void main(String[] args) {
         SpringApplication.run(MonitorProviderApplication.class,args);
